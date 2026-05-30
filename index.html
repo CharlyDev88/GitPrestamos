@@ -1,1 +1,454 @@
-<h1></h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Préstamos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h2>Iniciar sesion</h2>
+      <form id="loginForm" class="form-grid">
+        <label>Usuario
+          <input id="loginUsername" required>
+        </label>
+        <label>Clave
+          <input id="loginPassword" type="password" required>
+        </label>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">Ingresar</button>
+        </div>
+      </form>
+      <button id="forgotPasswordBtn" class="auth-link-btn" type="button">¿Olvidó su contraseña?</button>
+      <p class="subtitle">Usuario de prueba: <strong>admin</strong> / <strong>admin123</strong></p>
+    </div>
+  </section>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>Gestión de Préstamos</h1>
+        
+      </div>
+      <div class="top-actions">
+        <span id="sessionUserInfo" class="subtitle"></span>
+        <button id="exportDataBtn" class="btn btn-secondary" type="button">📤 Exportar datos</button>
+        <button id="logoutBtn" class="btn btn-danger" type="button">⇦ Salir</button>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Secciones">
+      <button class="tab active" data-tab="dashboard" type="button">📊 Dashboard</button>
+      <button class="tab" data-tab="clientes" type="button">👥 Clientes</button>
+      <button class="tab" data-tab="prestamos" type="button">💵 Préstamos</button>
+      <button class="tab" data-tab="pagos" type="button">💳 Pagos</button>
+      <button class="tab" data-tab="refinanciaciones" type="button">🔁 Refinanciaciones</button>
+      <button class="tab" data-tab="comprobantes" type="button">🧾 Comprobantes</button>
+      <button class="tab" data-tab="usuarios" type="button">🔐 Usuarios</button>
+    </nav>
+
+    <main>
+      <section id="dashboard" class="panel active">
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <h2>Clientes</h2>
+            <p id="kpiClientes" class="kpi-value">0</p>
+          </article>
+          <article class="kpi-card">
+            <h2>Préstamos activos</h2>
+            <p id="kpiPrestamosActivos" class="kpi-value">0</p>
+          </article>
+          <article class="kpi-card">
+            <h2>Cuotas vencidas</h2>
+            <p id="kpiCuotasVencidas" class="kpi-value warning">0</p>
+          </article>
+          <article class="kpi-card">
+            <h2>Cobrado (mes actual)</h2>
+            <p id="kpiCobradoMes" class="kpi-value success">$0</p>
+          </article>
+        </div>
+
+        <div class="dual-grid">
+          <article class="card">
+            <h3>Clientes por score</h3>
+            <ul id="dashboardSemaforo" class="bulletless"></ul>
+            <div id="dashboardSemaforoChart" class="chart-block"></div>
+          </article>
+          <article class="card">
+            <h3>Préstamos en mora</h3>
+            <ul id="dashboardMora" class="bulletless"></ul>
+            <div id="dashboardCobranzaChart" class="chart-block"></div>
+          </article>
+        </div>
+
+        <article class="card">
+          <h3>Evolución mensual (últimos 6 meses)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th>Otorgado</th>
+                  <th>Nuevos creditos</th>
+                  <th>Refinanciaciones</th>
+                  <th>Finalizados</th>
+                  <th>Cobrado</th>
+                  <th>En mora</th>
+                  <th>Indicador</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardEvolucionTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="clientes" class="panel">
+        <div class="card">
+          <h2>Gestión de clientes</h2>
+          <form id="clienteForm" class="form-grid">
+            <input type="hidden" id="clienteId">
+            <label>Nombre completo
+              <input id="clienteNombre" name="nombre" required>
+            </label>
+            <label>DNI
+              <input id="clienteDni" name="dni" required>
+            </label>
+            <label>Telefono
+              <input id="clienteTelefono" name="telefono" required>
+            </label>
+            <label>Domicilio
+              <input id="clienteDomicilio" name="domicilio" required>
+            </label>
+            <label>Evaluacion (0-100)
+              <input id="clienteScore" name="score" type="number" min="0" max="100" required>
+            </label>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Guardar cliente</button>
+              <button id="clienteCancelBtn" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Listado de clientes</h3>
+          <div class="list-tools">
+            <input id="clientesSearch" placeholder="Buscar por nombre, DNI o telefono">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>DNI</th>
+                  <th>Telefono</th>
+                  <th>Score</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="clientesTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="clientesPager"></div>
+        </div>
+
+        <div class="card">
+          <h3 id="historialClienteTitulo">Historial de préstamos por cliente</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID prestamo</th>
+                  <th>Fecha inicio</th>
+                  <th>Tipo</th>
+                  <th>Monto otorgado</th>
+                  <th>Total</th>
+                  <th>Pagado</th>
+                  <th>Adeudado</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="historialClienteTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="clientesSemaforo" class="panel">
+        <div class="card">
+          <div class="topbar">
+            <div>
+              <h2 id="clientesSemaforoTitulo">Clientes por score</h2>
+              <p id="clientesSemaforoSubtitulo" class="subtitle">Listado filtrado desde tablero</p>
+            </div>
+            <button id="volverTableroBtn" class="btn btn-secondary" type="button">Volver al tablero</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>DNI</th>
+                  <th>Telefono</th>
+                  <th>Puntuacion</th>
+                  <th>Semaforo</th>
+                  <th>Prestamo activo</th>
+                  <th>Monto otorgado</th>
+                  <th>Monto abonado</th>
+                  <th>Monto adeudado</th>
+                </tr>
+              </thead>
+              <tbody id="clientesSemaforoTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="prestamos" class="panel">
+        <div class="card">
+          <h2>Nuevo préstamo</h2>
+          <form id="prestamoForm" class="form-grid">
+            <label>Cliente
+              <select id="prestamoCliente" required></select>
+            </label>
+            <label>Tipo de préstamo
+              <select id="prestamoTipo" required>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensual (1 cuota)</option>
+              </select>
+            </label>
+            <label>Monto
+              <div class="money-input">
+                <span>$</span>
+                <input id="prestamoMonto" type="number" min="1" step="0.01" required>
+              </div>
+            </label>
+            <label>Cuotas
+              <input id="prestamoCuotas" type="number" min="1" max="10" value="4" required>
+            </label>
+            <label>Interes a aplicar (%)
+              <input id="prestamoInteres" type="number" min="0" max="200" step="0.01" required>
+            </label>
+            <label>Fecha de inicio
+              <input id="prestamoFecha" type="date" required>
+            </label>
+            <div class="hint-row">
+              <span id="interesPreview">Interes estimado: -</span>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Crear prestamo</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Préstamos registrados</h3>
+          <div class="list-tools">
+            <input id="prestamosSearch" placeholder="Buscar por ID, cliente, tipo o estado">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Cliente</th>
+                  <th>Tipo</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="prestamosTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="prestamosPager"></div>
+        </div>
+      </section>
+
+      <section id="pagos" class="panel">
+        <div class="card">
+          <h2>Registrar pago</h2>
+          <form id="pagoForm" class="form-grid">
+            <label>Préstamo
+              <select id="pagoPrestamo" required></select>
+            </label>
+            <label>Cuota pendiente
+              <select id="pagoCuota" required></select>
+            </label>
+            <label>Monto a pagar
+              <div class="money-input">
+                <span>$</span>
+                <input id="pagoMonto" type="number" min="0.01" step="0.01" required>
+              </div>
+            </label>
+            <label>Fecha de pago
+              <input id="pagoFecha" type="date" required>
+            </label>
+            <div class="hint-row">
+              <span id="pagoAtrasoInfo" class="atraso-indicator">Selecciona cuota para ver atraso.</span>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Registrar cobro</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Ultimos pagos</h3>
+          <div class="list-tools">
+            <input id="pagosSearch" placeholder="Buscar por cliente, prestamo, cuota o fecha">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Préstamo</th>
+                  <th>Cliente</th>
+                  <th>Cuota</th>
+                  <th>Monto</th>
+                  <th>Comprobante</th>
+                </tr>
+              </thead>
+              <tbody id="pagosTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="pagosPager"></div>
+        </div>
+      </section>
+
+      <section id="refinanciaciones" class="panel">
+        <div class="card">
+          <h2>Refinanciar morosos</h2>
+          <form id="refinanciacionForm" class="form-grid">
+            <label>Préstamo en mora
+              <select id="refiPrestamo" required></select>
+            </label>
+            <label>Nuevo tipo
+              <select id="refiTipo" required>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensual (1 cuota)</option>
+              </select>
+            </label>
+            <label>Nuevas cuotas
+              <input id="refiCuotas" type="number" min="1" max="10" value="4" required>
+            </label>
+            <label>Interes a aplicar (%)
+              <input id="refiInteres" type="number" min="0" max="200" step="0.01" required>
+            </label>
+            <label>Inicio refinanciacion
+              <input id="refiFecha" type="date" required>
+            </label>
+            <div class="hint-row">
+              <span id="refiSaldo">Saldo pendiente: -</span>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Refinanciar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Historial de refinanciaciones</h3>
+          <div class="list-tools">
+            <input id="refisSearch" placeholder="Buscar por prestamo origen, nuevo o fecha">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Préstamo origen</th>
+                  <th>Préstamo nuevo</th>
+                  <th>Saldo refinanciado</th>
+                </tr>
+              </thead>
+              <tbody id="refisTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="refisPager"></div>
+        </div>
+      </section>
+
+      <section id="comprobantes" class="panel">
+        <div class="card">
+          <h2>Comprobantes emitidos</h2>
+          <div class="list-tools">
+            <input id="comprobantesSearch" placeholder="Buscar por tipo, cliente, detalle o fecha">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Referencia</th>
+                  <th>Cliente</th>
+                  <th>Monto</th>
+                  <th>Accion</th>
+                </tr>
+              </thead>
+              <tbody id="comprobantesTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="comprobantesPager"></div>
+        </div>
+      </section>
+
+      <section id="usuarios" class="panel">
+        <div class="card">
+          <h2>Gestión de usuarios</h2>
+          <form id="usuarioForm" class="form-grid">
+            <input type="hidden" id="usuarioId">
+            <label>Nombre
+              <input id="usuarioNombre" required>
+            </label>
+            <label>Usuario
+              <input id="usuarioUsername" required>
+            </label>
+            <label>Rol
+              <select id="usuarioRol" required>
+                <option value="admin">Admin</option>
+                <option value="operador">Operador</option>
+              </select>
+            </label>
+            <label>Clave
+              <input id="usuarioPassword" type="password" required>
+            </label>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Guardar usuario</button>
+              <button id="usuarioCancelBtn" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Listado de usuarios</h3>
+          <div class="list-tools">
+            <input id="usuariosSearch" placeholder="Buscar por nombre, usuario o rol">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Usuario</th>
+                  <th>Rol</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="usuariosTable"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="usuariosPager"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
