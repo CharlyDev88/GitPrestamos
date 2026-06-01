@@ -12,10 +12,10 @@
       <h2>Iniciar sesion</h2>
       <form id="loginForm" class="form-grid">
         <label>Usuario
-          <input id="loginUsername" required>
+          <input id="loginUsername" autocomplete="username" required>
         </label>
         <label>Clave
-          <input id="loginPassword" type="password" required>
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
         </label>
         <div class="actions">
           <button class="btn btn-primary" type="submit">Ingresar</button>
@@ -34,19 +34,21 @@
       </div>
       <div class="top-actions">
         <span id="sessionUserInfo" class="subtitle"></span>
-        <button id="exportDataBtn" class="btn btn-secondary" type="button">📤 Exportar datos</button>
-        <button id="logoutBtn" class="btn btn-danger" type="button">⇦ Salir</button>
+        <button id="logoutBtn" class="btn btn-danger" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          Salir
+        </button>
       </div>
     </header>
 
     <nav class="tabs" aria-label="Secciones">
-      <button class="tab active" data-tab="dashboard" type="button">📊 Dashboard</button>
-      <button class="tab" data-tab="clientes" type="button">👥 Clientes</button>
-      <button class="tab" data-tab="prestamos" type="button">💵 Préstamos</button>
-      <button class="tab" data-tab="pagos" type="button">💳 Pagos</button>
-      <button class="tab" data-tab="refinanciaciones" type="button">🔁 Refinanciaciones</button>
-      <button class="tab" data-tab="comprobantes" type="button">🧾 Comprobantes</button>
-      <button class="tab" data-tab="usuarios" type="button">🔐 Usuarios</button>
+      <button class="tab active" data-tab="dashboard" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-7"/></svg>Dashboard</button>
+      <button class="tab" data-tab="clientes" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</button>
+      <button class="tab" data-tab="prestamos" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>Préstamos</button>
+      <button class="tab" data-tab="pagos" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pagos</button>
+      <button class="tab" data-tab="refinanciaciones" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.6 6.1"/><path d="M3 12A9 9 0 0 1 18.6 5.9"/><path d="M3 18h5v-5"/><path d="M21 6h-5v5"/></svg>Refinanciaciones</button>
+      <button class="tab" data-tab="comprobantes" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>Comprobantes</button>
+      <button class="tab" data-tab="usuarios" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Usuarios</button>
     </nav>
 
     <main>
@@ -84,7 +86,9 @@
         </div>
 
         <article class="card">
-          <h3>Evolución mensual (últimos 6 meses)</h3>
+          <div class="section-heading">
+            <h3>Evolución mensual (últimos 6 meses)</h3>
+          </div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -116,13 +120,13 @@
             <label>DNI
               <input id="clienteDni" name="dni" required>
             </label>
-            <label>Telefono
-              <input id="clienteTelefono" name="telefono" required>
+            <label>Teléfono
+              <input id="clienteTelefono" name="telefono" type="tel" required>
             </label>
             <label>Domicilio
               <input id="clienteDomicilio" name="domicilio" required>
             </label>
-            <label>Evaluacion (0-100)
+            <label>Evaluación (0-100)
               <input id="clienteScore" name="score" type="number" min="0" max="100" required>
             </label>
             <div class="actions">
@@ -135,7 +139,7 @@
         <div class="card">
           <h3>Listado de clientes</h3>
           <div class="list-tools">
-            <input id="clientesSearch" placeholder="Buscar por nombre, DNI o telefono">
+            <input id="clientesSearch" placeholder="Buscar por nombre, DNI o teléfono">
           </div>
           <div class="table-wrap">
             <table>
@@ -143,7 +147,7 @@
                 <tr>
                   <th>Nombre</th>
                   <th>DNI</th>
-                  <th>Telefono</th>
+                  <th>Teléfono</th>
                   <th>Score</th>
                   <th>Acciones</th>
                 </tr>
@@ -160,7 +164,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>ID prestamo</th>
+                  <th>ID préstamo</th>
                   <th>Fecha inicio</th>
                   <th>Tipo</th>
                   <th>Monto otorgado</th>
@@ -191,10 +195,10 @@
                 <tr>
                   <th>Nombre</th>
                   <th>DNI</th>
-                  <th>Telefono</th>
-                  <th>Puntuacion</th>
-                  <th>Semaforo</th>
-                  <th>Prestamo activo</th>
+                  <th>Teléfono</th>
+                  <th>Puntuación</th>
+                  <th>Score</th>
+                  <th>Préstamo activo</th>
                   <th>Monto otorgado</th>
                   <th>Monto abonado</th>
                   <th>Monto adeudado</th>
@@ -228,17 +232,17 @@
             <label>Cuotas
               <input id="prestamoCuotas" type="number" min="1" max="10" value="4" required>
             </label>
-            <label>Interes a aplicar (%)
+            <label>Interés a aplicar (%)
               <input id="prestamoInteres" type="number" min="0" max="200" step="0.01" required>
             </label>
             <label>Fecha de inicio
               <input id="prestamoFecha" type="date" required>
             </label>
             <div class="hint-row">
-              <span id="interesPreview">Interes estimado: -</span>
+              <span id="interesPreview">Interés estimado: -</span>
             </div>
             <div class="actions">
-              <button class="btn btn-primary" type="submit">Crear prestamo</button>
+              <button class="btn btn-primary" type="submit">Crear préstamo</button>
             </div>
           </form>
         </div>
@@ -296,9 +300,9 @@
         </div>
 
         <div class="card">
-          <h3>Ultimos pagos</h3>
+          <h3>Últimos pagos</h3>
           <div class="list-tools">
-            <input id="pagosSearch" placeholder="Buscar por cliente, prestamo, cuota o fecha">
+            <input id="pagosSearch" placeholder="Buscar por cliente, préstamo, cuota o fecha">
           </div>
           <div class="table-wrap">
             <table>
@@ -335,7 +339,7 @@
             <label>Nuevas cuotas
               <input id="refiCuotas" type="number" min="1" max="10" value="4" required>
             </label>
-            <label>Interes a aplicar (%)
+            <label>Interés a aplicar (%)
               <input id="refiInteres" type="number" min="0" max="200" step="0.01" required>
             </label>
             <label>Inicio refinanciacion
@@ -353,7 +357,7 @@
         <div class="card">
           <h3>Historial de refinanciaciones</h3>
           <div class="list-tools">
-            <input id="refisSearch" placeholder="Buscar por prestamo origen, nuevo o fecha">
+            <input id="refisSearch" placeholder="Buscar por préstamo origen, nuevo o fecha">
           </div>
           <div class="table-wrap">
             <table>
@@ -387,7 +391,7 @@
                   <th>Referencia</th>
                   <th>Cliente</th>
                   <th>Monto</th>
-                  <th>Accion</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody id="comprobantesTable"></tbody>

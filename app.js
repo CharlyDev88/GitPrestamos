@@ -80,6 +80,7 @@ const dashboardEvolucionTable = document.getElementById("dashboardEvolucionTable
 const toastContainer = document.getElementById("toastContainer");
 let semaforoFilterActive = null;
 let selectedClientHistoryId = null;
+const collapsedEvolutionMonths = new Set();
 const PAGE_SIZE = 10;
 const listState = {
   clientes: { query: "", page: 1 },
@@ -131,14 +132,13 @@ function bindEvents() {
   refiCuotas.addEventListener("input", updateRefiSaldoPreview);
   refiInteres.addEventListener("input", updateRefiSaldoPreview);
 
-  exportDataBtn.addEventListener("click", exportData);
+  if (exportDataBtn) exportDataBtn.addEventListener("click", exportData);
   volverTableroBtn.addEventListener("click", () => activatePanel("dashboard"));
   logoutBtn.addEventListener("click", logout);
   loginForm.addEventListener("submit", onLogin);
   forgotPasswordBtn.addEventListener("click", onForgotPassword);
   usuarioForm.addEventListener("submit", onSaveUser);
   usuarioCancelBtn.addEventListener("click", resetUsuarioForm);
-
   bindSearchInput(clientesSearch, "clientes");
   bindSearchInput(prestamosSearch, "prestamos");
   bindSearchInput(pagosSearch, "pagos");
@@ -1648,6 +1648,7 @@ function renderMonthlyEvolution() {
 
   dashboardEvolucionTable.innerHTML = "";
   rows.forEach((row) => {
+    const isCollapsed = collapsedEvolutionMonths.has(row.monthKey);
     const gCountPct = (row.newCreditsCount / maxCount) * 100;
     const rCountPct = (row.refiCount / maxCount) * 100;
     const fCountPct = (row.finalizedCount / maxCount) * 100;
@@ -1655,7 +1656,12 @@ function renderMonthlyEvolution() {
     const mPct = (row.mora / maxMoney) * 100;
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${formatMonthKey(row.monthKey)}</td>
+      <td>
+        <span class="month-cell">
+          <button class="month-toggle" data-month="${row.monthKey}" type="button" aria-expanded="${!isCollapsed}" aria-label="${isCollapsed ? "Expandir" : "Contraer"} mes ${formatMonthKey(row.monthKey)}">${isCollapsed ? "+" : "-"}</button>
+          <span>${formatMonthKey(row.monthKey)}</span>
+        </span>
+      </td>
       <td>${currency(row.granted)}</td>
       <td>${row.newCreditsCount}</td>
       <td>${row.refiCount}</td>
@@ -1663,16 +1669,30 @@ function renderMonthlyEvolution() {
       <td>${currency(row.collected)}</td>
       <td>${currency(row.mora)}</td>
       <td class="evo-cell">
-        <div class="evo-stack">
-          ${buildEvolutionRowWithValue("Otorgado", gCountPct, "evo-granted", "evo-tag-granted", `${row.newCreditsCount} cred.`)}
-          ${buildEvolutionRowWithValue("Refi", rCountPct, "evo-refi", "evo-tag-refi", `${row.refiCount} refi.`)}
-          ${buildEvolutionRowWithValue("Finaliz.", fCountPct, "evo-finalizados", "evo-tag-finalizados", `${row.finalizedCount} fin.`)}
-          ${buildEvolutionRow("Cobrado", cPct, "evo-collected", "evo-tag-collected")}
-          ${buildEvolutionRow("Mora", mPct, "evo-mora", "evo-tag-mora")}
-        </div>
+        ${isCollapsed
+          ? `<span class="evo-collapsed-label">Detalle contraido</span>`
+          : `<div class="evo-stack">
+              ${buildEvolutionRowWithValue("Otorgado", gCountPct, "evo-granted", "evo-tag-granted", `${row.newCreditsCount} cred.`)}
+              ${buildEvolutionRowWithValue("Refi", rCountPct, "evo-refi", "evo-tag-refi", `${row.refiCount} refi.`)}
+              ${buildEvolutionRowWithValue("Finaliz.", fCountPct, "evo-finalizados", "evo-tag-finalizados", `${row.finalizedCount} fin.`)}
+              ${buildEvolutionRow("Cobrado", cPct, "evo-collected", "evo-tag-collected")}
+              ${buildEvolutionRow("Mora", mPct, "evo-mora", "evo-tag-mora")}
+            </div>`}
       </td>
     `;
     dashboardEvolucionTable.appendChild(tr);
+  });
+
+  dashboardEvolucionTable.querySelectorAll("[data-month]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const monthKey = button.dataset.month;
+      if (collapsedEvolutionMonths.has(monthKey)) {
+        collapsedEvolutionMonths.delete(monthKey);
+      } else {
+        collapsedEvolutionMonths.add(monthKey);
+      }
+      renderMonthlyEvolution();
+    });
   });
 }
 
