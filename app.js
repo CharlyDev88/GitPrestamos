@@ -1,5 +1,5 @@
 /**
- * Sidera - Gestión de Corralón
+ * Sidera - Gestión de Distribuidora de Bebidas
  * Core Application Logic & State Management
  */
 
@@ -7,66 +7,66 @@
 const STATE = {
     currentView: 'dashboard',
     
-    // Inventory items (Materiales)
+    // Inventory items (Bebidas)
     inventory: [
-        { id: '1', name: 'Cemento Loma Negra 50kg', sku: 'CEM-LNE-50', category: 'Cemento', stock: 120, minStock: 50, unit: 'Bolsas', cost: 7200, price: 9500 },
-        { id: '2', name: 'Hierro del 8 (x12m)', sku: 'HIE-008-12', category: 'Hierros', stock: 45, minStock: 20, unit: 'Barras', cost: 5800, price: 7900 },
-        { id: '3', name: 'Ladrillo Hueco 12x18x33', sku: 'LAD-HUE-12', category: 'Ladrillos', stock: 1500, minStock: 500, unit: 'Unidades', cost: 210, price: 290 },
-        { id: '4', name: 'Arena Fina (m3)', sku: 'ARI-ARE-FI', category: 'Áridos', stock: 15, minStock: 8, unit: 'm3', cost: 9000, price: 13500 },
-        { id: '5', name: 'Piedra Partida (m3)', sku: 'ARI-PIE-PA', category: 'Áridos', stock: 6, minStock: 10, unit: 'm3', cost: 12000, price: 18000 }, // Low stock
-        { id: '6', name: 'Pegamento Klaukol Impermeable 30kg', sku: 'KLA-IMP-30', category: 'Terminaciones', stock: 80, minStock: 30, unit: 'Bolsas', cost: 6100, price: 8200 },
-        { id: '7', name: 'Hierro del 10 (x12m)', sku: 'HIE-010-12', category: 'Hierros', stock: 12, minStock: 20, unit: 'Barras', cost: 9100, price: 12400 } // Low stock
+        { id: '1', name: 'Coca-Cola Original 2.25L', sku: 'GAS-COC-225', category: 'Gaseosas', stock: 180, minStock: 60, unit: 'Cajones x6', cost: 4200, price: 5600 },
+        { id: '2', name: 'Cerveza Quilmes Clásica 1L', sku: 'CER-QUI-1L', category: 'Cervezas', stock: 90, minStock: 40, unit: 'Cajones x12', cost: 6800, price: 9200 },
+        { id: '3', name: 'Agua Mineral Villavicencio 1.5L', sku: 'AGU-VIL-150', category: 'Aguas', stock: 220, minStock: 80, unit: 'Packs x6', cost: 2100, price: 2900 },
+        { id: '4', name: 'Fernet Branca 750ml', sku: 'LIC-FER-750', category: 'Licores y Aperitivos', stock: 35, minStock: 15, unit: 'Cajas x6', cost: 8900, price: 12500 },
+        { id: '5', name: 'Vino Malbec Trapiche 750ml', sku: 'VIN-TRA-750', category: 'Vinos y Espumantes', stock: 8, minStock: 12, unit: 'Cajas x12', cost: 11000, price: 15800 }, // Stock bajo
+        { id: '6', name: 'Gatorade Naranja 500ml', sku: 'ENE-GAT-500', category: 'Isotónicas y Energizantes', stock: 65, minStock: 25, unit: 'Packs x12', cost: 3200, price: 4500 },
+        { id: '7', name: 'Sidra Real 725ml', sku: 'SID-REA-725', category: 'Vinos y Espumantes', stock: 5, minStock: 20, unit: 'Cajas x12', cost: 3600, price: 5100 } // Stock bajo
     ],
     
-    // Providers (Proveedores)
+    // Providers (Distribuidoras / Proveedores)
     providers: [
-        { id: '1', name: 'Loma Negra C.I.A.S.A.', cuit: '30-50000845-9', phone: '011-4319-3000', email: 'ventas@lomanegra.com', address: 'Av. Corrientes 316, CABA' },
-        { id: '2', name: 'Acindar S.A.', cuit: '30-50001082-8', phone: '0341-493-9000', email: 'comercial@acindar.com.ar', address: 'Ruta 21 Km 247, Villa Constitución' },
-        { id: '3', name: 'Klaukol Argentina', cuit: '30-54218903-4', phone: '0800-222-5528', email: 'soporte@klaukol.com', address: 'Industrial San Justo, Buenos Aires' }
+        { id: '1', name: 'Coca-Cola FEMSA Argentina', cuit: '30-50000845-9', phone: '011-4319-3000', email: 'ventas@femsa.com.ar', address: 'Av. del Libertador 1000, CABA' },
+        { id: '2', name: 'Cervecería y Maltería Quilmes', cuit: '30-50001082-8', phone: '0800-333-2020', email: 'comercial@quilmes.com.ar', address: 'Av. Andrés Baranda 197, Quilmes' },
+        { id: '3', name: 'Bodegas Trapiche S.A.', cuit: '30-54218903-4', phone: '0261-520-7666', email: 'pedidos@trapiche.com.ar', address: 'Nueva Mayorga s/n, Coquimbito, Mendoza' }
     ],
     
     // Clients (Clientes)
     clients: [
-        { id: '1', name: 'Constructora del Plata S.A.', dni_cuit: '30-71458921-2', phone: '11-5823-1492', email: 'compras@constructoradelplata.com', type: 'Constructora' },
-        { id: '2', name: 'Ing. Martín Gómez', dni_cuit: '24.582.103', phone: '341-692-0492', email: 'mgomez@gmail.com', type: 'Profesional' },
+        { id: '1', name: 'Restaurante La Parrilla del Che', dni_cuit: '30-71458921-2', phone: '11-5823-1492', email: 'compras@laparrilladelche.com', type: 'Bar / Restaurante' },
+        { id: '2', name: 'Kiosco Don Martín', dni_cuit: '24.582.103', phone: '341-692-0492', email: 'kioscodonmartin@gmail.com', type: 'Kiosco' },
         { id: '3', name: 'Carlos Rodríguez', dni_cuit: '32.194.053', phone: '11-4029-5821', email: 'carlos.rod@hotmail.com', type: 'Particular' }
     ],
     
     // Purchases (Compras)
     purchases: [
-        { id: 'COM-001', providerId: '1', providerName: 'Loma Negra C.I.A.S.A.', date: '2026-06-10', items: [{ productId: '1', qty: 100, cost: 7200 }], total: 720000, status: 'Recibido' },
-        { id: 'COM-002', providerId: '2', providerName: 'Acindar S.A.', date: '2026-06-18', items: [{ productId: '2', qty: 30, cost: 5800 }], total: 174000, status: 'Recibido' }
+        { id: 'COM-001', providerId: '1', providerName: 'Coca-Cola FEMSA Argentina', date: '2026-08-10', items: [{ productId: '1', qty: 100, cost: 4200 }], total: 420000, status: 'Recibido' },
+        { id: 'COM-002', providerId: '2', providerName: 'Cervecería y Maltería Quilmes', date: '2026-08-14', items: [{ productId: '2', qty: 30, cost: 6800 }], total: 204000, status: 'Recibido' }
     ],
     
     // Sales (Ventas)
     sales: [
-        { id: 'VEN-001', clientId: '1', clientName: 'Constructora del Plata S.A.', date: '2026-06-20', items: [{ productId: '1', qty: 50, price: 9500 }, { productId: '2', qty: 20, price: 7900 }], total: 633000, status: 'Entregado' },
-        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', date: '2026-06-24', items: [{ productId: '3', qty: 300, price: 290 }], total: 87000, status: 'Entregado' },
-        { id: 'VEN-003', clientId: '2', clientName: 'Ing. Martín Gómez', date: '2026-06-25', items: [{ productId: '4', qty: 3, price: 13500 }], total: 40500, status: 'Pendiente' }
+        { id: 'VEN-001', clientId: '1', clientName: 'Restaurante La Parrilla del Che', date: '2026-08-15', items: [{ productId: '1', qty: 50, price: 5600 }, { productId: '2', qty: 20, price: 9200 }], total: 464000, status: 'Entregado' },
+        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', date: '2026-08-16', items: [{ productId: '3', qty: 20, price: 2900 }], total: 58000, status: 'Entregado' },
+        { id: 'VEN-003', clientId: '2', clientName: 'Kiosco Don Martín', date: '2026-08-17', items: [{ productId: '6', qty: 15, price: 4500 }], total: 67500, status: 'Pendiente' }
     ],
     
     // Receipts (Recibos de Cobro)
     receipts: [
-        { id: 'REC-001', saleId: 'VEN-001', clientName: 'Constructora del Plata S.A.', date: '2026-06-20', amount: 633000, method: 'Transferencia' },
-        { id: 'REC-002', saleId: 'VEN-002', clientName: 'Carlos Rodríguez', date: '2026-06-24', amount: 87000, method: 'Efectivo' }
+        { id: 'REC-001', saleId: 'VEN-001', clientName: 'Restaurante La Parrilla del Che', date: '2026-08-15', amount: 464000, method: 'Transferencia' },
+        { id: 'REC-002', saleId: 'VEN-002', clientName: 'Carlos Rodríguez', date: '2026-08-16', amount: 58000, method: 'Efectivo' }
     ],
     
     // Payments (Pagos de Compra)
     payments: [
-        { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Loma Negra C.I.A.S.A.', date: '2026-06-10', amount: 720000, method: 'Transferencia' },
-        { id: 'PAG-002', purchaseId: 'COM-002', providerName: 'Acindar S.A.', date: '2026-06-18', amount: 174000, method: 'Cheque' }
+        { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Coca-Cola FEMSA Argentina', date: '2026-08-10', amount: 420000, method: 'Transferencia' },
+        { id: 'PAG-002', purchaseId: 'COM-002', providerName: 'Cervecería y Maltería Quilmes', date: '2026-08-14', amount: 204000, method: 'Cheque' }
     ],
     
     // Audit / History log (Historial)
     history: [
-        { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-06-25T08:00:00-03:00', details: 'Base de datos simulada creada con 7 materiales, 3 proveedores y 3 clientes.' }
+        { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-08-18T08:00:00-03:00', details: 'Base de datos simulada creada con 7 bebidas, 3 proveedores y 3 clientes.' }
     ],
     
     // Active alerts for notification center
     notifications: [
-        { id: 'n1', title: 'Stock Bajo', text: 'El material "Hierro del 10 (x12m)" ha quedado bajo el mínimo.', type: 'warning', time: 'Hace 2 horas' },
-        { id: 'n2', title: 'Stock Crítico', text: 'El material "Piedra Partida (m3)" requiere reposición urgente.', type: 'danger', time: 'Hace 5 horas' },
-        { id: 'n3', title: 'Nueva Venta', text: 'Se ha registrado una venta pendiente para Ing. Martín Gómez.', type: 'success', time: 'Hace 1 día' }
+        { id: 'n1', title: 'Stock Bajo', text: 'La bebida "Sidra Real 725ml" ha quedado bajo el mínimo.', type: 'warning', time: 'Hace 2 horas' },
+        { id: 'n2', title: 'Stock Crítico', text: 'El "Vino Malbec Trapiche 750ml" requiere reposición urgente.', type: 'danger', time: 'Hace 5 horas' },
+        { id: 'n3', title: 'Nueva Venta', text: 'Se ha registrado una venta pendiente para Kiosco Don Martín.', type: 'success', time: 'Hace 1 día' }
     ],
     
     // System Users (Usuarios)
@@ -271,22 +271,22 @@ function switchView(viewName) {
     switch (viewName) {
         case 'dashboard':
             viewTitle.textContent = "Panel Principal";
-            viewSubtitle.textContent = "Dashboard de métricas técnicas, ventas y control de inventario en tiempo real.";
+            viewSubtitle.textContent = "Dashboard de métricas de ventas, reposición y control de stock en tiempo real.";
             renderDashboard(container);
             break;
         case 'inventory':
-            viewTitle.textContent = "Inventario de Materiales";
-            viewSubtitle.textContent = "Catálogo de productos, control de stock mínimo y alta de materiales.";
+            viewTitle.textContent = "Inventario de Bebidas";
+            viewSubtitle.textContent = "Catálogo de productos, control de stock mínimo y alta de bebidas.";
             renderInventoryView(container);
             break;
         case 'sales':
             viewTitle.textContent = "Gestión de Ventas";
-            viewSubtitle.textContent = "Registros de ventas de materiales a clientes y emisión de recibos.";
+            viewSubtitle.textContent = "Registros de ventas de bebidas a clientes y emisión de recibos.";
             renderSalesView(container);
             break;
         case 'purchases':
             viewTitle.textContent = "Pedidos de Compra";
-            viewSubtitle.textContent = "Registro de compras de materiales a proveedores para aumento de inventario.";
+            viewSubtitle.textContent = "Registro de compras a distribuidoras y proveedores para reponer inventario.";
             renderPurchasesView(container);
             break;
         case 'receipts':
@@ -301,12 +301,12 @@ function switchView(viewName) {
             break;
         case 'clients':
             viewTitle.textContent = "Base de Clientes";
-            viewSubtitle.textContent = "Directorio de constructoras, profesionales y particulares registrados.";
+            viewSubtitle.textContent = "Directorio de bares, kioscos, restaurantes y particulares registrados.";
             renderClientsView(container);
             break;
         case 'providers':
             viewTitle.textContent = "Directorio de Proveedores";
-            viewSubtitle.textContent = "Fábricas y distribuidores oficiales asociados al corralón.";
+            viewSubtitle.textContent = "Distribuidoras y bodegas oficiales asociadas al depósito.";
             renderProvidersView(container);
             break;
         case 'reports':
@@ -316,7 +316,7 @@ function switchView(viewName) {
             break;
         case 'users':
             viewTitle.textContent = "Control de Usuarios";
-            viewSubtitle.textContent = "Alta, baja, modificación y roles del personal del corralón.";
+            viewSubtitle.textContent = "Alta, baja, modificación y roles del personal del depósito.";
             renderUsersView(container);
             break;
         default:
@@ -556,7 +556,7 @@ function initDashboardCharts() {
                 {
                     label: 'Ventas ($)',
                     data: salesData,
-                    backgroundColor: '#4f46e5', // Primary indigo
+                    backgroundColor: '#0891b2', // Primary cyan
                     borderRadius: 6,
                     borderWidth: 0,
                     barPercentage: 0.6
@@ -613,7 +613,7 @@ function initDashboardCharts() {
     const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
     
     // Group sales total by category
-    const catTotals = { Cemento: 0, Hierros: 0, Ladrillos: 0, Áridos: 0, Terminaciones: 0 };
+    const catTotals = { Gaseosas: 0, Cervezas: 0, Aguas: 0, 'Vinos y Espumantes': 0, 'Licores y Aperitivos': 0, 'Isotónicas y Energizantes': 0 };
     
     STATE.sales.forEach(s => {
         if (s.status === 'Cancelado') return;
@@ -636,11 +636,12 @@ function initDashboardCharts() {
             datasets: [{
                 data: dataValues,
                 backgroundColor: [
-                    '#4f46e5', // indigo
-                    '#f59e0b', // amber
-                    '#10b981', // emerald
-                    '#3b82f6', // blue
-                    '#ec4899'  // pink
+                    '#0891b2', // cyan (Gaseosas)
+                    '#f59e0b', // amber (Cervezas)
+                    '#0ea5e9', // sky blue (Aguas)
+                    '#be123c', // wine red (Vinos y Espumantes)
+                    '#d946ef', // fuchsia (Licores y Aperitivos)
+                    '#22c55e'  // green (Isotónicas y Energizantes)
                 ],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -689,11 +690,12 @@ function renderInventoryView(container) {
                 </div>
                 <select class="filter-select" id="inventory-filter-cat">
                     <option value="all">Todas las Categorías</option>
-                    <option value="Cemento">Cemento</option>
-                    <option value="Hierros">Hierros</option>
-                    <option value="Ladrillos">Ladrillos</option>
-                    <option value="Áridos">Áridos</option>
-                    <option value="Terminaciones">Terminaciones</option>
+                    <option value="Gaseosas">Gaseosas</option>
+                    <option value="Cervezas">Cervezas</option>
+                    <option value="Aguas">Aguas</option>
+                    <option value="Vinos y Espumantes">Vinos y Espumantes</option>
+                    <option value="Licores y Aperitivos">Licores y Aperitivos</option>
+                    <option value="Isotónicas y Energizantes">Isotónicas y Energizantes</option>
                 </select>
                 <select class="filter-select" id="inventory-filter-stock">
                     <option value="all">Todo el Stock</option>
@@ -703,7 +705,7 @@ function renderInventoryView(container) {
             </div>
             <button class="btn-primary" id="btn-inventory-add">
                 <i data-lucide="plus"></i>
-                <span>Nuevo Material</span>
+                <span>Nueva Bebida</span>
             </button>
         </div>
         
@@ -758,7 +760,7 @@ function renderInventoryRows(items) {
     tbody.innerHTML = '';
     
     if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron materiales</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron bebidas</td></tr>`;
         return;
     }
     
@@ -923,8 +925,9 @@ function renderClientsView(container) {
                 <select class="filter-select" id="clients-filter-type">
                     <option value="all">Todos los Clientes</option>
                     <option value="Particular">Particular</option>
-                    <option value="Profesional">Profesional</option>
-                    <option value="Constructora">Constructora</option>
+                    <option value="Kiosco">Kiosco / Almacén</option>
+                    <option value="Bar / Restaurante">Bar / Restaurante</option>
+                    <option value="Mayorista">Mayorista</option>
                 </select>
             </div>
             <button class="btn-primary" id="btn-clients-add">
@@ -981,8 +984,9 @@ function renderClientsRows(items) {
     
     items.forEach(item => {
         let typeBadge = 'secondary';
-        if (item.type === 'Constructora') typeBadge = 'info';
-        if (item.type === 'Profesional') typeBadge = 'success';
+        if (item.type === 'Bar / Restaurante') typeBadge = 'info';
+        if (item.type === 'Kiosco') typeBadge = 'success';
+        if (item.type === 'Mayorista') typeBadge = 'warning';
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1707,15 +1711,15 @@ function renderProductReportChart() {
     charts.productRotation = new Chart(ctxRot, {
         type: 'polarArea',
         data: {
-            labels: ['Cemento', 'Hierros', 'Ladrillos', 'Áridos', 'Terminaciones'],
+            labels: ['Gaseosas', 'Cervezas', 'Aguas', 'Vinos y Espumantes', 'Licores y Aperitivos'],
             datasets: [{
-                data: [45, 20, 55, 30, 15], // Rotations units
+                data: [55, 45, 30, 15, 20], // Rotations units
                 backgroundColor: [
-                    'rgba(79, 70, 229, 0.7)',
+                    'rgba(6, 182, 212, 0.7)',
                     'rgba(245, 158, 11, 0.7)',
-                    'rgba(16, 185, 129, 0.7)',
-                    'rgba(59, 130, 246, 0.7)',
-                    'rgba(236, 72, 153, 0.7)'
+                    'rgba(14, 165, 233, 0.7)',
+                    'rgba(190, 24, 93, 0.7)',
+                    'rgba(217, 70, 239, 0.7)'
                 ]
             }]
         },
@@ -1774,7 +1778,7 @@ function openCrudModal(module, action, id = null) {
     
     // Config title
     const moduleNameEs = {
-        inventory: 'Material / Producto',
+        inventory: 'Bebida / Producto',
         providers: 'Proveedor',
         clients: 'Cliente',
         purchases: 'Compra',
@@ -1798,29 +1802,30 @@ function openCrudModal(module, action, id = null) {
     if (module === 'inventory') {
         fieldsContainer.innerHTML = `
             <div class="form-group">
-                <label>Descripción del Material</label>
-                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Cemento Loma Negra 50kg">
+                <label>Descripción de la Bebida</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Coca-Cola Original 2.25L">
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>SKU / Código</label>
-                    <input type="text" class="form-control" name="sku" value="${data.sku || ''}" required placeholder="Ej: CEM-001">
+                    <input type="text" class="form-control" name="sku" value="${data.sku || ''}" required placeholder="Ej: GAS-001">
                 </div>
                 <div class="form-group">
                     <label>Categoría</label>
                     <select class="form-control" name="category" required>
-                        <option value="Cemento" ${data.category === 'Cemento' ? 'selected' : ''}>Cemento</option>
-                        <option value="Hierros" ${data.category === 'Hierros' ? 'selected' : ''}>Hierros</option>
-                        <option value="Ladrillos" ${data.category === 'Ladrillos' ? 'selected' : ''}>Ladrillos</option>
-                        <option value="Áridos" ${data.category === 'Áridos' ? 'selected' : ''}>Áridos</option>
-                        <option value="Terminaciones" ${data.category === 'Terminaciones' ? 'selected' : ''}>Terminaciones</option>
+                        <option value="Gaseosas" ${data.category === 'Gaseosas' ? 'selected' : ''}>Gaseosas</option>
+                        <option value="Cervezas" ${data.category === 'Cervezas' ? 'selected' : ''}>Cervezas</option>
+                        <option value="Aguas" ${data.category === 'Aguas' ? 'selected' : ''}>Aguas</option>
+                        <option value="Vinos y Espumantes" ${data.category === 'Vinos y Espumantes' ? 'selected' : ''}>Vinos y Espumantes</option>
+                        <option value="Licores y Aperitivos" ${data.category === 'Licores y Aperitivos' ? 'selected' : ''}>Licores y Aperitivos</option>
+                        <option value="Isotónicas y Energizantes" ${data.category === 'Isotónicas y Energizantes' ? 'selected' : ''}>Isotónicas y Energizantes</option>
                     </select>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Unidad de Medida</label>
-                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Bolsas, m3, Barras">
+                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Cajones x6, Packs x12, Botellas">
                 </div>
                 <div class="form-group">
                     <label>Stock Inicial</label>
@@ -1886,8 +1891,9 @@ function openCrudModal(module, action, id = null) {
                     <label>Tipo de Cliente</label>
                     <select class="form-control" name="type" required>
                         <option value="Particular" ${data.type === 'Particular' ? 'selected' : ''}>Particular</option>
-                        <option value="Profesional" ${data.type === 'Profesional' ? 'selected' : ''}>Profesional / Arquitecto</option>
-                        <option value="Constructora" ${data.type === 'Constructora' ? 'selected' : ''}>Constructora</option>
+                        <option value="Kiosco" ${data.type === 'Kiosco' ? 'selected' : ''}>Kiosco / Almacén</option>
+                        <option value="Bar / Restaurante" ${data.type === 'Bar / Restaurante' ? 'selected' : ''}>Bar / Restaurante</option>
+                        <option value="Mayorista" ${data.type === 'Mayorista' ? 'selected' : ''}>Mayorista</option>
                     </select>
                 </div>
             </div>
@@ -1959,10 +1965,10 @@ function openCrudModal(module, action, id = null) {
             
             <!-- Items builder -->
             <div class="items-list-selector">
-                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE MATERIALES COMPRADOS</label>
+                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE PRODUCTOS COMPRADOS</label>
                 <div class="items-selector-row">
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:0.7rem; color:var(--text-secondary)">Material</span>
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Producto</span>
                         <select class="form-control" id="tx-item-select">
                             ${materialOptions}
                         </select>
@@ -1983,7 +1989,7 @@ function openCrudModal(module, action, id = null) {
                 <table class="selected-items-table">
                     <thead>
                         <tr>
-                            <th>Material</th>
+                            <th>Producto</th>
                             <th>Cant</th>
                             <th>Unit.</th>
                             <th>Subtotal</th>
@@ -2127,10 +2133,10 @@ function openCrudModal(module, action, id = null) {
             
             <!-- Items builder -->
             <div class="items-list-selector">
-                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE MATERIALES VENDIDOS</label>
+                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE PRODUCTOS VENDIDOS</label>
                 <div class="items-selector-row">
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:0.7rem; color:var(--text-secondary)">Material</span>
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Producto</span>
                         <select class="form-control" id="tx-item-select">
                             ${materialOptions}
                         </select>
@@ -2151,7 +2157,7 @@ function openCrudModal(module, action, id = null) {
                 <table class="selected-items-table">
                     <thead>
                         <tr>
-                            <th>Material</th>
+                            <th>Producto</th>
                             <th>Cant</th>
                             <th>Unit.</th>
                             <th>Subtotal</th>

@@ -1,19 +1,25 @@
-/* Modern Minimalist Design System for Sidera - Corralón Digital */
+/* Modern Design System for Sidera - Distribuidora de Bebidas */
 
 :root {
-    /* Color Palette - HSL Slate/Indigo System */
-    --bg-app: #f8fafc;        /* slate-50 */
+    /* Color Palette - Cyan/Teal "Refreshing Drinks" System */
+    --bg-app: #f4fafb;         /* cyan-tinted off-white */
     --bg-card: #ffffff;
-    --bg-sidebar: #0f172a;    /* slate-900 */
-    --border-color: #e2e8f0;  /* slate-200 */
+    --bg-sidebar: #082f34;     /* deep teal-black */
+    --bg-sidebar-2: #0c3d42;   /* teal gradient stop */
+    --border-color: #dceef1;   /* soft cyan-slate */
     
-    --primary: #4f46e5;       /* indigo-600 */
-    --primary-hover: #4338ca; /* indigo-700 */
-    --primary-light: #e0e7ff; /* indigo-100 */
+    --primary: #0891b2;        /* cyan-600 */
+    --primary-hover: #0e7490;  /* cyan-700 */
+    --primary-light: #cffafe;  /* cyan-100 */
+    --primary-rgb: 8, 145, 178;
+
+    --accent: #f97316;         /* orange-500 — soda-cap accent for highlights */
+    --accent-hover: #ea580c;   /* orange-600 */
+    --accent-light: #ffedd5;   /* orange-100 */
     
-    --text-primary: #0f172a;   /* slate-900 */
-    --text-secondary: #475569; /* slate-600 */
-    --text-muted: #94a3b8;     /* slate-400 */
+    --text-primary: #0b2b2f;   /* deep teal-black */
+    --text-secondary: #4b6a6e; /* muted teal-gray */
+    --text-muted: #94aeb1;     /* light teal-gray */
     --text-on-primary: #ffffff;
     
     /* Semantic Colors */
@@ -28,15 +34,15 @@
 
     /* Typography & Spacing */
     --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
     --radius-full: 9999px;
     
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px 0 rgba(8, 40, 45, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(8, 40, 45, 0.06), 0 2px 4px -2px rgba(8, 40, 45, 0.05);
+    --shadow-lg: 0 10px 15px -3px rgba(8, 40, 45, 0.05), 0 4px 6px -4px rgba(8, 40, 45, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(8, 40, 45, 0.08), 0 8px 10px -6px rgba(8, 40, 45, 0.06);
 
     --transition-fast: 0.15s ease;
     --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -79,7 +85,7 @@ button {
 
 /* Sidebar */
 .sidebar {
-    background-color: var(--bg-sidebar);
+    background: linear-gradient(180deg, var(--bg-sidebar) 0%, var(--bg-sidebar-2) 100%);
     color: #f1f5f9;
     display: flex;
     flex-direction: column;
@@ -87,7 +93,7 @@ button {
     position: sticky;
     top: 0;
     z-index: 10;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-brand {
@@ -107,7 +113,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.35);
 }
 
 .brand-icon i {
@@ -181,9 +187,9 @@ button {
 }
 
 .nav-item.active {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, #06768c 100%);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35);
 }
 
 .nav-item.active i {
@@ -437,13 +443,14 @@ button {
 }
 
 .btn-primary {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, #06768c 100%);
     color: var(--text-on-primary);
 }
 
 .btn-primary:hover {
-    background-color: var(--primary-hover);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, #075e70 100%);
+    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -535,12 +542,30 @@ button {
     flex-direction: column;
     box-shadow: var(--shadow-sm);
     transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    opacity: 0;
+    transition: var(--transition-normal);
 }
 
 .kpi-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-light);
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
 }
 
 .kpi-header {
@@ -837,7 +862,7 @@ button {
 .search-input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.12);
 }
 
 .filter-select {
@@ -877,7 +902,7 @@ button {
 }
 
 .custom-table th {
-    background-color: #f8fafc;
+    background-color: var(--bg-app);
     padding: 16px 24px;
     color: var(--text-secondary);
     font-weight: 600;
@@ -899,7 +924,7 @@ button {
 }
 
 .custom-table tbody tr:hover {
-    background-color: #f8fafc;
+    background-color: var(--bg-app);
 }
 
 .custom-table tbody tr:last-child td {
@@ -1054,7 +1079,7 @@ button {
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.12);
 }
 
 .form-row {
@@ -1276,7 +1301,7 @@ button {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 16px;
-    background-color: #f8fafc;
+    background-color: var(--bg-app);
     margin-bottom: 16px;
 }
 
@@ -1305,7 +1330,7 @@ button {
 .selected-items-table td {
     padding: 8px 0;
     font-size: 0.8rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-color);
 }
 
 /* Tab buttons for reports page */
@@ -1360,7 +1385,10 @@ body.authenticated .login-overlay {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    background:
+        radial-gradient(circle at 15% 20%, rgba(6, 182, 212, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(249, 115, 22, 0.18) 0%, transparent 45%),
+        linear-gradient(135deg, #082f34 0%, #0b1f2b 55%, #082f34 100%);
     display: none;
     align-items: center;
     justify-content: center;
@@ -1369,11 +1397,12 @@ body.authenticated .login-overlay {
 }
 
 .login-card {
-    background-color: var(--bg-card);
+    background-color: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(20px);
     width: 100%;
     max-width: 420px;
     border-radius: var(--radius-lg);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
     padding: 40px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     animation: modalScaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1394,7 +1423,7 @@ body.authenticated .login-overlay {
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px auto;
-    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+    box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.35);
 }
 
 .brand-icon-login i {
@@ -1464,5 +1493,32 @@ body.authenticated .login-overlay {
 .helper-cred strong {
     font-weight: 600;
     color: var(--text-primary);
+}
+
+/* Custom Scrollbars for a polished modern finish */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--primary-rgb), 0.25);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--primary-rgb), 0.45);
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
