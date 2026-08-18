@@ -60,8 +60,11 @@
 
     <!-- Main Workspace Application Layout -->
     <div class="app-layout">
+        <!-- Sidebar backdrop overlay (mobile only) -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-icon">
                     <i data-lucide="cup-soda"></i>
@@ -70,6 +73,9 @@
                     <span class="brand-name">Sidera</span>
                     <span class="brand-sub">Distribuidora Digital</span>
                 </div>
+                <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Cerrar menú">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
             
             <nav class="sidebar-menu">
@@ -159,8 +165,13 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-left">
-                    <h1 id="view-title">Panel Principal</h1>
-                    <p id="view-subtitle" class="text-secondary">Simulación de operaciones y KPIs de la Distribuidora en tiempo real</p>
+                    <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menú">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <div>
+                        <h1 id="view-title">Panel Principal</h1>
+                        <p id="view-subtitle" class="text-secondary">Simulación de operaciones y KPIs de la Distribuidora en tiempo real</p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <div class="time-widget">
@@ -185,7 +196,7 @@
                     <div class="divider"></div>
                     <button class="btn-primary" id="btn-quick-sale">
                         <i data-lucide="plus-circle"></i>
-                        <span>Nueva Venta</span>
+                        <span class="btn-label-full">Nueva Venta</span>
                     </button>
                 </div>
             </header>

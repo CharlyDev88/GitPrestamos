@@ -144,8 +144,31 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             const targetView = btn.getAttribute('data-view');
             switchView(targetView);
+            closeSidebar(); // Auto-close drawer on mobile after navigating
         });
     });
+
+    // Mobile sidebar (off-canvas drawer) controls
+    const sidebarEl = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+
+    function openSidebar() {
+        sidebarEl.classList.add('open');
+        sidebarBackdrop.classList.add('active');
+        document.body.classList.add('sidebar-locked');
+    }
+    function closeSidebar() {
+        sidebarEl.classList.remove('open');
+        sidebarBackdrop.classList.remove('active');
+        document.body.classList.remove('sidebar-locked');
+    }
+    window.closeSidebar = closeSidebar;
+
+    hamburgerBtn.addEventListener('click', openSidebar);
+    sidebarCloseBtn.addEventListener('click', closeSidebar);
+    sidebarBackdrop.addEventListener('click', closeSidebar);
     
     // Quick action: Nueva Venta
     document.getElementById('btn-quick-sale').addEventListener('click', () => {
