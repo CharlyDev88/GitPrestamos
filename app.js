@@ -1,1842 +1,2822 @@
-const STORAGE_KEY = "gestion_prestamos_app_v1";
+/**
+ * Sidera - Gestión de Corralón
+ * Core Application Logic & State Management
+ */
 
-const state = loadState();
-
-const authScreen = document.getElementById("authScreen");
-const loginForm = document.getElementById("loginForm");
-const loginUsername = document.getElementById("loginUsername");
-const loginPassword = document.getElementById("loginPassword");
-const forgotPasswordBtn = document.getElementById("forgotPasswordBtn");
-const tabs = document.querySelectorAll(".tab");
-const panels = document.querySelectorAll(".panel");
-const appShell = document.querySelector(".app-shell");
-
-const clienteForm = document.getElementById("clienteForm");
-const clienteCancelBtn = document.getElementById("clienteCancelBtn");
-const clientesTable = document.getElementById("clientesTable");
-const historialClienteTitulo = document.getElementById("historialClienteTitulo");
-const historialClienteTable = document.getElementById("historialClienteTable");
-const clientesSearch = document.getElementById("clientesSearch");
-const clientesPager = document.getElementById("clientesPager");
-const clientesSemaforoTitulo = document.getElementById("clientesSemaforoTitulo");
-const clientesSemaforoSubtitulo = document.getElementById("clientesSemaforoSubtitulo");
-const clientesSemaforoTable = document.getElementById("clientesSemaforoTable");
-const volverTableroBtn = document.getElementById("volverTableroBtn");
-const sessionUserInfo = document.getElementById("sessionUserInfo");
-const logoutBtn = document.getElementById("logoutBtn");
-
-const prestamoForm = document.getElementById("prestamoForm");
-const prestamoCliente = document.getElementById("prestamoCliente");
-const prestamoTipo = document.getElementById("prestamoTipo");
-const prestamoMonto = document.getElementById("prestamoMonto");
-const prestamoCuotas = document.getElementById("prestamoCuotas");
-const prestamoInteres = document.getElementById("prestamoInteres");
-const prestamoFecha = document.getElementById("prestamoFecha");
-const interesPreview = document.getElementById("interesPreview");
-const prestamosTable = document.getElementById("prestamosTable");
-const prestamosSearch = document.getElementById("prestamosSearch");
-const prestamosPager = document.getElementById("prestamosPager");
-
-const pagoForm = document.getElementById("pagoForm");
-const pagoPrestamo = document.getElementById("pagoPrestamo");
-const pagoCuota = document.getElementById("pagoCuota");
-const pagoMonto = document.getElementById("pagoMonto");
-const pagoFecha = document.getElementById("pagoFecha");
-const pagoAtrasoInfo = document.getElementById("pagoAtrasoInfo");
-const pagosTable = document.getElementById("pagosTable");
-const pagosSearch = document.getElementById("pagosSearch");
-const pagosPager = document.getElementById("pagosPager");
-
-const refinanciacionForm = document.getElementById("refinanciacionForm");
-const refiPrestamo = document.getElementById("refiPrestamo");
-const refiTipo = document.getElementById("refiTipo");
-const refiCuotas = document.getElementById("refiCuotas");
-const refiInteres = document.getElementById("refiInteres");
-const refiFecha = document.getElementById("refiFecha");
-const refiSaldo = document.getElementById("refiSaldo");
-const refisTable = document.getElementById("refisTable");
-const refisSearch = document.getElementById("refisSearch");
-const refisPager = document.getElementById("refisPager");
-
-const comprobantesTable = document.getElementById("comprobantesTable");
-const comprobantesSearch = document.getElementById("comprobantesSearch");
-const comprobantesPager = document.getElementById("comprobantesPager");
-const usuarioForm = document.getElementById("usuarioForm");
-const usuarioCancelBtn = document.getElementById("usuarioCancelBtn");
-const usuariosSearch = document.getElementById("usuariosSearch");
-const usuariosTable = document.getElementById("usuariosTable");
-const usuariosPager = document.getElementById("usuariosPager");
-const exportDataBtn = document.getElementById("exportDataBtn");
-
-const kpiClientes = document.getElementById("kpiClientes");
-const kpiPrestamosActivos = document.getElementById("kpiPrestamosActivos");
-const kpiCuotasVencidas = document.getElementById("kpiCuotasVencidas");
-const kpiCobradoMes = document.getElementById("kpiCobradoMes");
-const dashboardSemaforo = document.getElementById("dashboardSemaforo");
-const dashboardMora = document.getElementById("dashboardMora");
-const dashboardSemaforoChart = document.getElementById("dashboardSemaforoChart");
-const dashboardCobranzaChart = document.getElementById("dashboardCobranzaChart");
-const dashboardEvolucionTable = document.getElementById("dashboardEvolucionTable");
-const toastContainer = document.getElementById("toastContainer");
-let semaforoFilterActive = null;
-let selectedClientHistoryId = null;
-const collapsedEvolutionMonths = new Set();
-const PAGE_SIZE = 10;
-const listState = {
-  clientes: { query: "", page: 1 },
-  prestamos: { query: "", page: 1 },
-  pagos: { query: "", page: 1 },
-  refis: { query: "", page: 1 },
-  comprobantes: { query: "", page: 1 },
-  usuarios: { query: "", page: 1 }
+// --- GLOBAL APPLICATION STATE ---
+const STATE = {
+    currentView: 'dashboard',
+    
+    // Inventory items (Materiales)
+    inventory: [
+        { id: '1', name: 'Cemento Loma Negra 50kg', sku: 'CEM-LNE-50', category: 'Cemento', stock: 120, minStock: 50, unit: 'Bolsas', cost: 7200, price: 9500 },
+        { id: '2', name: 'Hierro del 8 (x12m)', sku: 'HIE-008-12', category: 'Hierros', stock: 45, minStock: 20, unit: 'Barras', cost: 5800, price: 7900 },
+        { id: '3', name: 'Ladrillo Hueco 12x18x33', sku: 'LAD-HUE-12', category: 'Ladrillos', stock: 1500, minStock: 500, unit: 'Unidades', cost: 210, price: 290 },
+        { id: '4', name: 'Arena Fina (m3)', sku: 'ARI-ARE-FI', category: 'Áridos', stock: 15, minStock: 8, unit: 'm3', cost: 9000, price: 13500 },
+        { id: '5', name: 'Piedra Partida (m3)', sku: 'ARI-PIE-PA', category: 'Áridos', stock: 6, minStock: 10, unit: 'm3', cost: 12000, price: 18000 }, // Low stock
+        { id: '6', name: 'Pegamento Klaukol Impermeable 30kg', sku: 'KLA-IMP-30', category: 'Terminaciones', stock: 80, minStock: 30, unit: 'Bolsas', cost: 6100, price: 8200 },
+        { id: '7', name: 'Hierro del 10 (x12m)', sku: 'HIE-010-12', category: 'Hierros', stock: 12, minStock: 20, unit: 'Barras', cost: 9100, price: 12400 } // Low stock
+    ],
+    
+    // Providers (Proveedores)
+    providers: [
+        { id: '1', name: 'Loma Negra C.I.A.S.A.', cuit: '30-50000845-9', phone: '011-4319-3000', email: 'ventas@lomanegra.com', address: 'Av. Corrientes 316, CABA' },
+        { id: '2', name: 'Acindar S.A.', cuit: '30-50001082-8', phone: '0341-493-9000', email: 'comercial@acindar.com.ar', address: 'Ruta 21 Km 247, Villa Constitución' },
+        { id: '3', name: 'Klaukol Argentina', cuit: '30-54218903-4', phone: '0800-222-5528', email: 'soporte@klaukol.com', address: 'Industrial San Justo, Buenos Aires' }
+    ],
+    
+    // Clients (Clientes)
+    clients: [
+        { id: '1', name: 'Constructora del Plata S.A.', dni_cuit: '30-71458921-2', phone: '11-5823-1492', email: 'compras@constructoradelplata.com', type: 'Constructora' },
+        { id: '2', name: 'Ing. Martín Gómez', dni_cuit: '24.582.103', phone: '341-692-0492', email: 'mgomez@gmail.com', type: 'Profesional' },
+        { id: '3', name: 'Carlos Rodríguez', dni_cuit: '32.194.053', phone: '11-4029-5821', email: 'carlos.rod@hotmail.com', type: 'Particular' }
+    ],
+    
+    // Purchases (Compras)
+    purchases: [
+        { id: 'COM-001', providerId: '1', providerName: 'Loma Negra C.I.A.S.A.', date: '2026-06-10', items: [{ productId: '1', qty: 100, cost: 7200 }], total: 720000, status: 'Recibido' },
+        { id: 'COM-002', providerId: '2', providerName: 'Acindar S.A.', date: '2026-06-18', items: [{ productId: '2', qty: 30, cost: 5800 }], total: 174000, status: 'Recibido' }
+    ],
+    
+    // Sales (Ventas)
+    sales: [
+        { id: 'VEN-001', clientId: '1', clientName: 'Constructora del Plata S.A.', date: '2026-06-20', items: [{ productId: '1', qty: 50, price: 9500 }, { productId: '2', qty: 20, price: 7900 }], total: 633000, status: 'Entregado' },
+        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', date: '2026-06-24', items: [{ productId: '3', qty: 300, price: 290 }], total: 87000, status: 'Entregado' },
+        { id: 'VEN-003', clientId: '2', clientName: 'Ing. Martín Gómez', date: '2026-06-25', items: [{ productId: '4', qty: 3, price: 13500 }], total: 40500, status: 'Pendiente' }
+    ],
+    
+    // Receipts (Recibos de Cobro)
+    receipts: [
+        { id: 'REC-001', saleId: 'VEN-001', clientName: 'Constructora del Plata S.A.', date: '2026-06-20', amount: 633000, method: 'Transferencia' },
+        { id: 'REC-002', saleId: 'VEN-002', clientName: 'Carlos Rodríguez', date: '2026-06-24', amount: 87000, method: 'Efectivo' }
+    ],
+    
+    // Payments (Pagos de Compra)
+    payments: [
+        { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Loma Negra C.I.A.S.A.', date: '2026-06-10', amount: 720000, method: 'Transferencia' },
+        { id: 'PAG-002', purchaseId: 'COM-002', providerName: 'Acindar S.A.', date: '2026-06-18', amount: 174000, method: 'Cheque' }
+    ],
+    
+    // Audit / History log (Historial)
+    history: [
+        { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-06-25T08:00:00-03:00', details: 'Base de datos simulada creada con 7 materiales, 3 proveedores y 3 clientes.' }
+    ],
+    
+    // Active alerts for notification center
+    notifications: [
+        { id: 'n1', title: 'Stock Bajo', text: 'El material "Hierro del 10 (x12m)" ha quedado bajo el mínimo.', type: 'warning', time: 'Hace 2 horas' },
+        { id: 'n2', title: 'Stock Crítico', text: 'El material "Piedra Partida (m3)" requiere reposición urgente.', type: 'danger', time: 'Hace 5 horas' },
+        { id: 'n3', title: 'Nueva Venta', text: 'Se ha registrado una venta pendiente para Ing. Martín Gómez.', type: 'success', time: 'Hace 1 día' }
+    ],
+    
+    // System Users (Usuarios)
+    users: [
+        { id: '1', name: 'Claudio Vasquez', username: 'admin', password: 'admin123', role: 'Administrador', email: 'claudio@sidera.com' },
+        { id: '2', name: 'Laura Martínez', username: 'vendedor', password: 'vendedor123', role: 'Vendedor', email: 'laura@sidera.com' },
+        { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@sidera.com' }
+    ],
+    currentUser: null
 };
 
-init();
+// Global chart references to allow destroying before rebuilding
+let charts = {};
 
-function init() {
-  ensureDefaultAdminUser();
-  applySessionVisibility();
-  setDefaultDates();
-  bindEvents();
-  if (isAuthenticated()) renderAll();
+// Helper to log changes to the unified history
+function logHistory(module, action, description, details = '') {
+    const log = {
+        id: (STATE.history.length + 1).toString(),
+        module,
+        action,
+        description,
+        timestamp: new Date().toISOString(),
+        details
+    };
+    STATE.history.unshift(log); // Add to the top
+    showToast(`Historial Actualizado`, `${description}`, 'info');
 }
 
-function bindEvents() {
-  tabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const target = tab.dataset.tab;
-      activatePanel(target);
+// Helper for UI Toast Notifications
+function showToast(title, message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = 'info';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'warning') icon = 'alert-triangle';
+    if (type === 'danger') icon = 'alert-octagon';
+    
+    toast.innerHTML = `
+        <div class="toast-icon ${type}">
+            <i data-lucide="${icon}"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">${title}</div>
+            <div class="toast-message">${message}</div>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    lucide.createIcons();
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px) scale(0.9)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// Formatter Helpers
+const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(val);
+const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Set current date in top bar
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-AR', options);
+    
+    // Register routing events
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const targetView = btn.getAttribute('data-view');
+            switchView(targetView);
+        });
     });
-  });
+    
+    // Quick action: Nueva Venta
+    document.getElementById('btn-quick-sale').addEventListener('click', () => {
+        openCrudModal('sales', 'create');
+    });
 
-  clienteForm.addEventListener("submit", onSaveClient);
-  clienteCancelBtn.addEventListener("click", resetClienteForm);
-
-  prestamoForm.addEventListener("submit", onCreateLoan);
-  prestamoTipo.addEventListener("change", syncLoanTypeRules);
-  prestamoMonto.addEventListener("input", updateInterestPreview);
-  prestamoCuotas.addEventListener("input", updateInterestPreview);
-  prestamoInteres.addEventListener("input", updateInterestPreview);
-
-  pagoForm.addEventListener("submit", onRegisterPayment);
-  pagoPrestamo.addEventListener("change", renderCuotasPendientesSelect);
-  pagoCuota.addEventListener("change", () => {
-    syncPagoMontoByInstallment();
-    updatePagoAtrasoIndicator();
-  });
-  pagoFecha.addEventListener("change", renderCuotasPendientesSelect);
-
-  refinanciacionForm.addEventListener("submit", onRefinanciar);
-  refiPrestamo.addEventListener("change", updateRefiSaldoPreview);
-  refiTipo.addEventListener("change", syncRefiTypeRules);
-  refiCuotas.addEventListener("input", updateRefiSaldoPreview);
-  refiInteres.addEventListener("input", updateRefiSaldoPreview);
-
-  if (exportDataBtn) exportDataBtn.addEventListener("click", exportData);
-  volverTableroBtn.addEventListener("click", () => activatePanel("dashboard"));
-  logoutBtn.addEventListener("click", logout);
-  loginForm.addEventListener("submit", onLogin);
-  forgotPasswordBtn.addEventListener("click", onForgotPassword);
-  usuarioForm.addEventListener("submit", onSaveUser);
-  usuarioCancelBtn.addEventListener("click", resetUsuarioForm);
-  bindSearchInput(clientesSearch, "clientes");
-  bindSearchInput(prestamosSearch, "prestamos");
-  bindSearchInput(pagosSearch, "pagos");
-  bindSearchInput(refisSearch, "refis");
-  bindSearchInput(comprobantesSearch, "comprobantes");
-  bindSearchInput(usuariosSearch, "usuarios");
-}
-
-function renderAll() {
-  if (!isAuthenticated()) return;
-  refreshComputedStatuses();
-  renderClientOptions();
-  renderLoanOptions();
-  renderRefiOptions();
-  renderClientsTable();
-  renderClientLoanHistory();
-  renderClientsBySemaforoScreen();
-  renderLoansTable();
-  renderPagosTable();
-  renderRefisTable();
-  renderComprobantesTable();
-  renderUsersTable();
-  renderDashboard();
-  renderCuotasPendientesSelect();
-  updateInterestPreview();
-  updateRefiSaldoPreview();
-  persist();
-  applySessionVisibility();
-}
-
-function bindSearchInput(inputEl, key) {
-  if (!inputEl) return;
-  inputEl.addEventListener("input", () => {
-    listState[key].query = (inputEl.value || "").trim().toLowerCase();
-    listState[key].page = 1;
-    renderAll();
-  });
-}
-
-function paginateRows(rows, key) {
-  const total = rows.length;
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const currentPage = clamp(listState[key].page, 1, pageCount);
-  listState[key].page = currentPage;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageRows = rows.slice(start, start + PAGE_SIZE);
-  return { total, pageCount, currentPage, pageRows, start };
-}
-
-function renderPager(container, key, total, currentPage, pageCount, start) {
-  if (!container) return;
-  if (total === 0) {
-    container.innerHTML = "<span class='pager-meta'>Sin resultados</span>";
-    return;
-  }
-  const end = Math.min(total, start + PAGE_SIZE);
-  container.innerHTML = `
-    <span class="pager-meta">Mostrando ${start + 1}-${end} de ${total}</span>
-    <span class="pager-actions">
-      <button class="pager-arrow" data-page-action="prev" ${currentPage <= 1 ? "disabled" : ""} type="button" aria-label="Pagina anterior">←</button>
-      <span class="pager-meta">Pag. ${currentPage}/${pageCount}</span>
-      <button class="pager-arrow" data-page-action="next" ${currentPage >= pageCount ? "disabled" : ""} type="button" aria-label="Pagina siguiente">→</button>
-    </span>
-  `;
-  const prev = container.querySelector("[data-page-action='prev']");
-  const next = container.querySelector("[data-page-action='next']");
-  if (prev) prev.addEventListener("click", () => {
-    listState[key].page = Math.max(1, currentPage - 1);
-    renderAll();
-  });
-  if (next) next.addEventListener("click", () => {
-    listState[key].page = Math.min(pageCount, currentPage + 1);
-    renderAll();
-  });
-}
-
-function includesQuery(parts, query) {
-  if (!query) return true;
-  const haystack = parts.map((p) => String(p || "").toLowerCase()).join(" ");
-  return haystack.includes(query);
-}
-
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return {
-      ids: { client: 1, loan: 1, receipt: 1, payment: 1, refi: 1 },
-      clients: [],
-      loans: [],
-      payments: [],
-      receipts: [],
-      refinances: [],
-      users: [],
-      session: { currentUserId: null }
+    // Notification dropdown toggle
+    const notifBtn = document.getElementById('notification-btn');
+    const notifDropdown = document.getElementById('notification-dropdown');
+    notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle('active');
+        renderNotificationsList();
+    });
+    
+    document.getElementById('clear-notifications').addEventListener('click', (e) => {
+        e.stopPropagation();
+        STATE.notifications = [];
+        document.querySelector('.badge-dot').style.display = 'none';
+        renderNotificationsList();
+        showToast('Notificaciones', 'Bandeja vaciada correctamente', 'success');
+    });
+    
+    document.addEventListener('click', () => {
+        notifDropdown.classList.remove('active');
+    });
+    
+    // Register modal handlers
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-form').addEventListener('submit', handleFormSubmit);
+    
+    document.getElementById('details-modal-close-btn').addEventListener('click', closeDetailsModal);
+    document.getElementById('details-modal-close-btn-bottom').addEventListener('click', closeDetailsModal);
+    
+    // Login Submission Handler
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const u = document.getElementById('login-username').value;
+        const p = document.getElementById('login-password').value;
+        attemptLogin(u, p);
+    });
+    
+    // Logout Action
+    document.getElementById('btn-logout').addEventListener('click', logout);
+    
+    // Global credentials autofiller helper
+    window.fillCreds = (u, p) => {
+        document.getElementById('login-username').value = u;
+        document.getElementById('login-password').value = p;
+        showToast('Formulario Completado', `Se cargaron datos para ${u}. Presiona Iniciar Sesión`, 'info');
     };
-  }
-  try {
-    return JSON.parse(raw);
-  } catch {
-    localStorage.removeItem(STORAGE_KEY);
-    return {
-      ids: { client: 1, loan: 1, receipt: 1, payment: 1, refi: 1 },
-      clients: [],
-      loans: [],
-      payments: [],
-      receipts: [],
-      refinances: [],
-      users: [],
-      session: { currentUserId: null }
-    };
-  }
+    
+    // Session check and init
+    checkSession();
+    updateNotificationBadge();
+});
+
+// Update the red notification badge indicator
+function updateNotificationBadge() {
+    const badge = document.querySelector('.badge-dot');
+    if (STATE.notifications.length > 0) {
+        badge.style.display = 'block';
+    } else {
+        badge.style.display = 'none';
+    }
 }
 
-function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function renderNotificationsList() {
+    const list = document.getElementById('notification-list');
+    list.innerHTML = '';
+    
+    if (STATE.notifications.length === 0) {
+        list.innerHTML = `
+            <div class="notification-empty">
+                <i data-lucide="bell-off" style="width: 24px; height: 24px;"></i>
+                <p>No tienes notificaciones pendientes</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+    
+    STATE.notifications.forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        item.innerHTML = `
+            <div class="notification-icon ${n.type}">
+                <i data-lucide="${n.type === 'success' ? 'check' : n.type === 'danger' ? 'alert-octagon' : 'alert-triangle'}"></i>
+            </div>
+            <div class="notification-content">
+                <span class="notification-title">${n.title}</span>
+                <span class="notification-text">${n.text}</span>
+                <span class="notification-time">${n.time}</span>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+    lucide.createIcons();
 }
 
-function nextId(type) {
-  const value = state.ids[type];
-  state.ids[type] += 1;
-  return value;
-}
-
-function setDefaultDates() {
-  const today = dateToInput(new Date());
-  prestamoFecha.value = today;
-  pagoFecha.value = today;
-  refiFecha.value = today;
-  setDefaultClientScore();
-}
-
-function onSaveClient(event) {
-  event.preventDefault();
-  const idRaw = document.getElementById("clienteId").value;
-  const payload = {
-    nombre: document.getElementById("clienteNombre").value.trim(),
-    dni: document.getElementById("clienteDni").value.trim(),
-    telefono: document.getElementById("clienteTelefono").value.trim(),
-    domicilio: document.getElementById("clienteDomicilio").value.trim(),
-    score: Number(document.getElementById("clienteScore").value)
-  };
-
-  if (!payload.nombre || !payload.dni || !payload.telefono || !payload.domicilio) return;
-  payload.score = clamp(payload.score, 0, 100);
-  payload.semaforo = semaforoByScore(payload.score);
-
-  if (idRaw) {
-    const idx = state.clients.findIndex((c) => c.id === Number(idRaw));
-    if (idx >= 0) state.clients[idx] = { ...state.clients[idx], ...payload };
-    showToast("Cliente actualizado correctamente.", "success");
-  } else {
-    state.clients.push({ id: nextId("client"), ...payload, createdAt: new Date().toISOString() });
-    showToast("Cliente creado correctamente.", "success");
-  }
-
-  resetClienteForm();
-  renderAll();
-}
-
-function onLogin(event) {
-  event.preventDefault();
-  const username = (loginUsername.value || "").trim().toLowerCase();
-  const password = (loginPassword.value || "").trim();
-  const user = state.users.find((u) => u.username.toLowerCase() === username && u.password === password);
-  if (!user) {
-    showToast("Usuario o clave incorrecta.", "error");
-    return;
-  }
-  state.session.currentUserId = user.id;
-  loginForm.reset();
-  showToast(`Bienvenido ${user.nombre}.`, "success");
-  renderAll();
-}
-
-function onForgotPassword() {
-  showToast("Contacte al administrador para restablecer la clave del usuario.", "warning");
-}
-
-function onCreateLoan(event) {
-  event.preventDefault();
-  const clientId = Number(prestamoCliente.value);
-  const type = prestamoTipo.value;
-  const principal = Number(prestamoMonto.value);
-  const startDate = prestamoFecha.value;
-  let installments = Number(prestamoCuotas.value);
-
-  if (!clientId || !principal || !startDate) return;
-
-  if (type === "weekly") installments = clamp(installments, 1, 10);
-  if (type === "monthly") installments = 1;
-
-  const suggestedRate = getInterestRate(principal, installments, type);
-  const enteredRate = Number(prestamoInteres.value);
-  const interestRate = Number.isFinite(enteredRate) ? clamp(enteredRate, 0, 200) : suggestedRate;
-  const interestAmount = roundCurrency((principal * interestRate) / 100);
-  const totalAmount = roundCurrency(principal + interestAmount);
-  const installmentAmount = roundCurrency(totalAmount / installments);
-
-  const dueDates = buildDueDates(startDate, type, installments);
-  const installmentsItems = dueDates.map((date, index) => ({
-    number: index + 1,
-    dueDate: date,
-    amount: index === dueDates.length - 1 ? roundCurrency(totalAmount - installmentAmount * index) : installmentAmount,
-    paidAmount: 0,
-    status: "pending",
-    paymentDate: null,
-    paymentReceiptId: null
-  }));
-
-  const loan = {
-    id: nextId("loan"),
-    clientId,
-    type,
-    principal,
-    installments,
-    interestRate,
-    interestAmount,
-    totalAmount,
-    startDate,
-    status: "active",
-    installmentsItems,
-    parentLoanId: null,
-    createdAt: new Date().toISOString()
-  };
-
-  state.loans.push(loan);
-  createReceipt({
-    type: "loan",
-    refId: loan.id,
-    clientId: loan.clientId,
-    amount: loan.totalAmount,
-    detail: `Prestamo ${loan.type === "weekly" ? "semanal" : "mensual"} - ${loan.installments} cuota(s)`,
-    date: startDate
-  });
-  showToast(`Prestamo #${loan.id} creado correctamente.`, "success");
-
-  prestamoForm.reset();
-  setDefaultDates();
-  prestamoTipo.value = "weekly";
-  prestamoCuotas.value = 4;
-  syncLoanTypeRules();
-  renderAll();
-}
-
-function onRegisterPayment(event) {
-  event.preventDefault();
-  const loanId = Number(pagoPrestamo.value);
-  const installmentNumber = Number(pagoCuota.value);
-  const amount = Number(pagoMonto.value);
-  const paymentDate = pagoFecha.value;
-  if (!loanId || !installmentNumber || !amount || !paymentDate) return;
-
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) return;
-
-  const installment = loan.installmentsItems.find((i) => i.number === installmentNumber);
-  if (!installment) return;
-  const firstPendingInstallment = getFirstPendingInstallment(loan);
-  if (!firstPendingInstallment) return;
-
-  if (installment.number !== firstPendingInstallment.number) {
-    showToast(`Debe cobrarse primero la cuota ${firstPendingInstallment.number}.`, "warning");
-    return;
-  }
-
-  if (paymentDate < installment.dueDate) {
-    showToast(
-      `No puede cobrarse antes del vencimiento (cuota ${installment.number}: ${formatDate(installment.dueDate)}).`,
-      "warning"
-    );
-    return;
-  }
-
-  const maxPending = roundCurrency(installment.amount - installment.paidAmount);
-  const paymentAmount = roundCurrency(Math.min(maxPending, amount));
-  if (paymentAmount <= 0) return;
-
-  const afterPaid = roundCurrency(installment.paidAmount + paymentAmount);
-  const shortfall = roundCurrency(installment.amount - afterPaid);
-  let carryOverData = null;
-
-  installment.paidAmount = afterPaid;
-  installment.paymentDate = paymentDate;
-
-  if (shortfall > 0) {
-    carryOverData = movePendingToNextInstallment(loan, installment, shortfall);
-    penalizeClientScore(loan.clientId, 7);
-  }
-
-  installment.status = installment.paidAmount >= installment.amount ? "paid" : "partial";
-
-  const paymentId = nextId("payment");
-  const payment = {
-    id: paymentId,
-    loanId,
-    clientId: loan.clientId,
-    installmentNumber,
-    amount: paymentAmount,
-    date: paymentDate,
-    shortfallMoved: carryOverData ? carryOverData.shortfall : 0,
-    movedToInstallment: carryOverData ? carryOverData.toInstallment : null
-  };
-  state.payments.push(payment);
-
-  const receiptDetail = carryOverData
-    ? `Cobro parcial cuota ${installmentNumber} prestamo #${loan.id}. Saldo trasladado a cuota ${carryOverData.toInstallment}.`
-    : `Cobro cuota ${installmentNumber} prestamo #${loan.id}`;
-
-  const receipt = createReceipt({
-    type: "payment",
-    refId: paymentId,
-    clientId: loan.clientId,
-    amount: paymentAmount,
-    detail: receiptDetail,
-    date: paymentDate,
-    extra: carryOverData
-      ? {
-          partialBalance: carryOverData.shortfall,
-          movedToInstallment: carryOverData.toInstallment,
-          originalInstallment: installmentNumber
+// --- ROUTER & VIEW SWITCHER ---
+function switchView(viewName) {
+    STATE.currentView = viewName;
+    
+    // Update active nav-item
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        if (btn.getAttribute('data-view') === viewName) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
         }
-      : null
-  });
-  installment.paymentReceiptId = receipt.id;
-
-  recomputeLoanStatus(loan);
-  if (carryOverData) {
-    showToast(
-      `Pago parcial registrado. Saldo ${currency(carryOverData.shortfall)} trasladado a cuota ${carryOverData.toInstallment}.`,
-      "warning"
-    );
-  } else {
-    showToast("Pago registrado correctamente.", "success");
-  }
-  pagoForm.reset();
-  setDefaultDates();
-  renderAll();
+    });
+    
+    // Update Titles and Load the specific view HTML builder
+    const viewTitle = document.getElementById('view-title');
+    const viewSubtitle = document.getElementById('view-subtitle');
+    const container = document.getElementById('dynamic-content');
+    
+    // Clear dynamic chart reference list for safety
+    charts = {};
+    
+    switch (viewName) {
+        case 'dashboard':
+            viewTitle.textContent = "Panel Principal";
+            viewSubtitle.textContent = "Dashboard de métricas técnicas, ventas y control de inventario en tiempo real.";
+            renderDashboard(container);
+            break;
+        case 'inventory':
+            viewTitle.textContent = "Inventario de Materiales";
+            viewSubtitle.textContent = "Catálogo de productos, control de stock mínimo y alta de materiales.";
+            renderInventoryView(container);
+            break;
+        case 'sales':
+            viewTitle.textContent = "Gestión de Ventas";
+            viewSubtitle.textContent = "Registros de ventas de materiales a clientes y emisión de recibos.";
+            renderSalesView(container);
+            break;
+        case 'purchases':
+            viewTitle.textContent = "Pedidos de Compra";
+            viewSubtitle.textContent = "Registro de compras de materiales a proveedores para aumento de inventario.";
+            renderPurchasesView(container);
+            break;
+        case 'receipts':
+            viewTitle.textContent = "Recibos emitidos";
+            viewSubtitle.textContent = "Comprobantes de cobro y pagos recibidos por parte de clientes.";
+            renderReceiptsView(container);
+            break;
+        case 'payments':
+            viewTitle.textContent = "Ordenes de Pago";
+            viewSubtitle.textContent = "Comprobantes de pagos y salidas de caja efectuadas a proveedores.";
+            renderPaymentsView(container);
+            break;
+        case 'clients':
+            viewTitle.textContent = "Base de Clientes";
+            viewSubtitle.textContent = "Directorio de constructoras, profesionales y particulares registrados.";
+            renderClientsView(container);
+            break;
+        case 'providers':
+            viewTitle.textContent = "Directorio de Proveedores";
+            viewSubtitle.textContent = "Fábricas y distribuidores oficiales asociados al corralón.";
+            renderProvidersView(container);
+            break;
+        case 'reports':
+            viewTitle.textContent = "Informes y Análisis de Datos";
+            viewSubtitle.textContent = "KPIs avanzados, valoración de existencias y flujo de caja consolidado.";
+            renderReportsView(container);
+            break;
+        case 'users':
+            viewTitle.textContent = "Control de Usuarios";
+            viewSubtitle.textContent = "Alta, baja, modificación y roles del personal del corralón.";
+            renderUsersView(container);
+            break;
+        default:
+            console.error(`View ${viewName} not found.`);
+    }
+    
+    // Auto re-render Lucide icons for the newly injected HTML
+    lucide.createIcons();
 }
 
-function onRefinanciar(event) {
-  event.preventDefault();
-  const oldLoanId = Number(refiPrestamo.value);
-  let type = refiTipo.value;
-  let installments = Number(refiCuotas.value);
-  const startDate = refiFecha.value;
-  const oldLoan = state.loans.find((l) => l.id === oldLoanId);
-  if (!oldLoan || !startDate) return;
 
-  const hasOverdue = oldLoan.installmentsItems.some((item) => isOverdue(item));
-  if (!hasOverdue) {
-    showToast("Solo se puede refinanciar un prestamo en mora.", "warning");
-    return;
-  }
-
-  if (type === "monthly") installments = 1;
-  if (type === "weekly") installments = clamp(installments, 1, 10);
-
-  const pending = getPendingBalance(oldLoan);
-  if (pending <= 0) return;
-
-  const suggestedRate = getInterestRate(pending, installments, type);
-  const enteredRate = Number(refiInteres.value);
-  const interestRate = Number.isFinite(enteredRate) ? clamp(enteredRate, 0, 200) : suggestedRate;
-  const interestAmount = roundCurrency((pending * interestRate) / 100);
-  const totalAmount = roundCurrency(pending + interestAmount);
-  const installmentAmount = roundCurrency(totalAmount / installments);
-
-  const dueDates = buildDueDates(startDate, type, installments);
-  const installmentsItems = dueDates.map((date, index) => ({
-    number: index + 1,
-    dueDate: date,
-    amount: index === dueDates.length - 1 ? roundCurrency(totalAmount - installmentAmount * index) : installmentAmount,
-    paidAmount: 0,
-    status: "pending",
-    paymentDate: null,
-    paymentReceiptId: null
-  }));
-
-  const newLoan = {
-    id: nextId("loan"),
-    clientId: oldLoan.clientId,
-    type,
-    principal: pending,
-    installments,
-    interestRate,
-    interestAmount,
-    totalAmount,
-    startDate,
-    status: "active",
-    installmentsItems,
-    parentLoanId: oldLoan.id,
-    createdAt: new Date().toISOString()
-  };
-  state.loans.push(newLoan);
-
-  oldLoan.status = "refinanced";
-
-  state.refinances.push({
-    id: nextId("refi"),
-    oldLoanId: oldLoan.id,
-    newLoanId: newLoan.id,
-    clientId: oldLoan.clientId,
-    amount: pending,
-    date: startDate
-  });
-
-  createReceipt({
-    type: "loan",
-    refId: newLoan.id,
-    clientId: newLoan.clientId,
-    amount: newLoan.totalAmount,
-    detail: `Refinanciacion prestamo #${oldLoan.id}`,
-    date: startDate
-  });
-  showToast(`Refinanciacion creada. Nuevo prestamo #${newLoan.id}.`, "success");
-
-  refinanciacionForm.reset();
-  setDefaultDates();
-  refiTipo.value = "weekly";
-  refiCuotas.value = 4;
-  syncRefiTypeRules();
-  renderAll();
-}
-
-function onSaveUser(event) {
-  event.preventDefault();
-  if (!isAdmin()) {
-    showToast("Solo un admin puede gestionar usuarios.", "warning");
-    return;
-  }
-  const idRaw = document.getElementById("usuarioId").value;
-  const payload = {
-    nombre: document.getElementById("usuarioNombre").value.trim(),
-    username: document.getElementById("usuarioUsername").value.trim(),
-    rol: document.getElementById("usuarioRol").value,
-    password: document.getElementById("usuarioPassword").value
-  };
-  if (!payload.nombre || !payload.username || !payload.rol || !payload.password) return;
-  const duplicated = state.users.find(
-    (u) => u.username.toLowerCase() === payload.username.toLowerCase() && String(u.id) !== String(idRaw || "")
-  );
-  if (duplicated) {
-    showToast("Ya existe un usuario con ese nombre de usuario.", "warning");
-    return;
-  }
-  if (idRaw) {
-    const idx = state.users.findIndex((u) => u.id === Number(idRaw));
-    if (idx >= 0) state.users[idx] = { ...state.users[idx], ...payload };
-    showToast("Usuario actualizado.", "success");
-  } else {
-    state.users.push({ id: nextId("user"), ...payload, createdAt: new Date().toISOString() });
-    showToast("Usuario creado.", "success");
-  }
-  resetUsuarioForm();
-  renderAll();
-}
-
-function resetClienteForm() {
-  clienteForm.reset();
-  document.getElementById("clienteId").value = "";
-  setDefaultClientScore();
-}
-
-function setDefaultClientScore() {
-  const scoreInput = document.getElementById("clienteScore");
-  if (scoreInput) scoreInput.value = "100";
-}
-
-function resetUsuarioForm() {
-  usuarioForm.reset();
-  document.getElementById("usuarioId").value = "";
-}
-
-function renderClientsTable() {
-  clientesTable.innerHTML = "";
-  const query = listState.clientes.query;
-  const filtered = state.clients.filter((client) =>
-    includesQuery([client.nombre, client.dni, client.telefono, client.semaforo], query)
-  );
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "clientes");
-  if (!pageRows.length) {
-    clientesTable.innerHTML = "<tr><td colspan='5'>No hay clientes para mostrar.</td></tr>";
-    renderPager(clientesPager, "clientes", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows.forEach((client) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(client.nombre)}</td>
-      <td>${escapeHtml(client.dni)}</td>
-      <td>${escapeHtml(client.telefono)}</td>
-      <td><span class="status-pill status-${client.semaforo}">${labelSemaforo(client.semaforo)}</span></td>
-      <td>
-        <button class="btn btn-secondary" data-action="history-client" data-id="${client.id}" type="button">Historial</button>
-        <button class="btn btn-secondary" data-action="edit-client" data-id="${client.id}" type="button">Editar</button>
-        <button class="btn btn-danger" data-action="delete-client" data-id="${client.id}" type="button">Eliminar</button>
-      </td>
+// ==========================================
+// VIEW 1: DASHBOARD
+// ==========================================
+function renderDashboard(container) {
+    // Calculative metrics
+    const totalSalesValue = STATE.sales.reduce((acc, curr) => curr.status !== 'Cancelado' ? acc + curr.total : acc, 0);
+    const totalPurchasesValue = STATE.purchases.reduce((acc, curr) => curr.status !== 'Cancelado' ? acc + curr.total : acc, 0);
+    const activeClientsCount = STATE.clients.length;
+    const lowStockCount = STATE.inventory.filter(item => item.stock <= item.minStock).length;
+    
+    container.innerHTML = `
+        <!-- KPI Row -->
+        <div class="dashboard-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Ventas Totales</span>
+                    <div class="kpi-icon success">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                </div>
+                <div class="kpi-value">${formatCurrency(totalSalesValue)}</div>
+                <div class="kpi-trend positive">
+                    <i data-lucide="arrow-up-right"></i>
+                    <span>+14.2%</span>
+                    <span class="kpi-label">vs. mes anterior</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Compras a Proveedores</span>
+                    <div class="kpi-icon primary">
+                        <i data-lucide="trending-down"></i>
+                    </div>
+                </div>
+                <div class="kpi-value">${formatCurrency(totalPurchasesValue)}</div>
+                <div class="kpi-trend neutral">
+                    <i data-lucide="minus"></i>
+                    <span>0.0%</span>
+                    <span class="kpi-label">Desviación estándar</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Clientes Activos</span>
+                    <div class="kpi-icon info">
+                        <i data-lucide="users"></i>
+                    </div>
+                </div>
+                <div class="kpi-value">${activeClientsCount}</div>
+                <div class="kpi-trend positive">
+                    <i data-lucide="arrow-up-right"></i>
+                    <span>+2</span>
+                    <span class="kpi-label">Esta semana</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Alertas Stock Bajo</span>
+                    <div class="kpi-icon danger">
+                        <i data-lucide="alert-triangle"></i>
+                    </div>
+                </div>
+                <div class="kpi-value">${lowStockCount}</div>
+                <div class="kpi-trend ${lowStockCount > 0 ? 'negative' : 'positive'}">
+                    <i data-lucide="${lowStockCount > 0 ? 'alert-circle' : 'shield-check'}"></i>
+                    <span>${lowStockCount > 0 ? 'Reponer' : 'Seguro'}</span>
+                    <span class="kpi-label">Artículos críticos</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Graphs Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <span class="chart-title">Movimiento Financiero Mensual (2026)</span>
+                    <div class="chart-actions">
+                        <select class="filter-select" id="chart-timeframe">
+                            <option value="6m">Últimos 6 meses</option>
+                            <option value="12m">Último año</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="financialTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <span class="chart-title">Ventas por Categoría</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="categoryPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Footer Lists -->
+        <div class="dashboard-bottom-grid">
+            <!-- Recent Sales -->
+            <div class="list-card">
+                <div class="list-card-header">
+                    <span class="list-card-title">Últimas Ventas</span>
+                    <button class="btn-text" id="dashboard-view-sales">Ver todas</button>
+                </div>
+                <div class="list-items" id="recent-sales-list">
+                    <!-- Dynamic dynamic content -->
+                </div>
+            </div>
+            
+            <!-- Critical Stock items -->
+            <div class="list-card">
+                <div class="list-card-header">
+                    <span class="list-card-title">Inventario Crítico (Bajo Mínimo)</span>
+                    <button class="btn-text" id="dashboard-view-inventory">Comprar Reposición</button>
+                </div>
+                <div class="list-items" id="recent-alerts-list">
+                    <!-- Dynamic alerts -->
+                </div>
+            </div>
+        </div>
     `;
-    clientesTable.appendChild(tr);
-  });
-  renderPager(clientesPager, "clientes", total, currentPage, pageCount, start);
+    
+    // Event listeners inside the dashboard
+    document.getElementById('dashboard-view-sales').addEventListener('click', () => switchView('sales'));
+    document.getElementById('dashboard-view-inventory').addEventListener('click', () => switchView('inventory'));
 
-  clientesTable.querySelectorAll("[data-action='history-client']").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectedClientHistoryId = Number(btn.dataset.id);
-      renderClientLoanHistory();
+    // Inject list items
+    renderRecentSales();
+    renderCriticalStockList();
+    
+    // Initialize Dashboard Charts
+    initDashboardCharts();
+}
+
+function renderRecentSales() {
+    const container = document.getElementById('recent-sales-list');
+    container.innerHTML = '';
+    
+    // Get last 4 sales sorted by date
+    const recent = [...STATE.sales].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+    
+    recent.forEach(sale => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        
+        let statusClass = 'success';
+        if (sale.status === 'Pendiente') statusClass = 'warning';
+        if (sale.status === 'Cancelado') statusClass = 'danger';
+        
+        item.innerHTML = `
+            <div class="list-item-left">
+                <div class="list-item-icon">
+                    <i data-lucide="shopping-cart"></i>
+                </div>
+                <div class="list-item-details">
+                    <span class="list-item-name">${sale.clientName}</span>
+                    <span class="list-item-sub">${sale.id} | ${formatDate(sale.date)}</span>
+                </div>
+            </div>
+            <div class="list-item-right">
+                <span class="list-item-value">${formatCurrency(sale.total)}</span>
+                <span class="list-item-status status-badge ${statusClass}">${sale.status}</span>
+            </div>
+        `;
+        container.appendChild(item);
     });
-  });
+}
 
-  clientesTable.querySelectorAll("[data-action='edit-client']").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = Number(btn.dataset.id);
-      const client = state.clients.find((c) => c.id === id);
-      if (!client) return;
-      document.getElementById("clienteId").value = client.id;
-      document.getElementById("clienteNombre").value = client.nombre;
-      document.getElementById("clienteDni").value = client.dni;
-      document.getElementById("clienteTelefono").value = client.telefono;
-      document.getElementById("clienteDomicilio").value = client.domicilio;
-      document.getElementById("clienteScore").value = client.score;
-    });
-  });
-
-  clientesTable.querySelectorAll("[data-action='delete-client']").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const id = Number(btn.dataset.id);
-      const hasLoans = state.loans.some((l) => l.clientId === id);
-      if (hasLoans) {
-        showToast("No se puede eliminar: el cliente tiene prestamos asociados.", "warning");
+function renderCriticalStockList() {
+    const container = document.getElementById('recent-alerts-list');
+    container.innerHTML = '';
+    
+    const criticals = STATE.inventory.filter(item => item.stock <= item.minStock);
+    
+    if (criticals.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 32px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                <i data-lucide="check-circle-2" style="width: 32px; height: 32px; color: var(--success); margin-bottom: 8px;"></i>
+                <p>Todos los niveles de stock están saludables</p>
+            </div>
+        `;
         return;
-      }
-      state.clients = state.clients.filter((c) => c.id !== id);
-      showToast("Cliente eliminado correctamente.", "success");
-      renderAll();
+    }
+    
+    criticals.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        row.innerHTML = `
+            <div class="list-item-left">
+                <div class="list-item-icon" style="color: var(--danger);">
+                    <i data-lucide="package"></i>
+                </div>
+                <div class="list-item-details">
+                    <span class="list-item-name">${item.name}</span>
+                    <span class="list-item-sub">SKU: ${item.sku} | Categoría: ${item.category}</span>
+                </div>
+            </div>
+            <div class="list-item-right">
+                <span class="list-item-value" style="color: var(--danger);">${item.stock} ${item.unit}</span>
+                <span class="list-item-sub">Mínimo: ${item.minStock}</span>
+            </div>
+        `;
+        container.appendChild(row);
     });
-  });
 }
 
-function renderClientLoanHistory() {
-  historialClienteTable.innerHTML = "";
-  if (!selectedClientHistoryId) {
-    historialClienteTitulo.textContent = "Historial de préstamos por cliente";
-    historialClienteTable.innerHTML = "<tr><td colspan='8'>Selecciona un cliente para ver su historial.</td></tr>";
-    return;
-  }
-  const client = state.clients.find((c) => c.id === selectedClientHistoryId);
-  if (!client) {
-    selectedClientHistoryId = null;
-    historialClienteTitulo.textContent = "Historial de préstamos por cliente";
-    historialClienteTable.innerHTML = "<tr><td colspan='8'>Selecciona un cliente para ver su historial.</td></tr>";
-    return;
-  }
-  const loans = state.loans
-    .filter((loan) => loan.clientId === client.id)
-    .slice()
-    .sort((a, b) => b.id - a.id);
-  historialClienteTitulo.textContent = `Historial de préstamos - ${client.nombre}`;
-  if (!loans.length) {
-    historialClienteTable.innerHTML = "<tr><td colspan='8'>Este cliente no tiene préstamos registrados.</td></tr>";
-    return;
-  }
-  loans.forEach((loan) => {
-    const paid = roundCurrency(
-      loan.installmentsItems.reduce((acc, item) => acc + Number(item.paidAmount || 0), 0)
-    );
-    const debt = getPendingBalance(loan);
-    const statusClass = loan.status === "defaulted" ? "mora" : loan.status === "closed" ? "cerrado" : "activo";
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>#${loan.id}</td>
-      <td>${formatDate(loan.startDate)}</td>
-      <td>${loan.type === "weekly" ? "Semanal" : "Mensual"}</td>
-      <td>${currency(loan.principal)}</td>
-      <td>${currency(loan.totalAmount)}</td>
-      <td>${currency(paid)}</td>
-      <td>${currency(debt)}</td>
-      <td><span class="status-pill status-${statusClass}">${labelLoanStatus(loan.status)}</span></td>
+function initDashboardCharts() {
+    // 1. Line/Bar Chart for Monthly Trend
+    const trendCtx = document.getElementById('financialTrendChart').getContext('2d');
+    
+    // Mock monthly datasets (Ene - Jun)
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'];
+    const salesData = [340000, 480000, 520000, 410000, 610000, 760500]; // Sums + mock growth
+    const purchasesData = [280000, 310000, 400000, 350000, 480000, 894000];
+    
+    charts.trend = new Chart(trendCtx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Ventas ($)',
+                    data: salesData,
+                    backgroundColor: '#4f46e5', // Primary indigo
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barPercentage: 0.6
+                },
+                {
+                    label: 'Compras ($)',
+                    data: purchasesData,
+                    backgroundColor: '#e2e8f0', // slate-200
+                    borderRadius: 6,
+                    borderWidth: 0,
+                    barPercentage: 0.6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: { family: 'Outfit', size: 12, weight: '500' },
+                        color: '#475569'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Outfit' }, color: '#64748b' }
+                },
+                y: {
+                    grid: { color: '#f1f5f9' },
+                    ticks: {
+                        font: { family: 'Outfit' },
+                        color: '#64748b',
+                        callback: function(value) {
+                            return '$' + value/1000 + 'k';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Pie Chart for Category distribution
+    const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
+    
+    // Group sales total by category
+    const catTotals = { Cemento: 0, Hierros: 0, Ladrillos: 0, Áridos: 0, Terminaciones: 0 };
+    
+    STATE.sales.forEach(s => {
+        if (s.status === 'Cancelado') return;
+        s.items.forEach(line => {
+            const p = STATE.inventory.find(item => item.id === line.productId);
+            if (p && catTotals[p.category] !== undefined) {
+                catTotals[p.category] += (line.qty * line.price);
+            }
+        });
+    });
+    
+    // Fallback default mock weights if empty to showcase nice visual data
+    const categories = Object.keys(catTotals);
+    const dataValues = Object.values(catTotals).map(v => v === 0 ? 50000 : v); // Avoid zero for aesthetics
+    
+    charts.pie = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categories,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: [
+                    '#4f46e5', // indigo
+                    '#f59e0b', // amber
+                    '#10b981', // emerald
+                    '#3b82f6', // blue
+                    '#ec4899'  // pink
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 14,
+                        font: { family: 'Outfit', size: 11, weight: '500' },
+                        color: '#475569'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a,b)=>a+b, 0);
+                            const val = context.raw;
+                            const pct = ((val / total) * 100).toFixed(1);
+                            return ` ${context.label}: ${formatCurrency(val)} (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+// ==========================================
+// MODULE 2: INVENTORY (INVENTARIO)
+// ==========================================
+function renderInventoryView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="inventory-search" class="search-input" placeholder="Buscar por SKU o descripción...">
+                </div>
+                <select class="filter-select" id="inventory-filter-cat">
+                    <option value="all">Todas las Categorías</option>
+                    <option value="Cemento">Cemento</option>
+                    <option value="Hierros">Hierros</option>
+                    <option value="Ladrillos">Ladrillos</option>
+                    <option value="Áridos">Áridos</option>
+                    <option value="Terminaciones">Terminaciones</option>
+                </select>
+                <select class="filter-select" id="inventory-filter-stock">
+                    <option value="all">Todo el Stock</option>
+                    <option value="low">Bajo Mínimo</option>
+                    <option value="ok">Stock Normal</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-inventory-add">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Material</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Unidad</th>
+                            <th>Costo Unit.</th>
+                            <th>Precio Venta</th>
+                            <th>Stock</th>
+                            <th>Mínimo</th>
+                            <th>Estado</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body">
+                        <!-- Injected dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- History component -->
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Inventario</span>
+            </div>
+            <div class="history-timeline" id="inventory-history">
+                <!-- Log history -->
+            </div>
+        </div>
     `;
-    historialClienteTable.appendChild(tr);
-  });
+    
+    // Register actions
+    document.getElementById('btn-inventory-add').addEventListener('click', () => openCrudModal('inventory', 'create'));
+    document.getElementById('inventory-search').addEventListener('input', filterInventoryTable);
+    document.getElementById('inventory-filter-cat').addEventListener('change', filterInventoryTable);
+    document.getElementById('inventory-filter-stock').addEventListener('change', filterInventoryTable);
+    
+    renderInventoryRows(STATE.inventory);
+    renderModuleHistory('inventory');
 }
 
-function renderLoansTable() {
-  prestamosTable.innerHTML = "";
-  const query = listState.prestamos.query;
-  const filtered = state.loans
-    .slice()
-    .sort((a, b) => b.id - a.id)
-    .filter((loan) => {
-      const client = getClientById(loan.clientId);
-      return includesQuery(
-        [loan.id, client ? client.nombre : "", loan.type === "weekly" ? "semanal" : "mensual", labelLoanStatus(loan.status)],
-        query
-      );
-    });
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "prestamos");
-  if (!pageRows.length) {
-    prestamosTable.innerHTML = "<tr><td colspan='6'>No hay préstamos para mostrar.</td></tr>";
-    renderPager(prestamosPager, "prestamos", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows
-    .forEach((loan) => {
-      const client = getClientById(loan.clientId);
-      const statusClass = loan.status === "defaulted" ? "mora" : loan.status === "closed" ? "cerrado" : "activo";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>#${loan.id}</td>
-        <td>${client ? escapeHtml(client.nombre) : "-"}</td>
-        <td>${loan.type === "weekly" ? "Semanal" : "Mensual"}</td>
-        <td>${currency(loan.totalAmount)}</td>
-        <td><span class="status-pill status-${statusClass}">${labelLoanStatus(loan.status)}</span></td>
-        <td>
-          <button class="btn btn-secondary" data-action="view-schedule" data-id="${loan.id}" type="button">Cuotas</button>
-          <button class="btn btn-secondary" data-action="print-loan" data-id="${loan.id}" type="button">Comprobante</button>
-        </td>
-      `;
-      prestamosTable.appendChild(tr);
-    });
-  renderPager(prestamosPager, "prestamos", total, currentPage, pageCount, start);
-
-  prestamosTable.querySelectorAll("[data-action='view-schedule']").forEach((btn) => {
-    btn.addEventListener("click", () => showLoanSchedule(Number(btn.dataset.id)));
-  });
-  prestamosTable.querySelectorAll("[data-action='print-loan']").forEach((btn) => {
-    btn.addEventListener("click", () => printLatestLoanReceipt(Number(btn.dataset.id)));
-  });
-}
-
-function renderPagosTable() {
-  pagosTable.innerHTML = "";
-  const query = listState.pagos.query;
-  const filtered = state.payments
-    .slice()
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .filter((pay) => {
-      const client = getClientById(pay.clientId);
-      return includesQuery(
-        [pay.date, pay.loanId, client ? client.nombre : "", pay.installmentNumber, pay.amount],
-        query
-      );
-    });
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "pagos");
-  if (!pageRows.length) {
-    pagosTable.innerHTML = "<tr><td colspan='6'>No hay pagos para mostrar.</td></tr>";
-    renderPager(pagosPager, "pagos", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows
-    .forEach((pay) => {
-      const loan = state.loans.find((l) => l.id === pay.loanId);
-      const client = getClientById(pay.clientId);
-      const receipt = state.receipts.find((r) => r.type === "payment" && r.refId === pay.id);
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${formatDate(pay.date)}</td>
-        <td>#${pay.loanId}</td>
-        <td>${client ? escapeHtml(client.nombre) : "-"}</td>
-        <td>${pay.installmentNumber}</td>
-        <td>${currency(pay.amount)}</td>
-        <td>${receipt ? `<button class="btn btn-secondary" data-action="print-receipt" data-id="${receipt.id}" type="button">Imprimir</button>` : "-"}</td>
-      `;
-      pagosTable.appendChild(tr);
-    });
-  renderPager(pagosPager, "pagos", total, currentPage, pageCount, start);
-
-  pagosTable.querySelectorAll("[data-action='print-receipt']").forEach((btn) => {
-    btn.addEventListener("click", () => printReceiptById(Number(btn.dataset.id)));
-  });
-}
-
-function renderRefisTable() {
-  refisTable.innerHTML = "";
-  const query = listState.refis.query;
-  const filtered = state.refinances
-    .slice()
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .filter((refi) =>
-      includesQuery([refi.date, refi.oldLoanId, refi.newLoanId, refi.amount], query)
-    );
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "refis");
-  if (!pageRows.length) {
-    refisTable.innerHTML = "<tr><td colspan='4'>No hay refinanciaciones para mostrar.</td></tr>";
-    renderPager(refisPager, "refis", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows
-    .forEach((refi) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${formatDate(refi.date)}</td>
-        <td>#${refi.oldLoanId}</td>
-        <td>#${refi.newLoanId}</td>
-        <td>${currency(refi.amount)}</td>
-      `;
-      refisTable.appendChild(tr);
-    });
-  renderPager(refisPager, "refis", total, currentPage, pageCount, start);
-}
-
-function renderComprobantesTable() {
-  comprobantesTable.innerHTML = "";
-  const query = listState.comprobantes.query;
-  const filtered = state.receipts
-    .slice()
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .filter((receipt) => {
-      const client = getClientById(receipt.clientId);
-      return includesQuery(
-        [receipt.date, receipt.type === "loan" ? "prestamo" : "cobro", receipt.detail, client ? client.nombre : "", receipt.amount],
-        query
-      );
-    });
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "comprobantes");
-  if (!pageRows.length) {
-    comprobantesTable.innerHTML = "<tr><td colspan='6'>No hay comprobantes para mostrar.</td></tr>";
-    renderPager(comprobantesPager, "comprobantes", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows
-    .forEach((receipt) => {
-      const client = getClientById(receipt.clientId);
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${formatDate(receipt.date)}</td>
-        <td>${receipt.type === "loan" ? "Prestamo" : "Cobro"}</td>
-        <td>${escapeHtml(receipt.detail)}</td>
-        <td>${client ? escapeHtml(client.nombre) : "-"}</td>
-        <td>${currency(receipt.amount)}</td>
-        <td><button class="btn btn-secondary" data-action="print-receipt" data-id="${receipt.id}" type="button">Imprimir</button></td>
-      `;
-      comprobantesTable.appendChild(tr);
-    });
-  renderPager(comprobantesPager, "comprobantes", total, currentPage, pageCount, start);
-
-  comprobantesTable.querySelectorAll("[data-action='print-receipt']").forEach((btn) => {
-    btn.addEventListener("click", () => printReceiptById(Number(btn.dataset.id)));
-  });
-}
-
-function renderUsersTable() {
-  usuariosTable.innerHTML = "";
-  const query = listState.usuarios.query;
-  const filtered = state.users
-    .slice()
-    .sort((a, b) => a.nombre.localeCompare(b.nombre))
-    .filter((u) => includesQuery([u.nombre, u.username, u.rol], query));
-  const { total, pageCount, currentPage, pageRows, start } = paginateRows(filtered, "usuarios");
-  if (!pageRows.length) {
-    usuariosTable.innerHTML = "<tr><td colspan='4'>No hay usuarios para mostrar.</td></tr>";
-    renderPager(usuariosPager, "usuarios", total, currentPage, pageCount, start);
-    return;
-  }
-  pageRows.forEach((user) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(user.nombre)}</td>
-      <td>${escapeHtml(user.username)}</td>
-      <td>${escapeHtml(user.rol)}</td>
-      <td>
-        <button class="btn btn-secondary" data-action="edit-user" data-id="${user.id}" type="button">Editar</button>
-        <button class="btn btn-danger" data-action="delete-user" data-id="${user.id}" type="button">Eliminar</button>
-      </td>
-    `;
-    usuariosTable.appendChild(tr);
-  });
-  renderPager(usuariosPager, "usuarios", total, currentPage, pageCount, start);
-
-  usuariosTable.querySelectorAll("[data-action='edit-user']").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!isAdmin()) return;
-      const user = state.users.find((u) => u.id === Number(btn.dataset.id));
-      if (!user) return;
-      document.getElementById("usuarioId").value = user.id;
-      document.getElementById("usuarioNombre").value = user.nombre;
-      document.getElementById("usuarioUsername").value = user.username;
-      document.getElementById("usuarioRol").value = user.rol;
-      document.getElementById("usuarioPassword").value = user.password;
-    });
-  });
-
-  usuariosTable.querySelectorAll("[data-action='delete-user']").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!isAdmin()) return;
-      const id = Number(btn.dataset.id);
-      if (state.session.currentUserId === id) {
-        showToast("No puedes eliminar tu propio usuario en sesion.", "warning");
+function renderInventoryRows(items) {
+    const tbody = document.getElementById('inventory-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron materiales</td></tr>`;
         return;
-      }
-      state.users = state.users.filter((u) => u.id !== id);
-      showToast("Usuario eliminado.", "success");
-      renderAll();
+    }
+    
+    items.forEach(item => {
+        const isLow = item.stock <= item.minStock;
+        const stateBadge = isLow ? '<span class="status-badge danger">Bajo Mínimo</span>' : '<span class="status-badge success">Normal</span>';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.sku}</td>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>${item.unit}</td>
+            <td>${formatCurrency(item.cost)}</td>
+            <td style="font-weight: 600;">${formatCurrency(item.price)}</td>
+            <td style="font-weight: 700; ${isLow ? 'color: var(--danger);' : ''}">${item.stock}</td>
+            <td>${item.minStock}</td>
+            <td>${stateBadge}</td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('inventory', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('inventory', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
-  });
+    lucide.createIcons();
 }
 
-function renderDashboard() {
-  const activeLoans = state.loans.filter((l) => l.status === "active" || l.status === "defaulted");
-  const overdueCount = activeLoans.reduce(
-    (acc, loan) => acc + loan.installmentsItems.filter((i) => i.status !== "paid" && isOverdue(i)).length,
-    0
-  );
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const collected = state.payments
-    .filter((p) => p.date.slice(0, 7) === currentMonth)
-    .reduce((acc, p) => acc + p.amount, 0);
-
-  const verdes = state.clients.filter((c) => c.semaforo === "verde").length;
-  const amarillos = state.clients.filter((c) => c.semaforo === "amarillo").length;
-  const rojos = state.clients.filter((c) => c.semaforo === "rojo").length;
-  const totalClientes = Math.max(1, verdes + amarillos + rojos);
-
-  kpiClientes.textContent = String(state.clients.length);
-  kpiPrestamosActivos.textContent = String(activeLoans.length);
-  kpiCuotasVencidas.textContent = String(overdueCount);
-  kpiCobradoMes.textContent = currency(collected);
-
-  dashboardSemaforo.innerHTML = `
-    <li>Total clientes evaluados: <strong>${verdes + amarillos + rojos}</strong></li>
-  `;
-  dashboardSemaforoChart.innerHTML = buildSemaforoPie(verdes, amarillos, rojos, totalClientes);
-  dashboardSemaforoChart.querySelectorAll("[data-semaforo]").forEach((btn) => {
-    btn.addEventListener("click", () => openClientsSemaforoScreen(btn.dataset.semaforo));
-  });
-
-  dashboardMora.innerHTML = "";
-  const moraLoans = state.loans.filter((l) => l.status === "defaulted");
-  if (!moraLoans.length) {
-    dashboardMora.innerHTML = "<li>Sin préstamos en mora.</li>";
-  } else {
-    moraLoans.slice(0, 6).forEach((loan) => {
-      const client = getClientById(loan.clientId);
-      const li = document.createElement("li");
-      li.textContent = `Prestamo #${loan.id} - ${client ? client.nombre : "-"} - Saldo ${currency(getPendingBalance(loan))}`;
-      dashboardMora.appendChild(li);
+function filterInventoryTable() {
+    const q = document.getElementById('inventory-search').value.toLowerCase();
+    const cat = document.getElementById('inventory-filter-cat').value;
+    const stockFilter = document.getElementById('inventory-filter-stock').value;
+    
+    const filtered = STATE.inventory.filter(item => {
+        const matchesQuery = item.sku.toLowerCase().includes(q) || item.name.toLowerCase().includes(q);
+        const matchesCat = cat === 'all' || item.category === cat;
+        
+        let matchesStock = true;
+        if (stockFilter === 'low') matchesStock = item.stock <= item.minStock;
+        if (stockFilter === 'ok') matchesStock = item.stock > item.minStock;
+        
+        return matchesQuery && matchesCat && matchesStock;
     });
-  }
-  renderMoraChart(moraLoans);
-  renderMonthlyEvolution();
+    
+    renderInventoryRows(filtered);
 }
 
-function renderClientOptions() {
-  prestamoCliente.innerHTML = "<option value=''>Seleccionar cliente</option>";
-  state.clients.forEach((c) => {
-    const option = document.createElement("option");
-    option.value = String(c.id);
-    option.textContent = `${c.nombre} (${c.dni})`;
-    prestamoCliente.appendChild(option);
-  });
+
+// ==========================================
+// MODULE 3: PROVIDERS (PROVEEDORES)
+// ==========================================
+function renderProvidersView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="providers-search" class="search-input" placeholder="Buscar por Nombre, CUIT o Email...">
+                </div>
+            </div>
+            <button class="btn-primary" id="btn-providers-add">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Proveedor</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="providers-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre Comercial</th>
+                            <th>CUIT</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Dirección</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="providers-table-body">
+                        <!-- Injected dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Proveedores</span>
+            </div>
+            <div class="history-timeline" id="providers-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-providers-add').addEventListener('click', () => openCrudModal('providers', 'create'));
+    document.getElementById('providers-search').addEventListener('input', filterProvidersTable);
+    
+    renderProvidersRows(STATE.providers);
+    renderModuleHistory('providers');
 }
 
-function renderLoanOptions() {
-  pagoPrestamo.innerHTML = "<option value=''>Seleccionar prestamo</option>";
-  state.loans
-    .filter((l) => l.status === "active" || l.status === "defaulted")
-    .forEach((loan) => {
-      const client = getClientById(loan.clientId);
-      const option = document.createElement("option");
-      option.value = String(loan.id);
-      option.textContent = `#${loan.id} - ${client ? client.nombre : "-"} (${labelLoanStatus(loan.status)})`;
-      pagoPrestamo.appendChild(option);
+function renderProvidersRows(items) {
+    const tbody = document.getElementById('providers-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron proveedores</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.name}</td>
+            <td>${item.cuit}</td>
+            <td>${item.phone}</td>
+            <td>${item.email}</td>
+            <td>${item.address}</td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('providers', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('providers', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterProvidersTable() {
+    const q = document.getElementById('providers-search').value.toLowerCase();
+    const filtered = STATE.providers.filter(p => 
+        p.name.toLowerCase().includes(q) || p.cuit.includes(q) || p.email.toLowerCase().includes(q)
+    );
+    renderProvidersRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 4: CLIENTS (CLIENTES)
+// ==========================================
+function renderClientsView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="clients-search" class="search-input" placeholder="Buscar por Nombre, DNI/CUIT o Email...">
+                </div>
+                <select class="filter-select" id="clients-filter-type">
+                    <option value="all">Todos los Clientes</option>
+                    <option value="Particular">Particular</option>
+                    <option value="Profesional">Profesional</option>
+                    <option value="Constructora">Constructora</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-clients-add">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Cliente</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="clients-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre y Apellido / R. Social</th>
+                            <th>DNI / CUIT</th>
+                            <th>Tipo de Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table-body">
+                        <!-- Injected dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Clientes</span>
+            </div>
+            <div class="history-timeline" id="clients-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-clients-add').addEventListener('click', () => openCrudModal('clients', 'create'));
+    document.getElementById('clients-search').addEventListener('input', filterClientsTable);
+    document.getElementById('clients-filter-type').addEventListener('change', filterClientsTable);
+    
+    renderClientsRows(STATE.clients);
+    renderModuleHistory('clients');
+}
+
+function renderClientsRows(items) {
+    const tbody = document.getElementById('clients-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron clientes</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        let typeBadge = 'secondary';
+        if (item.type === 'Constructora') typeBadge = 'info';
+        if (item.type === 'Profesional') typeBadge = 'success';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.name}</td>
+            <td>${item.dni_cuit}</td>
+            <td><span class="status-badge ${typeBadge}">${item.type}</span></td>
+            <td>${item.phone}</td>
+            <td>${item.email}</td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('clients', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('clients', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterClientsTable() {
+    const q = document.getElementById('clients-search').value.toLowerCase();
+    const type = document.getElementById('clients-filter-type').value;
+    
+    const filtered = STATE.clients.filter(c => {
+        const matchesQuery = c.name.toLowerCase().includes(q) || c.dni_cuit.includes(q) || c.email.toLowerCase().includes(q);
+        const matchesType = type === 'all' || c.type === type;
+        return matchesQuery && matchesType;
+    });
+    renderClientsRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 5: PURCHASES (COMPRAS)
+// ==========================================
+function renderPurchasesView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="purchases-search" class="search-input" placeholder="Buscar por ID Compra o Proveedor...">
+                </div>
+                <select class="filter-select" id="purchases-filter-status">
+                    <option value="all">Todos los Estados</option>
+                    <option value="Recibido">Recibido</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-purchases-add">
+                <i data-lucide="plus"></i>
+                <span>Nueva Compra</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="purchases-table">
+                    <thead>
+                        <tr>
+                            <th>Cód. Compra</th>
+                            <th>Proveedor</th>
+                            <th>Fecha</th>
+                            <th>Artículos</th>
+                            <th>Monto Total</th>
+                            <th>Estado</th>
+                            <th style="width: 120px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchases-table-body">
+                        <!-- Injected dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Compras</span>
+            </div>
+            <div class="history-timeline" id="purchases-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-purchases-add').addEventListener('click', () => openCrudModal('purchases', 'create'));
+    document.getElementById('purchases-search').addEventListener('input', filterPurchasesTable);
+    document.getElementById('purchases-filter-status').addEventListener('change', filterPurchasesTable);
+    
+    renderPurchasesRows(STATE.purchases);
+    renderModuleHistory('purchases');
+}
+
+function renderPurchasesRows(items) {
+    const tbody = document.getElementById('purchases-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron pedidos de compra</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        let statusBadge = 'success';
+        if (item.status === 'Pendiente') statusBadge = 'warning';
+        if (item.status === 'Cancelado') statusBadge = 'danger';
+        
+        // Sum total quantities of items in purchase
+        const itemsCount = item.items.reduce((acc, curr) => acc + curr.qty, 0);
+        
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.id}</td>
+            <td>${item.providerName}</td>
+            <td>${formatDate(item.date)}</td>
+            <td>${itemsCount} unidades</td>
+            <td style="font-weight: 700;">${formatCurrency(item.total)}</td>
+            <td><span class="status-badge ${statusBadge}">${item.status}</span></td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action view" onclick="viewTransactionDetails('purchases', '${item.id}')" title="Detalles">
+                        <i data-lucide="eye"></i>
+                    </button>
+                    <button class="btn-table-action edit" onclick="openCrudModal('purchases', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('purchases', '${item.id}')" title="Anular">
+                        <i data-lucide="slash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterPurchasesTable() {
+    const q = document.getElementById('purchases-search').value.toLowerCase();
+    const status = document.getElementById('purchases-filter-status').value;
+    
+    const filtered = STATE.purchases.filter(p => {
+        const matchesQuery = p.id.toLowerCase().includes(q) || p.providerName.toLowerCase().includes(q);
+        const matchesStatus = status === 'all' || p.status === status;
+        return matchesQuery && matchesStatus;
+    });
+    renderPurchasesRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 6: SALES (VENTAS)
+// ==========================================
+function renderSalesView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="sales-search" class="search-input" placeholder="Buscar por ID Venta o Cliente...">
+                </div>
+                <select class="filter-select" id="sales-filter-status">
+                    <option value="all">Todos los Estados</option>
+                    <option value="Entregado">Entregado</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-sales-add">
+                <i data-lucide="plus"></i>
+                <span>Nueva Venta</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Cód. Venta</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Artículos</th>
+                            <th>Monto Total</th>
+                            <th>Estado</th>
+                            <th style="width: 120px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-table-body">
+                        <!-- Injected dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Ventas</span>
+            </div>
+            <div class="history-timeline" id="sales-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-sales-add').addEventListener('click', () => openCrudModal('sales', 'create'));
+    document.getElementById('sales-search').addEventListener('input', filterSalesTable);
+    document.getElementById('sales-filter-status').addEventListener('change', filterSalesTable);
+    
+    renderSalesRows(STATE.sales);
+    renderModuleHistory('sales');
+}
+
+function renderSalesRows(items) {
+    const tbody = document.getElementById('sales-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron transacciones de venta</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        let statusBadge = 'success';
+        if (item.status === 'Pendiente') statusBadge = 'warning';
+        if (item.status === 'Cancelado') statusBadge = 'danger';
+        
+        const itemsCount = item.items.reduce((acc, curr) => acc + curr.qty, 0);
+        
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.id}</td>
+            <td>${item.clientName}</td>
+            <td>${formatDate(item.date)}</td>
+            <td>${itemsCount} unidades</td>
+            <td style="font-weight: 700;">${formatCurrency(item.total)}</td>
+            <td><span class="status-badge ${statusBadge}">${item.status}</span></td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action view" onclick="viewTransactionDetails('sales', '${item.id}')" title="Ver Detalle / Remito">
+                        <i data-lucide="eye"></i>
+                    </button>
+                    <button class="btn-table-action edit" onclick="openCrudModal('sales', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('sales', '${item.id}')" title="Anular">
+                        <i data-lucide="slash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterSalesTable() {
+    const q = document.getElementById('sales-search').value.toLowerCase();
+    const status = document.getElementById('sales-filter-status').value;
+    
+    const filtered = STATE.sales.filter(s => {
+        const matchesQuery = s.id.toLowerCase().includes(q) || s.clientName.toLowerCase().includes(q);
+        const matchesStatus = status === 'all' || s.status === status;
+        return matchesQuery && matchesStatus;
+    });
+    renderSalesRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 7: RECEIPTS (RECIBOS)
+// ==========================================
+function renderReceiptsView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="receipts-search" class="search-input" placeholder="Buscar por Nro Recibo, Venta o Cliente...">
+                </div>
+                <select class="filter-select" id="receipts-filter-method">
+                    <option value="all">Medio de Pago</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Cheque">Cheque</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-receipts-add">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Recibo</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="receipts-table">
+                    <thead>
+                        <tr>
+                            <th>Nro. Recibo</th>
+                            <th>Venta Ref.</th>
+                            <th>Cliente</th>
+                            <th>Fecha Cobro</th>
+                            <th>Medio de Pago</th>
+                            <th>Monto Recibido</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="receipts-table-body">
+                        <!-- Dynamic list -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Cobros</span>
+            </div>
+            <div class="history-timeline" id="receipts-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-receipts-add').addEventListener('click', () => openCrudModal('receipts', 'create'));
+    document.getElementById('receipts-search').addEventListener('input', filterReceiptsTable);
+    document.getElementById('receipts-filter-method').addEventListener('change', filterReceiptsTable);
+    
+    renderReceiptsRows(STATE.receipts);
+    renderModuleHistory('receipts');
+}
+
+function renderReceiptsRows(items) {
+    const tbody = document.getElementById('receipts-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No se registraron recibos de cobro</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.id}</td>
+            <td>${item.saleId || 'Sin venta asociada'}</td>
+            <td>${item.clientName}</td>
+            <td>${formatDate(item.date)}</td>
+            <td><span class="status-badge info">${item.method}</span></td>
+            <td style="font-weight: 700; color: var(--success);">${formatCurrency(item.amount)}</td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('receipts', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('receipts', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterReceiptsTable() {
+    const q = document.getElementById('receipts-search').value.toLowerCase();
+    const method = document.getElementById('receipts-filter-method').value;
+    
+    const filtered = STATE.receipts.filter(r => {
+        const matchesQuery = r.id.toLowerCase().includes(q) || (r.saleId && r.saleId.toLowerCase().includes(q)) || r.clientName.toLowerCase().includes(q);
+        const matchesMethod = method === 'all' || r.method === method;
+        return matchesQuery && matchesMethod;
+    });
+    renderReceiptsRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 8: PAYMENTS (PAGOS)
+// ==========================================
+function renderPaymentsView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="payments-search" class="search-input" placeholder="Buscar por Nro Orden, Compra o Proveedor...">
+                </div>
+                <select class="filter-select" id="payments-filter-method">
+                    <option value="all">Medio de Pago</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Cheque">Cheque</option>
+                </select>
+            </div>
+            <button class="btn-primary" id="btn-payments-add">
+                <i data-lucide="plus"></i>
+                <span>Nueva Orden de Pago</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Nro. Orden Pago</th>
+                            <th>Compra Ref.</th>
+                            <th>Proveedor</th>
+                            <th>Fecha Pago</th>
+                            <th>Medio de Pago</th>
+                            <th>Monto Erogado</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-table-body">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Pagos</span>
+            </div>
+            <div class="history-timeline" id="payments-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-payments-add').addEventListener('click', () => openCrudModal('payments', 'create'));
+    document.getElementById('payments-search').addEventListener('input', filterPaymentsTable);
+    document.getElementById('payments-filter-method').addEventListener('change', filterPaymentsTable);
+    
+    renderPaymentsRows(STATE.payments);
+    renderModuleHistory('payments');
+}
+
+function renderPaymentsRows(items) {
+    const tbody = document.getElementById('payments-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No se registraron ordenes de pago</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.id}</td>
+            <td>${item.purchaseId || 'Gasto General'}</td>
+            <td>${item.providerName}</td>
+            <td>${formatDate(item.date)}</td>
+            <td><span class="status-badge info">${item.method}</span></td>
+            <td style="font-weight: 700; color: var(--danger);">${formatCurrency(item.amount)}</td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('payments', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('payments', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterPaymentsTable() {
+    const q = document.getElementById('payments-search').value.toLowerCase();
+    const method = document.getElementById('payments-filter-method').value;
+    
+    const filtered = STATE.payments.filter(p => {
+        const matchesQuery = p.id.toLowerCase().includes(q) || (p.purchaseId && p.purchaseId.toLowerCase().includes(q)) || p.providerName.toLowerCase().includes(q);
+        const matchesMethod = method === 'all' || p.method === method;
+        return matchesQuery && matchesMethod;
+    });
+    renderPaymentsRows(filtered);
+}
+
+
+// ==========================================
+// MODULE 9: REPORTS (REPORTES)
+// ==========================================
+function renderReportsView(container) {
+    // Computations
+    const stockValue = STATE.inventory.reduce((acc, curr) => acc + (curr.stock * curr.cost), 0);
+    const retailValue = STATE.inventory.reduce((acc, curr) => acc + (curr.stock * curr.price), 0);
+    const expectedMargin = retailValue - stockValue;
+    
+    const totalReceipts = STATE.receipts.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalPayments = STATE.payments.reduce((acc, curr) => acc + curr.amount, 0);
+    const netCashflow = totalReceipts - totalPayments;
+    
+    container.innerHTML = `
+        <!-- Top Reports stats -->
+        <div class="dashboard-grid" style="margin-bottom: 24px;">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Valorización de Stock (Costo)</span>
+                    <div class="kpi-icon primary"><i data-lucide="database"></i></div>
+                </div>
+                <div class="kpi-value">${formatCurrency(stockValue)}</div>
+                <span class="text-secondary">Costo acumulado de existencias</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Valor de Venta Neto</span>
+                    <div class="kpi-icon info"><i data-lucide="tag"></i></div>
+                </div>
+                <div class="kpi-value">${formatCurrency(retailValue)}</div>
+                <span class="text-secondary">Retorno total estimado</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Margen Bruto Proyectado</span>
+                    <div class="kpi-icon success"><i data-lucide="piggy-bank"></i></div>
+                </div>
+                <div class="kpi-value">${formatCurrency(expectedMargin)}</div>
+                <span class="text-secondary" style="color: var(--success); font-weight: 600;">
+                    +${((expectedMargin / stockValue) * 100).toFixed(1)}% Margen prom.
+                </span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Flujo de Caja Neto</span>
+                    <div class="kpi-icon ${netCashflow >= 0 ? 'success' : 'danger'}">
+                        <i data-lucide="scale"></i>
+                    </div>
+                </div>
+                <div class="kpi-value" style="color: ${netCashflow >= 0 ? 'var(--success)' : 'var(--danger)'};">${formatCurrency(netCashflow)}</div>
+                <span class="text-secondary">Cobros menos Pagos realizados</span>
+            </div>
+        </div>
+
+        <div class="reports-tabs">
+            <button class="tab-btn active" id="btn-tab-financial">Flujo de Caja Real vs. Proyectado</button>
+            <button class="tab-btn" id="btn-tab-products">Rotación & Stock Crítico</button>
+        </div>
+
+        <div class="charts-grid" id="reports-charts-container">
+            <div class="chart-card" style="grid-column: span 2;">
+                <div class="chart-card-header">
+                    <span class="chart-title">Conciliación de Caja Acumulada</span>
+                    <button class="btn-secondary" id="btn-export-csv">
+                        <i data-lucide="download"></i>
+                        <span>Exportar a Excel (CSV)</span>
+                    </button>
+                </div>
+                <div class="chart-container" style="min-height: 350px;">
+                    <canvas id="cashflowChart"></canvas>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Register actions
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+        showToast('Exportación Exitosa', 'El archivo excel con los balances e inventarios se ha descargado.', 'success');
+        logHistory('reports', 'export', 'Exportación de datos de caja e inventario a CSV.');
+    });
+    
+    // Tab switching
+    const tabFin = document.getElementById('btn-tab-financial');
+    const tabProd = document.getElementById('btn-tab-products');
+    
+    tabFin.addEventListener('click', () => {
+        tabFin.classList.add('active');
+        tabProd.classList.remove('active');
+        renderFinancialReportChart();
+    });
+    
+    tabProd.addEventListener('click', () => {
+        tabFin.classList.remove('active');
+        tabProd.classList.add('active');
+        renderProductReportChart();
+    });
+    
+    // Initial Chart render
+    renderFinancialReportChart();
+}
+
+function renderFinancialReportChart() {
+    const chartContainer = document.getElementById('reports-charts-container');
+    chartContainer.innerHTML = `
+        <div class="chart-card" style="grid-column: span 2;">
+            <div class="chart-card-header">
+                <span class="chart-title">Evolución de Cobros vs. Erogaciones</span>
+                <button class="btn-secondary" id="btn-export-csv">
+                    <i data-lucide="download"></i>
+                    <span>Exportar Informe Financiero</span>
+                </button>
+            </div>
+            <div class="chart-container" style="min-height: 350px;">
+                <canvas id="cashflowChart"></canvas>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+    
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+        showToast('Exportación Exitosa', 'El balance financiero consolidado fue exportado.', 'success');
+    });
+
+    const ctx = document.getElementById('cashflowChart').getContext('2d');
+    
+    charts.cashflow = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            datasets: [
+                {
+                    label: 'Cobros Totales (Ingresos)',
+                    data: [310000, 420000, 510000, 400000, 580000, 720000],
+                    borderColor: '#059669', // emerald
+                    backgroundColor: 'rgba(5, 150, 105, 0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3
+                },
+                {
+                    label: 'Pagos Proveedores (Salidas)',
+                    data: [250000, 290000, 380000, 320000, 410000, 894000],
+                    borderColor: '#dc2626', // red
+                    backgroundColor: 'rgba(220, 38, 38, 0.03)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Outfit' } } }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) { return '$' + value/1000 + 'k'; },
+                        font: { family: 'Outfit' }
+                    }
+                },
+                x: { ticks: { font: { family: 'Outfit' } } }
+            }
+        }
     });
 }
 
-function renderRefiOptions() {
-  refiPrestamo.innerHTML = "<option value=''>Seleccionar préstamo en mora</option>";
-  state.loans
-    .filter((l) => l.status === "defaulted")
-    .forEach((loan) => {
-      const client = getClientById(loan.clientId);
-      const option = document.createElement("option");
-      option.value = String(loan.id);
-      option.textContent = `#${loan.id} - ${client ? client.nombre : "-"} - Saldo ${currency(getPendingBalance(loan))}`;
-      refiPrestamo.appendChild(option);
+function renderProductReportChart() {
+    const chartContainer = document.getElementById('reports-charts-container');
+    chartContainer.innerHTML = `
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <span class="chart-title">Nivel de Stock vs. Alertas de Reposición</span>
+            </div>
+            <div class="chart-container" style="min-height: 350px;">
+                <canvas id="productStockChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <span class="chart-title">Índice de Rotación por Categorías</span>
+            </div>
+            <div class="chart-container" style="min-height: 350px;">
+                <canvas id="productRotationChart"></canvas>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+
+    // Chart 1: Stock vs. Min level
+    const ctxStock = document.getElementById('productStockChart').getContext('2d');
+    const labels = STATE.inventory.map(item => item.sku);
+    const stockVals = STATE.inventory.map(item => item.stock);
+    const minVals = STATE.inventory.map(item => item.minStock);
+
+    charts.productStock = new Chart(ctxStock, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Stock Actual',
+                    data: stockVals,
+                    backgroundColor: '#3b82f6', // blue
+                    borderRadius: 4
+                },
+                {
+                    label: 'Punto de Pedido (Mínimo)',
+                    data: minVals,
+                    backgroundColor: '#f59e0b', // orange
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { font: { family: 'Outfit' } } } },
+            scales: {
+                y: { ticks: { font: { family: 'Outfit' } } },
+                x: { ticks: { font: { family: 'Outfit' } } }
+            }
+        }
+    });
+
+    // Chart 2: Category weights (sales counts)
+    const ctxRot = document.getElementById('productRotationChart').getContext('2d');
+    charts.productRotation = new Chart(ctxRot, {
+        type: 'polarArea',
+        data: {
+            labels: ['Cemento', 'Hierros', 'Ladrillos', 'Áridos', 'Terminaciones'],
+            datasets: [{
+                data: [45, 20, 55, 30, 15], // Rotations units
+                backgroundColor: [
+                    'rgba(79, 70, 229, 0.7)',
+                    'rgba(245, 158, 11, 0.7)',
+                    'rgba(16, 185, 129, 0.7)',
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(236, 72, 153, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } } }
+        }
     });
 }
 
-function renderCuotasPendientesSelect() {
-  pagoCuota.innerHTML = "<option value=''>Seleccionar cuota</option>";
-  const loanId = Number(pagoPrestamo.value);
-  if (!loanId) {
-    updatePagoAtrasoIndicator();
-    return;
-  }
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) {
-    updatePagoAtrasoIndicator();
-    return;
-  }
-  const referenceDate = pagoFecha.value || dateToInput(new Date());
-  loan.installmentsItems
-    .slice()
-    .sort((a, b) => a.number - b.number)
-    .filter((i) => i.status !== "paid")
-    .forEach((item) => {
-      const pending = roundCurrency(item.amount - item.paidAmount);
-      const option = document.createElement("option");
-      option.value = String(item.number);
-      const delayDays = getDelayDays(item, referenceDate);
-      const marker = delayDays > 0 ? `${delayDays} día(s) de atraso` : "En termino";
-      option.textContent = `Cuota ${item.number} - Vto ${formatDate(item.dueDate)} - Pendiente ${currency(pending)} - ${marker}`;
-      pagoCuota.appendChild(option);
+
+// ==========================================
+// SYSTEM LOGS (AUDITORIA / HISTORIAL) INJECTOR
+// ==========================================
+function renderModuleHistory(moduleName) {
+    const list = document.getElementById(`${moduleName}-history`);
+    if (!list) return;
+    list.innerHTML = '';
+    
+    const logs = STATE.history.filter(log => log.module === moduleName || log.module === 'system');
+    
+    if (logs.length === 0) {
+        list.innerHTML = `<div style="font-size: 0.8rem; color: var(--text-muted); padding: 8px;">No hay movimientos registrados para este módulo.</div>`;
+        return;
+    }
+    
+    logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = `history-timeline-item ${log.action}`;
+        item.innerHTML = `
+            <div class="history-item-header">
+                <span class="history-item-desc">${log.description}</span>
+                <span class="history-item-time">${formatDate(log.timestamp)}</span>
+            </div>
+            <div class="history-item-details">${log.details}</div>
+        `;
+        list.appendChild(item);
     });
-  updatePagoAtrasoIndicator();
 }
 
-function syncPagoMontoByInstallment() {
-  const loanId = Number(pagoPrestamo.value);
-  const installmentNumber = Number(pagoCuota.value);
-  if (!loanId || !installmentNumber) return;
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) return;
-  const installment = loan.installmentsItems.find((i) => i.number === installmentNumber);
-  if (!installment) return;
-  const pending = roundCurrency(installment.amount - installment.paidAmount);
-  pagoMonto.value = String(pending);
+
+// ==========================================
+// ABM (CRUD) POPUPS & SUBMISSIONS SYSTEM
+// ==========================================
+let currentCrudContext = { module: null, action: null, id: null };
+
+function openCrudModal(module, action, id = null) {
+    currentCrudContext = { module, action, id };
+    
+    const modal = document.getElementById('crud-modal');
+    const title = document.getElementById('modal-title');
+    const fieldsContainer = document.getElementById('modal-fields');
+    
+    modal.classList.add('active');
+    
+    // Config title
+    const moduleNameEs = {
+        inventory: 'Material / Producto',
+        providers: 'Proveedor',
+        clients: 'Cliente',
+        purchases: 'Compra',
+        sales: 'Venta',
+        receipts: 'Recibo de Pago',
+        payments: 'Orden de Pago',
+        users: 'Usuario'
+    }[module];
+    
+    const actionLabel = action === 'create' ? 'Agregar' : 'Modificar';
+    title.textContent = `${actionLabel} ${moduleNameEs}`;
+    
+    // Inject fields dynamically
+    fieldsContainer.innerHTML = '';
+    
+    let data = {};
+    if (action === 'edit' && id) {
+        data = STATE[module].find(item => item.id === id);
+    }
+    
+    if (module === 'inventory') {
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Descripción del Material</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Cemento Loma Negra 50kg">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>SKU / Código</label>
+                    <input type="text" class="form-control" name="sku" value="${data.sku || ''}" required placeholder="Ej: CEM-001">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select class="form-control" name="category" required>
+                        <option value="Cemento" ${data.category === 'Cemento' ? 'selected' : ''}>Cemento</option>
+                        <option value="Hierros" ${data.category === 'Hierros' ? 'selected' : ''}>Hierros</option>
+                        <option value="Ladrillos" ${data.category === 'Ladrillos' ? 'selected' : ''}>Ladrillos</option>
+                        <option value="Áridos" ${data.category === 'Áridos' ? 'selected' : ''}>Áridos</option>
+                        <option value="Terminaciones" ${data.category === 'Terminaciones' ? 'selected' : ''}>Terminaciones</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Unidad de Medida</label>
+                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Bolsas, m3, Barras">
+                </div>
+                <div class="form-group">
+                    <label>Stock Inicial</label>
+                    <input type="number" class="form-control" name="stock" value="${data.stock ?? 0}" required min="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Costo de Compra ($)</label>
+                    <input type="number" class="form-control" name="cost" value="${data.cost ?? 0}" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Precio de Venta ($)</label>
+                    <input type="number" class="form-control" name="price" value="${data.price ?? 0}" required min="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Stock Mínimo Alerta</label>
+                <input type="number" class="form-control" name="minStock" value="${data.minStock ?? 10}" required min="0">
+            </div>
+        `;
+    }
+    
+    else if (module === 'providers') {
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Razón Social / Nombre</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Loma Negra S.A.">
+            </div>
+            <div class="form-group">
+                <label>CUIT</label>
+                <input type="text" class="form-control" name="cuit" value="${data.cuit || ''}" required placeholder="30-XXXXXXXX-X">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" class="form-control" name="phone" value="${data.phone || ''}" placeholder="Ej: 011-4321-0000">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" placeholder="Ej: info@proveedor.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" class="form-control" name="address" value="${data.address || ''}" placeholder="Dirección comercial completa">
+            </div>
+        `;
+    }
+    
+    else if (module === 'clients') {
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Nombre Completo / Razón Social</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Carlos Gómez">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>DNI o CUIT</label>
+                    <input type="text" class="form-control" name="dni_cuit" value="${data.dni_cuit || ''}" required placeholder="DNI o CUIT tributario">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Cliente</label>
+                    <select class="form-control" name="type" required>
+                        <option value="Particular" ${data.type === 'Particular' ? 'selected' : ''}>Particular</option>
+                        <option value="Profesional" ${data.type === 'Profesional' ? 'selected' : ''}>Profesional / Arquitecto</option>
+                        <option value="Constructora" ${data.type === 'Constructora' ? 'selected' : ''}>Constructora</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" class="form-control" name="phone" value="${data.phone || ''}" placeholder="Celular o teléfono fijo">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" placeholder="correo@ejemplo.com">
+                </div>
+            </div>
+        `;
+    }
+    
+    else if (module === 'users') {
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Laura Martínez">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" class="form-control" name="username" value="${data.username || ''}" required placeholder="Ej: lauram">
+                </div>
+                <div class="form-group">
+                    <label>Rol del Sistema</label>
+                    <select class="form-control" name="role" required>
+                        <option value="Administrador" ${data.role === 'Administrador' ? 'selected' : ''}>Administrador</option>
+                        <option value="Vendedor" ${data.role === 'Vendedor' ? 'selected' : ''}>Vendedor</option>
+                        <option value="Depósito" ${data.role === 'Depósito' ? 'selected' : ''}>Depósito</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" required placeholder="laura@sidera.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" class="form-control" name="password" value="${data.password || ''}" required placeholder="••••••••">
+                </div>
+            </div>
+        `;
+    }
+    
+    // TRANSACTION: PURCHASES (COMPRAS)
+    else if (module === 'purchases') {
+        // Multi-item selector for transaction
+        let providerOptions = STATE.providers.map(p => `<option value="${p.id}" ${data.providerId === p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+        let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Costo: ${formatCurrency(m.cost)})</option>`).join('');
+        
+        fieldsContainer.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Seleccionar Proveedor</label>
+                    <select class="form-control" name="providerId" id="tx-provider-select" required>
+                        ${providerOptions}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Operación</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
+                </div>
+            </div>
+            
+            <!-- Items builder -->
+            <div class="items-list-selector">
+                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE MATERIALES COMPRADOS</label>
+                <div class="items-selector-row">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Material</span>
+                        <select class="form-control" id="tx-item-select">
+                            ${materialOptions}
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Cant.</span>
+                        <input type="number" class="form-control" id="tx-item-qty" value="10" min="1">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Costo ($)</span>
+                        <input type="number" class="form-control" id="tx-item-cost" value="0">
+                    </div>
+                    <button type="button" class="btn-success" id="btn-add-item-tx" style="padding: 10px 14px;">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+                
+                <table class="selected-items-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cant</th>
+                            <th>Unit.</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tx-selected-items-body">
+                        <!-- Loaded list -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Estado del Pedido</label>
+                    <select class="form-control" name="status" required>
+                        <option value="Recibido" ${data.status === 'Recibido' ? 'selected' : ''}>Recibido (Afecta Stock)</option>
+                        <option value="Pendiente" ${data.status === 'Pendiente' ? 'selected' : ''}>Pendiente de Entrega</option>
+                        <option value="Cancelado" ${data.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Total de la Compra ($)</label>
+                    <input type="number" class="form-control" name="total" id="tx-total-amount" value="${data.total || 0}" readonly style="font-weight:bold; background:#e2e8f0;">
+                </div>
+            </div>
+            
+            <div class="form-group" id="auto-pay-checkbox-wrapper">
+                <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:normal;">
+                    <input type="checkbox" id="auto-pay-tx" checked style="width:16px; height:16px;">
+                    Registrar egreso de caja (Orden de Pago) automáticamente
+                </label>
+            </div>
+        `;
+        
+        // Items list within modal state
+        let selectedItems = [];
+        if (action === 'edit' && data.items) {
+            selectedItems = data.items.map(it => {
+                const mat = STATE.inventory.find(m => m.id === it.productId);
+                return {
+                    productId: it.productId,
+                    name: mat ? mat.name : 'Desconocido',
+                    qty: it.qty,
+                    cost: it.cost || (mat ? mat.cost : 0)
+                };
+            });
+            // Hide autopay for edits
+            document.getElementById('auto-pay-checkbox-wrapper').style.display = 'none';
+        }
+        
+        // Logic for adding lines to purchase
+        const addBtn = document.getElementById('btn-add-item-tx');
+        const matSelect = document.getElementById('tx-item-select');
+        const qtySelect = document.getElementById('tx-item-qty');
+        const costInput = document.getElementById('tx-item-cost');
+        
+        // Auto-update price when select item
+        const updateDefaultCost = () => {
+            const mat = STATE.inventory.find(m => m.id === matSelect.value);
+            if (mat) costInput.value = mat.cost;
+        };
+        matSelect.addEventListener('change', updateDefaultCost);
+        updateDefaultCost();
+        
+        const renderSelectedList = () => {
+            const body = document.getElementById('tx-selected-items-body');
+            body.innerHTML = '';
+            let sum = 0;
+            
+            selectedItems.forEach((it, idx) => {
+                const sub = it.qty * it.cost;
+                sum += sub;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${it.name}</td>
+                    <td>${it.qty}</td>
+                    <td>${formatCurrency(it.cost)}</td>
+                    <td>${formatCurrency(sub)}</td>
+                    <td style="text-align:right;">
+                        <button type="button" class="btn-table-action delete" onclick="window.removeTxItem(${idx})">
+                            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            
+            document.getElementById('tx-total-amount').value = sum;
+            lucide.createIcons();
+        };
+        
+        addBtn.addEventListener('click', () => {
+            const mat = STATE.inventory.find(m => m.id === matSelect.value);
+            const qty = parseInt(qtySelect.value);
+            const cost = parseFloat(costInput.value);
+            
+            if (!mat || isNaN(qty) || qty <= 0 || isNaN(cost) || cost < 0) return;
+            
+            // Check if already in list
+            const existing = selectedItems.find(it => it.productId === mat.id);
+            if (existing) {
+                existing.qty += qty;
+                existing.cost = cost;
+            } else {
+                selectedItems.push({ productId: mat.id, name: mat.name, qty, cost });
+            }
+            renderSelectedList();
+        });
+        
+        window.removeTxItem = (idx) => {
+            selectedItems.splice(idx, 1);
+            renderSelectedList();
+        };
+        
+        // Render initial edit list if applicable
+        renderSelectedList();
+        
+        // Expose item reader on save
+        currentCrudContext.getItems = () => selectedItems;
+    }
+    
+    // TRANSACTION: SALES (VENTAS)
+    else if (module === 'sales') {
+        let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${data.clientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+        let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock: ${m.stock} | Precio: ${formatCurrency(m.price)})</option>`).join('');
+        
+        fieldsContainer.innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Seleccionar Cliente</label>
+                    <select class="form-control" name="clientId" id="tx-client-select" required>
+                        ${clientOptions}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Operación</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
+                </div>
+            </div>
+            
+            <!-- Items builder -->
+            <div class="items-list-selector">
+                <label style="font-size:0.75rem; font-weight:bold; margin-bottom:8px; display:block;">DETALLE DE MATERIALES VENDIDOS</label>
+                <div class="items-selector-row">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Material</span>
+                        <select class="form-control" id="tx-item-select">
+                            ${materialOptions}
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Cant.</span>
+                        <input type="number" class="form-control" id="tx-item-qty" value="1" min="1">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary)">Precio ($)</span>
+                        <input type="number" class="form-control" id="tx-item-price" value="0">
+                    </div>
+                    <button type="button" class="btn-success" id="btn-add-item-tx" style="padding: 10px 14px;">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+                
+                <table class="selected-items-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Cant</th>
+                            <th>Unit.</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tx-selected-items-body">
+                        <!-- Loaded list -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Estado de la Venta</label>
+                    <select class="form-control" name="status" required>
+                        <option value="Entregado" ${data.status === 'Entregado' ? 'selected' : ''}>Entregado (Baja de Stock)</option>
+                        <option value="Pendiente" ${data.status === 'Pendiente' ? 'selected' : ''}>Pendiente de Carga</option>
+                        <option value="Cancelado" ${data.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monto Total Venta ($)</label>
+                    <input type="number" class="form-control" name="total" id="tx-total-amount" value="${data.total || 0}" readonly style="font-weight:bold; background:#e2e8f0;">
+                </div>
+            </div>
+            
+            <div class="form-group" id="auto-pay-checkbox-wrapper">
+                <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-weight:normal;">
+                    <input type="checkbox" id="auto-pay-tx" checked style="width:16px; height:16px;">
+                    Registrar cobro de dinero (Emisión Recibo) automáticamente
+                </label>
+            </div>
+        `;
+        
+        let selectedItems = [];
+        if (action === 'edit' && data.items) {
+            selectedItems = data.items.map(it => {
+                const mat = STATE.inventory.find(m => m.id === it.productId);
+                return {
+                    productId: it.productId,
+                    name: mat ? mat.name : 'Desconocido',
+                    qty: it.qty,
+                    price: it.price || (mat ? mat.price : 0)
+                };
+            });
+            document.getElementById('auto-pay-checkbox-wrapper').style.display = 'none';
+        }
+        
+        const addBtn = document.getElementById('btn-add-item-tx');
+        const matSelect = document.getElementById('tx-item-select');
+        const qtySelect = document.getElementById('tx-item-qty');
+        const priceInput = document.getElementById('tx-item-price');
+        
+        const updateDefaultPrice = () => {
+            const mat = STATE.inventory.find(m => m.id === matSelect.value);
+            if (mat) priceInput.value = mat.price;
+        };
+        matSelect.addEventListener('change', updateDefaultPrice);
+        updateDefaultPrice();
+        
+        const renderSelectedList = () => {
+            const body = document.getElementById('tx-selected-items-body');
+            body.innerHTML = '';
+            let sum = 0;
+            
+            selectedItems.forEach((it, idx) => {
+                const sub = it.qty * it.price;
+                sum += sub;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${it.name}</td>
+                    <td>${it.qty}</td>
+                    <td>${formatCurrency(it.price)}</td>
+                    <td>${formatCurrency(sub)}</td>
+                    <td style="text-align:right;">
+                        <button type="button" class="btn-table-action delete" onclick="window.removeTxItem(${idx})">
+                            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                        </button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            
+            document.getElementById('tx-total-amount').value = sum;
+            lucide.createIcons();
+        };
+        
+        addBtn.addEventListener('click', () => {
+            const mat = STATE.inventory.find(m => m.id === matSelect.value);
+            const qty = parseInt(qtySelect.value);
+            const price = parseFloat(priceInput.value);
+            
+            if (!mat || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) return;
+            
+            // Stock availability check (only warn)
+            if (qty > mat.stock) {
+                showToast('Stock Insuficiente', `Stock actual de ${mat.name} es ${mat.stock} ${mat.unit}.`, 'warning');
+            }
+            
+            const existing = selectedItems.find(it => it.productId === mat.id);
+            if (existing) {
+                existing.qty += qty;
+                existing.price = price;
+            } else {
+                selectedItems.push({ productId: mat.id, name: mat.name, qty, price });
+            }
+            renderSelectedList();
+        });
+        
+        window.removeTxItem = (idx) => {
+            selectedItems.splice(idx, 1);
+            renderSelectedList();
+        };
+        
+        renderSelectedList();
+        currentCrudContext.getItems = () => selectedItems;
+    }
+    
+    // RECEIPTS (RECIBOS)
+    else if (module === 'receipts') {
+        const salesOptions = STATE.sales.map(s => `<option value="${s.id}" ${data.saleId === s.id ? 'selected' : ''}>Venta ${s.id} - ${s.clientName} (${formatCurrency(s.total)})</option>`).join('');
+        
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Venta Relacionada</label>
+                <select class="form-control" name="saleId" id="receipt-sale-select">
+                    <option value="">-- Sin venta / Pago a cuenta --</option>
+                    ${salesOptions}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nombre del Cliente</label>
+                <input type="text" class="form-control" name="clientName" id="receipt-client-name" value="${data.clientName || ''}" required placeholder="Razón social o Nombre del cliente">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de Cobro</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
+                </div>
+                <div class="form-group">
+                    <label>Medio de Pago</label>
+                    <select class="form-control" name="method" required>
+                        <option value="Efectivo" ${data.method === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+                        <option value="Transferencia" ${data.method === 'Transferencia' ? 'selected' : ''}>Transferencia Bancaria</option>
+                        <option value="Cheque" ${data.method === 'Cheque' ? 'selected' : ''}>Cheque</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Monto de Cobro ($)</label>
+                <input type="number" class="form-control" name="amount" id="receipt-amount" value="${data.amount || 0}" required min="1">
+            </div>
+        `;
+        
+        // Auto-filling amount and client when picking sale reference
+        const saleSel = document.getElementById('receipt-sale-select');
+        saleSel.addEventListener('change', () => {
+            const sale = STATE.sales.find(s => s.id === saleSel.value);
+            if (sale) {
+                document.getElementById('receipt-client-name').value = sale.clientName;
+                document.getElementById('receipt-amount').value = sale.total;
+            }
+        });
+    }
+    
+    // PAYMENTS (PAGOS)
+    else if (module === 'payments') {
+        const purchasesOptions = STATE.purchases.map(p => `<option value="${p.id}" ${data.purchaseId === p.id ? 'selected' : ''}>Compra ${p.id} - ${p.providerName} (${formatCurrency(p.total)})</option>`).join('');
+        
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Compra Relacionada</label>
+                <select class="form-control" name="purchaseId" id="payment-purchase-select">
+                    <option value="">-- Sin compra / Pago a cuenta --</option>
+                    ${purchasesOptions}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nombre del Proveedor</label>
+                <input type="text" class="form-control" name="providerName" id="payment-provider-name" value="${data.providerName || ''}" required placeholder="Nombre del proveedor">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de Pago</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
+                </div>
+                <div class="form-group">
+                    <label>Medio de Pago</label>
+                    <select class="form-control" name="method" required>
+                        <option value="Efectivo" ${data.method === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+                        <option value="Transferencia" ${data.method === 'Transferencia' ? 'selected' : ''}>Transferencia Bancaria</option>
+                        <option value="Cheque" ${data.method === 'Cheque' ? 'selected' : ''}>Cheque</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Monto Erogado ($)</label>
+                <input type="number" class="form-control" name="amount" id="payment-amount" value="${data.amount || 0}" required min="1">
+            </div>
+        `;
+        
+        const purchaseSel = document.getElementById('payment-purchase-select');
+        purchaseSel.addEventListener('change', () => {
+            const purchase = STATE.purchases.find(p => p.id === purchaseSel.value);
+            if (purchase) {
+                document.getElementById('payment-provider-name').value = purchase.providerName;
+                document.getElementById('payment-amount').value = purchase.total;
+            }
+        });
+    }
+    
+    // Force recreate Lucide icons inside modal
+    lucide.createIcons();
 }
 
-function updatePagoAtrasoIndicator() {
-  const loanId = Number(pagoPrestamo.value);
-  const installmentNumber = Number(pagoCuota.value);
-  if (!loanId || !installmentNumber) {
-    pagoAtrasoInfo.textContent = "Selecciona cuota para ver atraso.";
-    pagoAtrasoInfo.className = "atraso-indicator";
-    return;
-  }
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) return;
-  const installment = loan.installmentsItems.find((i) => i.number === installmentNumber);
-  if (!installment) return;
-  const referenceDate = pagoFecha.value || dateToInput(new Date());
-  const delayDays = getDelayDays(installment, referenceDate);
-  if (delayDays > 0) {
-    pagoAtrasoInfo.textContent = `Cuota ${installment.number} vencida hace ${delayDays} dia(s).`;
-    pagoAtrasoInfo.className = "atraso-indicator atraso-late";
-  } else {
-    pagoAtrasoInfo.textContent = `Cuota ${installment.number} en termino. Vence ${formatDate(installment.dueDate)}.`;
-    pagoAtrasoInfo.className = "atraso-indicator atraso-ok";
-  }
+function closeModal() {
+    document.getElementById('crud-modal').classList.remove('active');
+    currentCrudContext = { module: null, action: null, id: null };
 }
 
-function syncLoanTypeRules() {
-  if (prestamoTipo.value === "monthly") {
-    prestamoCuotas.value = 1;
-    prestamoCuotas.max = 1;
-    prestamoCuotas.min = 1;
-    prestamoCuotas.disabled = true;
-  } else {
-    prestamoCuotas.disabled = false;
-    prestamoCuotas.max = 10;
-    prestamoCuotas.min = 1;
-    if (Number(prestamoCuotas.value) > 10 || !Number(prestamoCuotas.value)) prestamoCuotas.value = 4;
-  }
-  const amount = Number(prestamoMonto.value) || 0;
-  const installments = prestamoTipo.value === "monthly" ? 1 : clamp(Number(prestamoCuotas.value) || 1, 1, 10);
-  const suggestedRate = getInterestRate(amount, installments, prestamoTipo.value);
-  if (!prestamoInteres.value) prestamoInteres.value = suggestedRate.toFixed(2);
-  updateInterestPreview();
-}
-
-function syncRefiTypeRules() {
-  if (refiTipo.value === "monthly") {
-    refiCuotas.value = 1;
-    refiCuotas.max = 1;
-    refiCuotas.min = 1;
-    refiCuotas.disabled = true;
-  } else {
-    refiCuotas.disabled = false;
-    refiCuotas.max = 10;
-    refiCuotas.min = 1;
-    if (Number(refiCuotas.value) > 10 || !Number(refiCuotas.value)) refiCuotas.value = 4;
-  }
-  const loanId = Number(refiPrestamo.value);
-  const loan = state.loans.find((l) => l.id === loanId);
-  const baseAmount = loan ? getPendingBalance(loan) : 0;
-  const installments = refiTipo.value === "monthly" ? 1 : clamp(Number(refiCuotas.value) || 1, 1, 10);
-  const suggestedRate = getInterestRate(baseAmount, installments, refiTipo.value);
-  if (!refiInteres.value) refiInteres.value = suggestedRate.toFixed(2);
-  updateRefiSaldoPreview();
-}
-
-function updateInterestPreview() {
-  const amount = Number(prestamoMonto.value) || 0;
-  const type = prestamoTipo.value;
-  let installments = Number(prestamoCuotas.value) || 1;
-  if (type === "monthly") installments = 1;
-  if (!amount) {
-    interesPreview.textContent = "Interes estimado: -";
-    return;
-  }
-  const suggestedRate = getInterestRate(amount, installments, type);
-  const enteredRate = Number(prestamoInteres.value);
-  const appliedRate = Number.isFinite(enteredRate) ? clamp(enteredRate, 0, 200) : suggestedRate;
-  const interestAmount = roundCurrency((amount * appliedRate) / 100);
-  const total = roundCurrency(amount + interestAmount);
-  interesPreview.textContent = `Interes sugerido ${suggestedRate.toFixed(2)}%. Interes aplicado ${appliedRate.toFixed(2)}% (${currency(interestAmount)}). Total ${currency(total)}.`;
-}
-
-function updateRefiSaldoPreview() {
-  const loanId = Number(refiPrestamo.value);
-  if (!loanId) {
-    refiSaldo.textContent = "Saldo pendiente: -";
-    return;
-  }
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) return;
-  const pending = getPendingBalance(loan);
-  const type = refiTipo.value;
-  const installments = type === "monthly" ? 1 : clamp(Number(refiCuotas.value) || 1, 1, 10);
-  const suggestedRate = getInterestRate(pending, installments, type);
-  const enteredRate = Number(refiInteres.value);
-  const appliedRate = Number.isFinite(enteredRate) ? clamp(enteredRate, 0, 200) : suggestedRate;
-  const total = roundCurrency(pending + (pending * appliedRate) / 100);
-  refiSaldo.textContent = `Saldo pendiente: ${currency(pending)}. Interes sugerido ${suggestedRate.toFixed(2)}%. Interes aplicado ${appliedRate.toFixed(2)}%. Total refinanciado estimado: ${currency(total)}.`;
-}
-
-function showLoanSchedule(loanId) {
-  const loan = state.loans.find((l) => l.id === loanId);
-  if (!loan) return;
-  const rows = loan.installmentsItems
-    .map((item) => {
-      const pending = roundCurrency(item.amount - item.paidAmount);
-      return `
-        <tr>
-          <td>${item.number}</td>
-          <td>${formatDate(item.dueDate)}</td>
-          <td>${currency(item.amount)}</td>
-          <td>${currency(item.paidAmount)}</td>
-          <td>${currency(pending)}</td>
-          <td>${labelInstallment(item)}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  const html = `
-    <html>
-    <head>
-      <title>Cuotas Préstamo #${loan.id}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 18px; color: #222; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
-        h2 { margin-top: 0; }
-      </style>
-    </head>
-    <body>
-      <h2>Detalle de cuotas - Préstamo #${loan.id}</h2>
-      <p>Monto total: ${currency(loan.totalAmount)} | Estado: ${labelLoanStatus(loan.status)}</p>
-      <table>
-        <thead><tr><th>Cuota</th><th>Vencimiento</th><th>Monto</th><th>Pagado</th><th>Pendiente</th><th>Estado</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </body>
-    </html>
-  `;
-  openPrintable(html);
-}
-
-function createReceipt({ type, refId, clientId, amount, detail, date, extra }) {
-  const receipt = {
-    id: nextId("receipt"),
-    type,
-    refId,
-    clientId,
-    amount,
-    detail,
-    date: date || dateToInput(new Date()),
-    extra: extra || null
-  };
-  state.receipts.push(receipt);
-  return receipt;
-}
-
-function printLatestLoanReceipt(loanId) {
-  const receipt = state.receipts
-    .filter((r) => r.type === "loan" && r.refId === loanId)
-    .sort((a, b) => (a.id < b.id ? 1 : -1))[0];
-  if (receipt) printReceiptById(receipt.id);
-}
-
-function printReceiptById(receiptId) {
-  const receipt = state.receipts.find((r) => r.id === receiptId);
-  if (!receipt) return;
-  const client = getClientById(receipt.clientId);
-  const html = `
-    <html>
-    <head>
-      <title>Comprobante #${receipt.id}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #111; }
-        .box { border: 2px solid #0d9488; border-radius: 8px; padding: 14px; }
-        h2 { margin-top: 0; }
-        .line { margin: 6px 0; }
-      </style>
-    </head>
-    <body>
-      <div class="box">
-        <h2>Comprobante #${receipt.id}</h2>
-        <div class="line"><strong>Fecha:</strong> ${formatDate(receipt.date)}</div>
-        <div class="line"><strong>Tipo:</strong> ${receipt.type === "loan" ? "Nuevo préstamo / refinanciacion" : "Cobro de cuota"}</div>
-        <div class="line"><strong>Cliente:</strong> ${client ? escapeHtml(client.nombre) : "-"}</div>
-        <div class="line"><strong>Detalle:</strong> ${escapeHtml(receipt.detail)}</div>
-        <div class="line"><strong>Monto:</strong> ${currency(receipt.amount)}</div>
-        ${receipt.extra && receipt.extra.partialBalance
-          ? `<div class="line"><strong>Saldo trasladado:</strong> ${currency(receipt.extra.partialBalance)} a cuota ${receipt.extra.movedToInstallment}</div>`
-          : ""}
-      </div>
-      <script>window.onload = () => window.print();</script>
-    </body>
-    </html>
-  `;
-  openPrintable(html);
-}
-
-function openPrintable(html) {
-  const popup = window.open("", "_blank", "width=900,height=700");
-  if (!popup) return;
-  popup.document.open();
-  popup.document.write(html);
-  popup.document.close();
-}
-
-function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `gestion-prestamos-${dateToInput(new Date())}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast("Datos exportados correctamente.", "success");
-}
-
-function ensureDefaultAdminUser() {
-  if (!state.ids.user) state.ids.user = 1;
-  if (!Array.isArray(state.users)) state.users = [];
-  if (!state.session) state.session = { currentUserId: null };
-  if (!state.users.length) {
-    state.users.push({
-      id: nextId("user"),
-      nombre: "Administrador",
-      username: "admin",
-      password: "admin123",
-      rol: "admin",
-      createdAt: new Date().toISOString()
+// Global form submission handler
+function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const { module, action, id } = currentCrudContext;
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    // Parse core form values
+    const formObj = {};
+    formData.forEach((value, key) => {
+        formObj[key] = value;
     });
-    persist();
-  }
+    
+    // Extra handling for quantities/numeric inputs
+    if (formObj.stock !== undefined) formObj.stock = parseInt(formObj.stock);
+    if (formObj.minStock !== undefined) formObj.minStock = parseInt(formObj.minStock);
+    if (formObj.cost !== undefined) formObj.cost = parseFloat(formObj.cost);
+    if (formObj.price !== undefined) formObj.price = parseFloat(formObj.price);
+    if (formObj.amount !== undefined) formObj.amount = parseFloat(formObj.amount);
+    if (formObj.total !== undefined) formObj.total = parseFloat(formObj.total);
+    
+    if (action === 'create') {
+        // Generate new sequential ID
+        let newId = '';
+        if (module === 'inventory' || module === 'providers' || module === 'clients' || module === 'users') {
+            newId = (STATE[module].length + 1).toString();
+        } else if (module === 'purchases') {
+            newId = `COM-00${STATE.purchases.length + 1}`;
+        } else if (module === 'sales') {
+            newId = `VEN-00${STATE.sales.length + 1}`;
+        } else if (module === 'receipts') {
+            newId = `REC-00${STATE.receipts.length + 1}`;
+        } else if (module === 'payments') {
+            newId = `PAG-00${STATE.payments.length + 1}`;
+        }
+        
+        formObj.id = newId;
+        
+        // Transaction lines insertion
+        if (module === 'sales' || module === 'purchases') {
+            const items = currentCrudContext.getItems();
+            if (items.length === 0) {
+                showToast('Error', 'Debes ingresar al menos un artículo.', 'danger');
+                return;
+            }
+            formObj.items = items;
+            
+            // Map Name indicators
+            if (module === 'sales') {
+                const client = STATE.clients.find(c => c.id === formObj.clientId);
+                formObj.clientName = client ? client.name : 'Cliente S.A.';
+                
+                // Stock mutations (Decreasing inventory)
+                if (formObj.status === 'Entregado') {
+                    items.forEach(line => {
+                        const mat = STATE.inventory.find(m => m.id === line.productId);
+                        if (mat) {
+                            mat.stock -= line.qty;
+                            if (mat.stock < 0) mat.stock = 0; // prevent negative stock
+                        }
+                    });
+                }
+            } else {
+                const provider = STATE.providers.find(p => p.id === formObj.providerId);
+                formObj.providerName = provider ? provider.name : 'Distribuidora';
+                
+                // Stock mutations (Increasing inventory)
+                if (formObj.status === 'Recibido') {
+                    items.forEach(line => {
+                        const mat = STATE.inventory.find(m => m.id === line.productId);
+                        if (mat) mat.stock += line.qty;
+                    });
+                }
+            }
+        }
+        
+        // Append element
+        STATE[module].push(formObj);
+        
+        // Trigger auto receipt / payment eegistration
+        const autoPayCheck = document.getElementById('auto-pay-tx');
+        if (autoPayCheck && autoPayCheck.checked) {
+            if (module === 'sales') {
+                const newRec = {
+                    id: `REC-00${STATE.receipts.length + 1}`,
+                    saleId: newId,
+                    clientName: formObj.clientName,
+                    date: formObj.date,
+                    amount: formObj.total,
+                    method: 'Transferencia'
+                };
+                STATE.receipts.push(newRec);
+                logHistory('receipts', 'create', `Generación automática de cobro ${newRec.id} por venta ${newId}`, `Monto: ${formatCurrency(newRec.amount)}`);
+            } else if (module === 'purchases') {
+                const newPag = {
+                    id: `PAG-00${STATE.payments.length + 1}`,
+                    purchaseId: newId,
+                    providerName: formObj.providerName,
+                    date: formObj.date,
+                    amount: formObj.total,
+                    method: 'Transferencia'
+                };
+                STATE.payments.push(newPag);
+                logHistory('payments', 'create', `Generación automática de pago ${newPag.id} por compra ${newId}`, `Monto: ${formatCurrency(newPag.amount)}`);
+            }
+        }
+        
+        logHistory(module, 'create', `Alta de ${module} registrado con éxito. Código: ${newId}`, JSON.stringify(formObj));
+        showToast('Alta Realizada', `Se guardó correctamente con código ${newId}`, 'success');
+        
+    } else if (action === 'edit' && id) {
+        // Edit existing element
+        const index = STATE[module].findIndex(item => item.id === id);
+        if (index !== -1) {
+            // Keep specific immutable properties like items lists or ids
+            const original = STATE[module][index];
+            
+            // In case of transactions, check stock changes for status alterations
+            if (module === 'sales' || module === 'purchases') {
+                const items = currentCrudContext.getItems();
+                formObj.items = items;
+                
+                // Basic stock correction based on state status change
+                if (module === 'sales') {
+                    const client = STATE.clients.find(c => c.id === formObj.clientId);
+                    formObj.clientName = client ? client.name : 'Cliente S.A.';
+                    
+                    // Simple logic: if changing status to delivered, discount stock
+                    if (original.status !== 'Entregado' && formObj.status === 'Entregado') {
+                        items.forEach(line => {
+                            const mat = STATE.inventory.find(m => m.id === line.productId);
+                            if (mat) mat.stock = Math.max(0, mat.stock - line.qty);
+                        });
+                    }
+                } else {
+                    const provider = STATE.providers.find(p => p.id === formObj.providerId);
+                    formObj.providerName = provider ? provider.name : 'Distribuidora';
+                    
+                    if (original.status !== 'Recibido' && formObj.status === 'Recibido') {
+                        items.forEach(line => {
+                            const mat = STATE.inventory.find(m => m.id === line.productId);
+                            if (mat) mat.stock += line.qty;
+                        });
+                    }
+                }
+            }
+            
+            // Merge form modifications
+            STATE[module][index] = { ...original, ...formObj };
+            
+            logHistory(module, 'update', `Modificación en ${module}. Código: ${id}`, `Valores nuevos: ${JSON.stringify(formObj)}`);
+            showToast('Modificación Realizada', `Se guardaron los cambios para ${id}`, 'success');
+        }
+    }
+    
+    closeModal();
+    switchView(STATE.currentView); // Refresh current screen
 }
 
-function getCurrentUser() {
-  return state.users.find((u) => u.id === state.session.currentUserId) || null;
+// Global deletion helper
+function deleteItem(module, id) {
+    const confirmation = confirm(`¿Está seguro de que desea eliminar o anular el elemento con código ${id}?`);
+    if (!confirmation) return;
+    
+    // Special transaction cancel logic
+    if (module === 'sales' || module === 'purchases') {
+        const index = STATE[module].findIndex(item => item.id === id);
+        if (index !== -1) {
+            const tx = STATE[module][index];
+            const oldStatus = tx.status;
+            tx.status = 'Cancelado';
+            
+            // If it was already active/processed, reverse inventory changes!
+            if (oldStatus === 'Entregado' && module === 'sales') {
+                tx.items.forEach(line => {
+                    const mat = STATE.inventory.find(m => m.id === line.productId);
+                    if (mat) mat.stock += line.qty; // Return items to stock
+                });
+            } else if (oldStatus === 'Recibido' && module === 'purchases') {
+                tx.items.forEach(line => {
+                    const mat = STATE.inventory.find(m => m.id === line.productId);
+                    if (mat) mat.stock = Math.max(0, mat.stock - line.qty); // Deduct items from stock
+                });
+            }
+            
+            logHistory(module, 'delete', `Anulación de transacción ${id}`, `El estado se marcó como Cancelado y se regularizó el stock.`);
+            showToast('Transacción Anulada', `La transacción ${id} fue cancelada y se revirtieron stocks.`, 'warning');
+        }
+    } else {
+        // Standard physical deletion
+        const index = STATE[module].findIndex(item => item.id === id);
+        if (index !== -1) {
+            const deleted = STATE[module].splice(index, 1)[0];
+            logHistory(module, 'delete', `Baja física de ${module} con ID ${id}`, JSON.stringify(deleted));
+            showToast('Registro Eliminado', `Se removió el elemento ${id} del sistema.`, 'danger');
+        }
+    }
+    
+    switchView(STATE.currentView);
 }
 
-function isAuthenticated() {
-  return Boolean(getCurrentUser());
+
+// ==========================================
+// DETAILS VIEW POPUPS (INVOICES/DELIVERY SLIPS)
+// ==========================================
+function viewTransactionDetails(module, id) {
+    const modal = document.getElementById('details-modal');
+    const title = document.getElementById('details-modal-title');
+    const content = document.getElementById('details-modal-content');
+    
+    modal.classList.add('active');
+    
+    const tx = STATE[module].find(item => item.id === id);
+    if (!tx) {
+        content.innerHTML = '<p>Error al cargar el detalle.</p>';
+        return;
+    }
+    
+    title.textContent = `Detalle de ${module === 'sales' ? 'Venta (Remito)' : 'Compra'} - Código: ${tx.id}`;
+    
+    // Generate Invoice HTML representation
+    let rowsHTML = '';
+    tx.items.forEach(line => {
+        const product = STATE.inventory.find(p => p.id === line.productId);
+        const desc = product ? product.name : 'Articulo Desconocido';
+        const price = line.price || line.cost || 0;
+        const sub = line.qty * price;
+        
+        rowsHTML += `
+            <div class="invoice-row">
+                <span>${desc} (x${line.qty})</span>
+                <span>${formatCurrency(price)} | Sub: ${formatCurrency(sub)}</span>
+            </div>
+        `;
+    });
+    
+    content.innerHTML = `
+        <div class="invoice-box">
+            <div class="invoice-header">
+                <h4>SIDERA CORRALÓN DIGITAL S.A.</h4>
+                <p>Cuit: 30-82749102-3 | Av. San Martín 4900, Rosario</p>
+                <p>Fecha de emisión: ${formatDate(tx.date)}</p>
+            </div>
+            
+            <div class="invoice-row" style="font-weight: bold; margin-bottom: 12px;">
+                <span>${module === 'sales' ? 'Cliente' : 'Proveedor'}:</span>
+                <span>${tx.clientName || tx.providerName}</span>
+            </div>
+            
+            <div class="invoice-divider"></div>
+            
+            ${rowsHTML}
+            
+            <div class="invoice-divider"></div>
+            
+            <div class="invoice-row invoice-total">
+                <span>Importe Total Consolidado:</span>
+                <span>${formatCurrency(tx.total)}</span>
+            </div>
+            
+            <div class="invoice-divider"></div>
+            
+            <div class="invoice-row">
+                <span>Estado actual:</span>
+                <span style="font-weight: bold; color: ${tx.status === 'Cancelado' ? 'var(--danger)' : 'var(--success)'};">${tx.status.toUpperCase()}</span>
+            </div>
+        </div>
+    `;
 }
 
-function isAdmin() {
-  const user = getCurrentUser();
-  return Boolean(user && user.rol === "admin");
+function closeDetailsModal() {
+    document.getElementById('details-modal').classList.remove('active');
+}
+
+// ==========================================
+// MODULE 10: USER MANAGEMENT (USUARIOS)
+// ==========================================
+function renderUsersView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="users-search" class="search-input" placeholder="Buscar por Nombre, Usuario o Rol...">
+                </div>
+            </div>
+            <button class="btn-primary" id="btn-users-add">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Usuario</span>
+            </button>
+        </div>
+        
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Nombre Usuario</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Contraseña</th>
+                            <th style="width: 100px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Dynamic list -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Usuarios</span>
+            </div>
+            <div class="history-timeline" id="users-history"></div>
+        </div>
+    `;
+    
+    document.getElementById('btn-users-add').addEventListener('click', () => openCrudModal('users', 'create'));
+    document.getElementById('users-search').addEventListener('input', filterUsersTable);
+    
+    renderUsersRows(STATE.users);
+    renderModuleHistory('users');
+}
+
+function renderUsersRows(items) {
+    const tbody = document.getElementById('users-table-body');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron usuarios</td></tr>`;
+        return;
+    }
+    
+    items.forEach(item => {
+        let roleBadge = 'secondary';
+        if (item.role === 'Administrador') roleBadge = 'success';
+        if (item.role === 'Vendedor') roleBadge = 'info';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600;">${item.name}</td>
+            <td>${item.username}</td>
+            <td>${item.email}</td>
+            <td><span class="status-badge ${roleBadge}">${item.role}</span></td>
+            <td><code>${item.password}</code></td>
+            <td style="text-align: center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('users', 'edit', '${item.id}')" title="Editar">
+                        <i data-lucide="edit"></i>
+                    </button>
+                    <button class="btn-table-action delete" onclick="deleteItem('users', '${item.id}')" title="Eliminar">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+function filterUsersTable() {
+    const q = document.getElementById('users-search').value.toLowerCase();
+    const filtered = STATE.users.filter(u => 
+        u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
+    );
+    renderUsersRows(filtered);
+}
+
+// ==========================================
+// AUTHENTICATION LOGIC
+// ==========================================
+function attemptLogin(username, password) {
+    const user = STATE.users.find(u => u.username.toLowerCase() === username.trim().toLowerCase() && u.password === password);
+    
+    if (user) {
+        STATE.currentUser = user;
+        localStorage.setItem('sidera_session', JSON.stringify(user));
+        
+        document.body.className = 'authenticated';
+        updateSidebarProfile();
+        switchView('dashboard');
+        
+        showToast('Inicio de Sesión', `¡Bienvenido, ${user.name}!`, 'success');
+        
+        // Log to history
+        logHistory('system', 'login', `Inicio de sesión de ${user.username} (${user.role})`);
+        
+        // Clear login inputs
+        document.getElementById('login-username').value = '';
+        document.getElementById('login-password').value = '';
+    } else {
+        showToast('Error de Acceso', 'Nombre de usuario o contraseña incorrectos.', 'danger');
+    }
 }
 
 function logout() {
-  state.session.currentUserId = null;
-  persist();
-  applySessionVisibility();
-  showToast("Sesion cerrada.", "success");
-}
-
-function applySessionVisibility() {
-  const user = getCurrentUser();
-  const logged = Boolean(user);
-  appShell.style.display = logged ? "" : "none";
-  authScreen.style.display = logged ? "none" : "grid";
-  sessionUserInfo.textContent = logged ? `${user.nombre} (${user.rol})` : "";
-  const userTab = Array.from(tabs).find((t) => t.dataset.tab === "usuarios");
-  if (userTab) userTab.style.display = isAdmin() ? "" : "none";
-  if (!isAdmin() && document.getElementById("usuarios").classList.contains("active")) {
-    activatePanel("dashboard");
-  }
-  if (usuarioForm) {
-    const disabled = !isAdmin();
-    usuarioForm.querySelectorAll("input,select,button").forEach((el) => {
-      if (el.id === "usuarioCancelBtn") return;
-      el.disabled = disabled;
-    });
-  }
-}
-
-function showToast(message, type = "success") {
-  if (!toastContainer) return;
-  const toast = document.createElement("div");
-  const safeType = ["success", "warning", "error"].includes(type) ? type : "success";
-  toast.className = `toast toast-${safeType}`;
-  const icon = safeType === "success" ? "OK" : safeType === "warning" ? "!" : "X";
-  toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
-    <span class="toast-message">${escapeHtml(message)}</span>
-    <button class="toast-close" type="button" aria-label="Cerrar aviso">×</button>
-  `;
-  const closeBtn = toast.querySelector(".toast-close");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      if (toast.parentElement) toast.parentElement.removeChild(toast);
-    });
-  }
-  toastContainer.appendChild(toast);
-  setTimeout(() => {
-    if (toast.parentElement) toast.parentElement.removeChild(toast);
-  }, 3200);
-}
-
-function refreshComputedStatuses() {
-  state.clients = state.clients.map((c) => ({ ...c, semaforo: semaforoByScore(Number(c.score || 0)) }));
-  state.loans.forEach((loan) => recomputeLoanStatus(loan));
-}
-
-function recomputeLoanStatus(loan) {
-  if (loan.status === "refinanced") return;
-  const allPaid = loan.installmentsItems.every((item) => item.paidAmount >= item.amount);
-  if (allPaid) {
-    loan.status = "closed";
-    loan.installmentsItems.forEach((item) => {
-      item.status = "paid";
-    });
-    return;
-  }
-
-  let hasOverdue = false;
-  loan.installmentsItems.forEach((item) => {
-    if (item.paidAmount >= item.amount) {
-      item.status = "paid";
-    } else if (item.paidAmount > 0) {
-      item.status = "partial";
-      if (isOverdue(item)) hasOverdue = true;
-    } else {
-      item.status = isOverdue(item) ? "overdue" : "pending";
-      if (item.status === "overdue") hasOverdue = true;
+    if (STATE.currentUser) {
+        logHistory('system', 'logout', `Cierre de sesión de ${STATE.currentUser.username}`);
     }
-  });
-
-  loan.status = hasOverdue ? "defaulted" : "active";
+    
+    STATE.currentUser = null;
+    localStorage.removeItem('sidera_session');
+    document.body.className = 'unauthenticated';
+    showToast('Sesión Cerrada', 'Has salido del sistema.', 'info');
 }
 
-function getClientById(id) {
-  return state.clients.find((c) => c.id === id);
+function checkSession() {
+    const session = localStorage.getItem('sidera_session');
+    if (session) {
+        try {
+            const user = JSON.parse(session);
+            // Verify user still exists in database
+            const found = STATE.users.find(u => u.id === user.id);
+            if (found) {
+                STATE.currentUser = found;
+                document.body.className = 'authenticated';
+                updateSidebarProfile();
+                switchView('dashboard'); // Force render dashboard on valid session
+                return;
+            }
+        } catch (e) {
+            console.error("Session parsing failed", e);
+        }
+    }
+    document.body.className = 'unauthenticated';
 }
 
-function getPendingBalance(loan) {
-  return roundCurrency(
-    loan.installmentsItems.reduce((acc, i) => acc + Math.max(0, i.amount - i.paidAmount), 0)
-  );
-}
-
-function getFirstPendingInstallment(loan) {
-  return loan.installmentsItems
-    .slice()
-    .filter((item) => item.status !== "paid")
-    .sort((a, b) => a.number - b.number)[0];
-}
-
-function getInterestRate(amount, installments, type) {
-  let base = 0;
-  if (amount <= 100000) base = 12;
-  else if (amount <= 300000) base = 18;
-  else if (amount <= 600000) base = 24;
-  else base = 30;
-
-  if (type === "weekly") {
-    base += installments * 1.2;
-  } else {
-    base += 5;
-  }
-  return Math.min(base, 65);
-}
-
-function movePendingToNextInstallment(loan, currentInstallment, shortfall) {
-  const roundedShortfall = roundCurrency(shortfall);
-  currentInstallment.amount = roundCurrency(currentInstallment.paidAmount);
-  currentInstallment.status = "paid";
-
-  let target = loan.installmentsItems.find(
-    (item) => item.number > currentInstallment.number && item.status !== "paid"
-  );
-
-  if (!target) {
-    const maxNumber = loan.installmentsItems.reduce((acc, item) => Math.max(acc, item.number), 0);
-    const orderedInstallments = loan.installmentsItems
-      .slice()
-      .sort((a, b) => (a.number > b.number ? 1 : -1));
-    const lastDueDate = orderedInstallments[orderedInstallments.length - 1].dueDate;
-    const dueDate = buildNextDueDate(lastDueDate, loan.type);
-    target = {
-      number: maxNumber + 1,
-      dueDate,
-      amount: 0,
-      paidAmount: 0,
-      status: "pending",
-      paymentDate: null,
-      paymentReceiptId: null
-    };
-    loan.installmentsItems.push(target);
-    loan.installments = loan.installmentsItems.length;
-  }
-
-  target.amount = roundCurrency(target.amount + roundedShortfall);
-  return {
-    shortfall: roundedShortfall,
-    toInstallment: target.number
-  };
-}
-
-function buildNextDueDate(lastDateISO, type) {
-  const base = new Date(`${lastDateISO}T00:00:00`);
-  if (type === "monthly") base.setMonth(base.getMonth() + 1);
-  else base.setDate(base.getDate() + 7);
-  return dateToInput(base);
-}
-
-function penalizeClientScore(clientId, points) {
-  const client = state.clients.find((c) => c.id === clientId);
-  if (!client) return;
-  client.score = clamp((Number(client.score) || 0) - points, 0, 100);
-  client.semaforo = semaforoByScore(client.score);
-}
-
-function buildDueDates(startDate, type, installments) {
-  const base = new Date(`${startDate}T00:00:00`);
-  const dates = [];
-  for (let i = 0; i < installments; i += 1) {
-    const d = new Date(base);
-    if (type === "weekly") d.setDate(base.getDate() + (i + 1) * 7);
-    if (type === "monthly") d.setMonth(base.getMonth() + (i + 1));
-    dates.push(dateToInput(d));
-  }
-  return dates;
-}
-
-function semaforoByScore(score) {
-  if (score >= 75) return "verde";
-  if (score >= 45) return "amarillo";
-  return "rojo";
-}
-
-function labelSemaforo(s) {
-  if (s === "verde") return "Cliente Puntual";
-  if (s === "amarillo") return "Cliente Bajo riesgo";
-  return "Cliente Alto riesgo";
-}
-
-function labelLoanStatus(status) {
-  if (status === "active") return "Activo";
-  if (status === "defaulted") return "En mora";
-  if (status === "closed") return "Cerrado";
-  if (status === "refinanced") return "Refinanciado";
-  return status;
-}
-
-function labelInstallment(item) {
-  if (item.status === "paid") return "Pagada";
-  if (item.status === "partial") return isOverdue(item) ? "Parcial / Vencida" : "Parcial";
-  if (item.status === "overdue") return "Vencida";
-  return "Pendiente";
-}
-
-function isOverdue(installment) {
-  const today = dateToInput(new Date());
-  return isOverdueByDate(installment, today);
-}
-
-function isOverdueByDate(installment, dateISO) {
-  return installment.dueDate < dateISO && installment.paidAmount < installment.amount;
-}
-
-function getDelayDays(installment, dateISO) {
-  const due = new Date(`${installment.dueDate}T00:00:00`);
-  const current = new Date(`${dateISO}T00:00:00`);
-  const diff = Math.floor((current - due) / 86400000);
-  return Math.max(0, diff);
-}
-
-function activatePanel(targetId) {
-  panels.forEach((panel) => panel.classList.toggle("active", panel.id === targetId));
-  const selectedTab = Array.from(tabs).find((tab) => tab.dataset.tab === targetId);
-  tabs.forEach((tab) => tab.classList.toggle("active", tab === selectedTab));
-}
-
-function openClientsSemaforoScreen(semaforo) {
-  semaforoFilterActive = semaforo;
-  renderClientsBySemaforoScreen();
-  activatePanel("clientesSemaforo");
-}
-
-function renderClientsBySemaforoScreen() {
-  const selected = semaforoFilterActive || "verde";
-  const label = labelSemaforo(selected);
-  const filteredClients = state.clients
-    .slice()
-    .filter((client) => client.semaforo === selected)
-    .sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-  clientesSemaforoTitulo.textContent = "Clientes por score";
-  clientesSemaforoSubtitulo.textContent = `Listado de ${label.toLowerCase()}.`;
-  clientesSemaforoTable.innerHTML = "";
-
-  if (!filteredClients.length) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td colspan='9'>No hay clientes en esta categoria.</td>";
-    clientesSemaforoTable.appendChild(tr);
-    return;
-  }
-
-  filteredClients.forEach((client) => {
-    const loanSummary = getClientActiveLoanSummary(client.id);
-    const activeLoanLabel = loanSummary.hasActiveLoan
-      ? `#${loanSummary.loanIds.join(", #")}`
-      : "-";
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${escapeHtml(client.nombre)}</td>
-      <td>${escapeHtml(client.dni)}</td>
-      <td>${escapeHtml(client.telefono)}</td>
-      <td>${Number(client.score || 0)}</td>
-      <td><span class="status-pill status-${client.semaforo}">${labelSemaforo(client.semaforo)}</span></td>
-      <td>${activeLoanLabel}</td>
-      <td>${currency(loanSummary.granted)}</td>
-      <td>${currency(loanSummary.paid)}</td>
-      <td>${currency(loanSummary.debt)}</td>
-    `;
-    clientesSemaforoTable.appendChild(tr);
-  });
-}
-
-function getClientActiveLoanSummary(clientId) {
-  const activeClientLoans = state.loans.filter(
-    (loan) => loan.clientId === clientId && (loan.status === "active" || loan.status === "defaulted")
-  );
-  if (!activeClientLoans.length) {
-    return { hasActiveLoan: false, loanIds: [], granted: 0, paid: 0, debt: 0 };
-  }
-  const granted = roundCurrency(activeClientLoans.reduce((acc, loan) => acc + loan.principal, 0));
-  const paid = roundCurrency(
-    activeClientLoans.reduce(
-      (acc, loan) => acc + loan.installmentsItems.reduce((sum, item) => sum + Number(item.paidAmount || 0), 0),
-      0
-    )
-  );
-  const debt = roundCurrency(activeClientLoans.reduce((acc, loan) => acc + getPendingBalance(loan), 0));
-  return {
-    hasActiveLoan: true,
-    loanIds: activeClientLoans.map((loan) => loan.id),
-    granted,
-    paid,
-    debt
-  };
-}
-
-function buildChartRow(label, valuePercent, fillClass) {
-  const pct = Math.max(0, Math.min(100, Number(valuePercent || 0)));
-  return `
-    <div class="chart-row">
-      <span>${label}</span>
-      <span class="chart-track"><span class="chart-fill ${fillClass}" style="width:${pct.toFixed(1)}%"></span></span>
-      <span>${pct.toFixed(1)}%</span>
-    </div>
-  `;
-}
-
-function renderMonthlyEvolution() {
-  const months = getLastMonths(6);
-  const rows = months.map((monthKey) => {
-    const newLoans = state.loans.filter(
-      (loan) => (loan.startDate || "").slice(0, 7) === monthKey && !loan.parentLoanId
-    );
-    const refisMonth = state.refinances.filter((refi) => (refi.date || "").slice(0, 7) === monthKey);
-    const closedInMonth = state.loans.filter((loan) => {
-      if (loan.status !== "closed") return false;
-      const paymentDates = loan.installmentsItems
-        .map((item) => item.paymentDate)
-        .filter(Boolean)
-        .sort();
-      const lastPaymentDate = paymentDates.length ? paymentDates[paymentDates.length - 1] : "";
-      return (lastPaymentDate || "").slice(0, 7) === monthKey;
-    });
-    const granted = roundCurrency(
-      newLoans.reduce((acc, loan) => acc + Number(loan.principal || 0), 0)
-    );
-    const newCreditsCount = newLoans.length;
-    const refiCount = refisMonth.length;
-    const finalizedCount = closedInMonth.length;
-    const collected = roundCurrency(
-      state.payments
-        .filter((payment) => (payment.date || "").slice(0, 7) === monthKey)
-        .reduce((acc, payment) => acc + Number(payment.amount || 0), 0)
-    );
-    const defaultedLoans = state.loans.filter(
-      (loan) => loan.status === "defaulted" && (loan.startDate || "").slice(0, 7) <= monthKey
-    );
-    const mora = roundCurrency(defaultedLoans.reduce((acc, loan) => acc + getPendingBalance(loan), 0));
-    return { monthKey, granted, newCreditsCount, refiCount, finalizedCount, collected, mora };
-  });
-
-  const maxMoney = Math.max(1, ...rows.map((row) => Math.max(row.granted, row.collected, row.mora)));
-  const maxCount = Math.max(1, ...rows.map((row) => Math.max(row.newCreditsCount, row.refiCount, row.finalizedCount)));
-
-  dashboardEvolucionTable.innerHTML = "";
-  rows.forEach((row) => {
-    const isCollapsed = collapsedEvolutionMonths.has(row.monthKey);
-    const gCountPct = (row.newCreditsCount / maxCount) * 100;
-    const rCountPct = (row.refiCount / maxCount) * 100;
-    const fCountPct = (row.finalizedCount / maxCount) * 100;
-    const cPct = (row.collected / maxMoney) * 100;
-    const mPct = (row.mora / maxMoney) * 100;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>
-        <span class="month-cell">
-          <button class="month-toggle" data-month="${row.monthKey}" type="button" aria-expanded="${!isCollapsed}" aria-label="${isCollapsed ? "Expandir" : "Contraer"} mes ${formatMonthKey(row.monthKey)}">${isCollapsed ? "+" : "-"}</button>
-          <span>${formatMonthKey(row.monthKey)}</span>
-        </span>
-      </td>
-      <td>${currency(row.granted)}</td>
-      <td>${row.newCreditsCount}</td>
-      <td>${row.refiCount}</td>
-      <td>${row.finalizedCount}</td>
-      <td>${currency(row.collected)}</td>
-      <td>${currency(row.mora)}</td>
-      <td class="evo-cell">
-        ${isCollapsed
-          ? `<span class="evo-collapsed-label">Detalle contraido</span>`
-          : `<div class="evo-stack">
-              ${buildEvolutionRowWithValue("Otorgado", gCountPct, "evo-granted", "evo-tag-granted", `${row.newCreditsCount} cred.`)}
-              ${buildEvolutionRowWithValue("Refi", rCountPct, "evo-refi", "evo-tag-refi", `${row.refiCount} refi.`)}
-              ${buildEvolutionRowWithValue("Finaliz.", fCountPct, "evo-finalizados", "evo-tag-finalizados", `${row.finalizedCount} fin.`)}
-              ${buildEvolutionRow("Cobrado", cPct, "evo-collected", "evo-tag-collected")}
-              ${buildEvolutionRow("Mora", mPct, "evo-mora", "evo-tag-mora")}
-            </div>`}
-      </td>
-    `;
-    dashboardEvolucionTable.appendChild(tr);
-  });
-
-  dashboardEvolucionTable.querySelectorAll("[data-month]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const monthKey = button.dataset.month;
-      if (collapsedEvolutionMonths.has(monthKey)) {
-        collapsedEvolutionMonths.delete(monthKey);
-      } else {
-        collapsedEvolutionMonths.add(monthKey);
-      }
-      renderMonthlyEvolution();
-    });
-  });
-}
-
-function getLastMonths(count) {
-  const now = new Date();
-  const result = [];
-  for (let i = 0; i < count; i += 1) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    result.push(`${y}-${m}`);
-  }
-  return result;
-}
-
-function formatMonthKey(monthKey) {
-  const [y, m] = monthKey.split("-");
-  return `${m}/${y}`;
-}
-
-function buildEvolutionRow(label, valuePercent, fillClass, tagClass) {
-  const pct = Math.max(0, Math.min(100, Number(valuePercent || 0)));
-  return `
-    <div class="evo-row">
-      <span class="evo-tag ${tagClass}">${label}</span>
-      <span class="evo-track"><span class="evo-fill ${fillClass}" style="width:${pct.toFixed(1)}%"></span></span>
-      <span>${pct.toFixed(1)}%</span>
-    </div>
-  `;
-}
-
-function buildEvolutionRowWithValue(label, valuePercent, fillClass, tagClass, valueLabel) {
-  const pct = Math.max(0, Math.min(100, Number(valuePercent || 0)));
-  return `
-    <div class="evo-row">
-      <span class="evo-tag ${tagClass}">${label}</span>
-      <span class="evo-track"><span class="evo-fill ${fillClass}" style="width:${pct.toFixed(1)}%"></span></span>
-      <span>${escapeHtml(valueLabel)}</span>
-    </div>
-  `;
-}
-
-function buildSemaforoRow(label, valuePercent, fillClass, tagClass) {
-  const pct = Math.max(0, Math.min(100, Number(valuePercent || 0)));
-  return `
-    <div class="sem-row">
-      <span class="sem-tag ${tagClass}">${label}</span>
-      <span class="sem-track"><span class="sem-fill ${fillClass}" style="width:${pct.toFixed(1)}%"></span></span>
-      <span>${pct.toFixed(1)}%</span>
-    </div>
-  `;
-}
-
-function buildSemaforoPie(verdes, amarillos, rojos, totalClientes) {
-  const safeTotal = Math.max(1, totalClientes);
-  const pVerde = (verdes / safeTotal) * 100;
-  const pAmarillo = (amarillos / safeTotal) * 100;
-  const pRojo = Math.max(0, 100 - pVerde - pAmarillo);
-  const gradient = `conic-gradient(
-    #10a867 0 ${pVerde.toFixed(2)}%,
-    #d5a20a ${pVerde.toFixed(2)}% ${(pVerde + pAmarillo).toFixed(2)}%,
-    #d6453a ${(pVerde + pAmarillo).toFixed(2)}% 100%
-  )`;
-
-  return `
-    <div class="pie-wrap">
-      <div class="pie-chart" style="background:${gradient}"></div>
-      <div class="pie-legend">
-        <button class="pie-btn pie-btn-verde" data-semaforo="verde" type="button">
-          <span class="pie-btn-label">Clientes Puntuales</span><span class="pie-btn-value">${verdes}</span>
-        </button>
-        <button class="pie-btn pie-btn-amarillo" data-semaforo="amarillo" type="button">
-          <span class="pie-btn-label">Clientes Bajo riesgo</span><span class="pie-btn-value">${amarillos}</span>
-        </button>
-        <button class="pie-btn pie-btn-rojo" data-semaforo="rojo" type="button">
-          <span class="pie-btn-label">Clientes Alto riesgo</span><span class="pie-btn-value">${rojos}</span>
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-function renderMoraChart(moraLoans) {
-  if (!moraLoans.length) {
-    dashboardCobranzaChart.innerHTML = "<div class='sem-stack'><div class='sem-row'><span class='sem-tag sem-tag-verde'>OK</span><span>Sin mora actual.</span><span></span></div></div>";
-    return;
-  }
-  const topLoans = moraLoans
-    .map((loan) => ({ loan, pending: getPendingBalance(loan) }))
-    .sort((a, b) => b.pending - a.pending)
-    .slice(0, 5);
-  const maxPending = Math.max(1, ...topLoans.map((item) => item.pending));
-  dashboardCobranzaChart.innerHTML = `
-    <div class="mora-stack">
-      ${topLoans
-        .map((item) => {
-          const pct = (item.pending / maxPending) * 100;
-          return `
-            <div class="mora-row">
-              <span class="mora-tag">#${item.loan.id}</span>
-              <span class="mora-track"><span class="mora-fill" style="width:${pct.toFixed(1)}%"></span></span>
-              <span>${currency(item.pending)}</span>
-            </div>
-          `;
-        })
-        .join("")}
-    </div>
-  `;
-}
-
-function formatDate(dateISO) {
-  if (!dateISO) return "-";
-  const [y, m, d] = dateISO.split("-");
-  return `${d}/${m}/${y}`;
-}
-
-function dateToInput(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function currency(value) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 2
-  }).format(Number(value || 0));
-}
-
-function roundCurrency(value) {
-  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
-}
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, Number(value)));
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function updateSidebarProfile() {
+    const avatar = document.getElementById('sidebar-user-avatar');
+    const name = document.getElementById('sidebar-user-name');
+    const role = document.getElementById('sidebar-user-role');
+    
+    if (STATE.currentUser) {
+        const parts = STATE.currentUser.name.split(' ');
+        const initials = parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        
+        avatar.textContent = initials;
+        name.textContent = STATE.currentUser.name;
+        role.textContent = STATE.currentUser.role;
+    }
 }

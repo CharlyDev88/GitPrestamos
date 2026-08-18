@@ -1,458 +1,246 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Préstamos</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidera - Gestión de Corralón</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <section id="authScreen" class="auth-screen">
-    <div class="auth-card">
-      <h2>Iniciar sesion</h2>
-      <form id="loginForm" class="form-grid">
-        <label>Usuario
-          <input id="loginUsername" autocomplete="username" required>
-        </label>
-        <label>Clave
-          <input id="loginPassword" type="password" autocomplete="current-password" required>
-        </label>
-        <div class="actions">
-          <button class="btn btn-primary" type="submit">Ingresar</button>
+<body class="unauthenticated">
+
+    <!-- Login Screen Overlay -->
+    <div class="login-overlay" id="login-screen">
+        <div class="login-card">
+            <div class="login-brand">
+                <div class="brand-icon-login">
+                    <i data-lucide="hard-hat"></i>
+                </div>
+                <h2>Sidera</h2>
+                <p>Corralón Digital</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Usuario</label>
+                    <input type="text" id="login-username" class="form-control" placeholder="admin / vendedor" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px; gap: 8px;">
+                    <span>Iniciar Sesión</span>
+                    <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                </button>
+            </form>
+            
+            <div class="login-helper">
+                <div class="helper-title">
+                    <i data-lucide="help-circle"></i>
+                    <span>Cuentas de Demostración</span>
+                </div>
+                <div class="helper-cred" onclick="fillCreds('admin', 'admin123')">
+                    <strong>Administrador:</strong> <span>admin</span> / <span>admin123</span>
+                </div>
+                <div class="helper-cred" onclick="fillCreds('vendedor', 'vendedor123')">
+                    <strong>Vendedor:</strong> <span>vendedor</span> / <span>vendedor123</span>
+                </div>
+            </div>
         </div>
-      </form>
-      <button id="forgotPasswordBtn" class="auth-link-btn" type="button">¿Olvidó su contraseña?</button>
-      <p class="subtitle">Usuario de prueba: <strong>admin</strong> / <strong>admin123</strong></p>
     </div>
-  </section>
 
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <h1>Gestión de Préstamos</h1>
-        
-      </div>
-      <div class="top-actions">
-        <span id="sessionUserInfo" class="subtitle"></span>
-        <button id="logoutBtn" class="btn btn-danger" type="button">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-          Salir
-        </button>
-      </div>
-    </header>
-
-    <nav class="tabs" aria-label="Secciones">
-      <button class="tab active" data-tab="dashboard" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 5-7"/></svg>Dashboard</button>
-      <button class="tab" data-tab="clientes" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</button>
-      <button class="tab" data-tab="prestamos" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>Préstamos</button>
-      <button class="tab" data-tab="pagos" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pagos</button>
-      <button class="tab" data-tab="refinanciaciones" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.6 6.1"/><path d="M3 12A9 9 0 0 1 18.6 5.9"/><path d="M3 18h5v-5"/><path d="M21 6h-5v5"/></svg>Refinanciaciones</button>
-      <button class="tab" data-tab="comprobantes" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>Comprobantes</button>
-      <button class="tab" data-tab="usuarios" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Usuarios</button>
-    </nav>
-
-    <main>
-      <section id="dashboard" class="panel active">
-        <div class="kpi-grid">
-          <article class="kpi-card">
-            <h2>Clientes</h2>
-            <p id="kpiClientes" class="kpi-value">0</p>
-          </article>
-          <article class="kpi-card">
-            <h2>Préstamos activos</h2>
-            <p id="kpiPrestamosActivos" class="kpi-value">0</p>
-          </article>
-          <article class="kpi-card">
-            <h2>Cuotas vencidas</h2>
-            <p id="kpiCuotasVencidas" class="kpi-value warning">0</p>
-          </article>
-          <article class="kpi-card">
-            <h2>Cobrado (mes actual)</h2>
-            <p id="kpiCobradoMes" class="kpi-value success">$0</p>
-          </article>
-        </div>
-
-        <div class="dual-grid">
-          <article class="card">
-            <h3>Clientes por score</h3>
-            <ul id="dashboardSemaforo" class="bulletless"></ul>
-            <div id="dashboardSemaforoChart" class="chart-block"></div>
-          </article>
-          <article class="card">
-            <h3>Préstamos en mora</h3>
-            <ul id="dashboardMora" class="bulletless"></ul>
-            <div id="dashboardCobranzaChart" class="chart-block"></div>
-          </article>
-        </div>
-
-        <article class="card">
-          <div class="section-heading">
-            <h3>Evolución mensual (últimos 6 meses)</h3>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Mes</th>
-                  <th>Otorgado</th>
-                  <th>Nuevos creditos</th>
-                  <th>Refinanciaciones</th>
-                  <th>Finalizados</th>
-                  <th>Cobrado</th>
-                  <th>En mora</th>
-                  <th>Indicador</th>
-                </tr>
-              </thead>
-              <tbody id="dashboardEvolucionTable"></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section id="clientes" class="panel">
-        <div class="card">
-          <h2>Gestión de clientes</h2>
-          <form id="clienteForm" class="form-grid">
-            <input type="hidden" id="clienteId">
-            <label>Nombre completo
-              <input id="clienteNombre" name="nombre" required>
-            </label>
-            <label>DNI
-              <input id="clienteDni" name="dni" required>
-            </label>
-            <label>Teléfono
-              <input id="clienteTelefono" name="telefono" type="tel" required>
-            </label>
-            <label>Domicilio
-              <input id="clienteDomicilio" name="domicilio" required>
-            </label>
-            <label>Evaluación (0-100)
-              <input id="clienteScore" name="score" type="number" min="0" max="100" required>
-            </label>
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Guardar cliente</button>
-              <button id="clienteCancelBtn" class="btn btn-secondary" type="button">Cancelar</button>
+    <!-- Main Workspace Application Layout -->
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i data-lucide="hard-hat"></i>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-name">Sidera</span>
+                    <span class="brand-sub">Corralón Digital</span>
+                </div>
             </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3>Listado de clientes</h3>
-          <div class="list-tools">
-            <input id="clientesSearch" placeholder="Buscar por nombre, DNI o teléfono">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>DNI</th>
-                  <th>Teléfono</th>
-                  <th>Score</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="clientesTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="clientesPager"></div>
-        </div>
-
-        <div class="card">
-          <h3 id="historialClienteTitulo">Historial de préstamos por cliente</h3>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID préstamo</th>
-                  <th>Fecha inicio</th>
-                  <th>Tipo</th>
-                  <th>Monto otorgado</th>
-                  <th>Total</th>
-                  <th>Pagado</th>
-                  <th>Adeudado</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody id="historialClienteTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="clientesSemaforo" class="panel">
-        <div class="card">
-          <div class="topbar">
-            <div>
-              <h2 id="clientesSemaforoTitulo">Clientes por score</h2>
-              <p id="clientesSemaforoSubtitulo" class="subtitle">Listado filtrado desde tablero</p>
+            
+            <nav class="sidebar-menu">
+                <ul>
+                    <li>
+                        <button class="nav-item active" data-view="dashboard">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Panel Principal</span>
+                        </button>
+                    </li>
+                    <li class="menu-section">Operaciones</li>
+                    <li>
+                        <button class="nav-item" data-view="inventory">
+                            <i data-lucide="boxes"></i>
+                            <span>Inventario</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-view="sales">
+                            <i data-lucide="shopping-cart"></i>
+                            <span>Ventas</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-view="purchases">
+                            <i data-lucide="shopping-bag"></i>
+                            <span>Compras</span>
+                        </button>
+                    </li>
+                    <li class="menu-section">Finanzas</li>
+                    <li>
+                        <button class="nav-item" data-view="receipts">
+                            <i data-lucide="file-text"></i>
+                            <span>Recibos</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-view="payments">
+                            <i data-lucide="credit-card"></i>
+                            <span>Pagos</span>
+                        </button>
+                    </li>
+                    <li class="menu-section">Contactos</li>
+                    <li>
+                        <button class="nav-item" data-view="clients">
+                            <i data-lucide="users"></i>
+                            <span>Clientes</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-view="providers">
+                            <i data-lucide="truck"></i>
+                            <span>Proveedores</span>
+                        </button>
+                    </li>
+                    <li class="menu-section">Administración</li>
+                    <li>
+                        <button class="nav-item" data-view="users">
+                            <i data-lucide="user-cog"></i>
+                            <span>Usuarios</span>
+                        </button>
+                    </li>
+                    <li class="menu-section">Reportes</li>
+                    <li>
+                        <button class="nav-item" data-view="reports">
+                            <i data-lucide="bar-chart-3"></i>
+                            <span>Reportes</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-avatar" id="sidebar-user-avatar">CC</div>
+                <div class="user-details">
+                    <span class="user-name" id="sidebar-user-name">Cargando...</span>
+                    <span class="user-role" id="sidebar-user-role">Cargando...</span>
+                </div>
+                <button class="btn-icon" title="Cerrar Sesión" id="btn-logout">
+                    <i data-lucide="log-out"></i>
+                </button>
             </div>
-            <button id="volverTableroBtn" class="btn btn-secondary" type="button">Volver al tablero</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>DNI</th>
-                  <th>Teléfono</th>
-                  <th>Puntuación</th>
-                  <th>Score</th>
-                  <th>Préstamo activo</th>
-                  <th>Monto otorgado</th>
-                  <th>Monto abonado</th>
-                  <th>Monto adeudado</th>
-                </tr>
-              </thead>
-              <tbody id="clientesSemaforoTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+        </aside>
 
-      <section id="prestamos" class="panel">
-        <div class="card">
-          <h2>Nuevo préstamo</h2>
-          <form id="prestamoForm" class="form-grid">
-            <label>Cliente
-              <select id="prestamoCliente" required></select>
-            </label>
-            <label>Tipo de préstamo
-              <select id="prestamoTipo" required>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual (1 cuota)</option>
-              </select>
-            </label>
-            <label>Monto
-              <div class="money-input">
-                <span>$</span>
-                <input id="prestamoMonto" type="number" min="1" step="0.01" required>
-              </div>
-            </label>
-            <label>Cuotas
-              <input id="prestamoCuotas" type="number" min="1" max="10" value="4" required>
-            </label>
-            <label>Interés a aplicar (%)
-              <input id="prestamoInteres" type="number" min="0" max="200" step="0.01" required>
-            </label>
-            <label>Fecha de inicio
-              <input id="prestamoFecha" type="date" required>
-            </label>
-            <div class="hint-row">
-              <span id="interesPreview">Interés estimado: -</span>
+        <!-- Main Workspace Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="view-title">Panel Principal</h1>
+                    <p id="view-subtitle" class="text-secondary">Simulación de operaciones y KPIs del Corralón en tiempo real</p>
+                </div>
+                <div class="header-right">
+                    <div class="time-widget">
+                        <i data-lucide="calendar"></i>
+                        <span id="current-date">Jueves, 25 de Junio, 2026</span>
+                    </div>
+                    <div class="notification-bell">
+                        <button class="btn-icon relative" id="notification-btn">
+                            <i data-lucide="bell"></i>
+                            <span class="badge-dot"></span>
+                        </button>
+                        <div class="notification-dropdown" id="notification-dropdown">
+                            <div class="dropdown-header">
+                                <h3>Notificaciones</h3>
+                                <button class="btn-text" id="clear-notifications">Limpiar</button>
+                            </div>
+                            <div class="dropdown-list" id="notification-list">
+                                <!-- Dynamic notifications go here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <button class="btn-primary" id="btn-quick-sale">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Nueva Venta</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic View Container -->
+            <div id="dynamic-content" class="content-body">
+                <!-- Content will be generated by app.js -->
             </div>
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Crear préstamo</button>
+        </main>
+    </div>
+
+    <!-- ABM (CRUD) Generic Modal -->
+    <div class="modal-overlay" id="crud-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title">Agregar Elemento</h3>
+                <button class="modal-close" id="modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3>Préstamos registrados</h3>
-          <div class="list-tools">
-            <input id="prestamosSearch" placeholder="Buscar por ID, cliente, tipo o estado">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Cliente</th>
-                  <th>Tipo</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="prestamosTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="prestamosPager"></div>
-        </div>
-      </section>
-
-      <section id="pagos" class="panel">
-        <div class="card">
-          <h2>Registrar pago</h2>
-          <form id="pagoForm" class="form-grid">
-            <label>Préstamo
-              <select id="pagoPrestamo" required></select>
-            </label>
-            <label>Cuota pendiente
-              <select id="pagoCuota" required></select>
-            </label>
-            <label>Monto a pagar
-              <div class="money-input">
-                <span>$</span>
-                <input id="pagoMonto" type="number" min="0.01" step="0.01" required>
-              </div>
-            </label>
-            <label>Fecha de pago
-              <input id="pagoFecha" type="date" required>
-            </label>
-            <div class="hint-row">
-              <span id="pagoAtrasoInfo" class="atraso-indicator">Selecciona cuota para ver atraso.</span>
+            <div class="modal-body">
+                <form id="modal-form">
+                    <!-- Dynamic inputs injected by JS -->
+                    <div id="modal-fields"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="modal-cancel-btn">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="modal-submit-btn">Guardar</button>
+                    </div>
+                </form>
             </div>
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Registrar cobro</button>
+        </div>
+    </div>
+
+    <!-- Details View Modal -->
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal-container modal-lg">
+            <div class="modal-header">
+                <h3 id="details-modal-title">Detalles de Operación</h3>
+                <button class="modal-close" id="details-modal-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
             </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3>Últimos pagos</h3>
-          <div class="list-tools">
-            <input id="pagosSearch" placeholder="Buscar por cliente, préstamo, cuota o fecha">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Préstamo</th>
-                  <th>Cliente</th>
-                  <th>Cuota</th>
-                  <th>Monto</th>
-                  <th>Comprobante</th>
-                </tr>
-              </thead>
-              <tbody id="pagosTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="pagosPager"></div>
-        </div>
-      </section>
-
-      <section id="refinanciaciones" class="panel">
-        <div class="card">
-          <h2>Refinanciar morosos</h2>
-          <form id="refinanciacionForm" class="form-grid">
-            <label>Préstamo en mora
-              <select id="refiPrestamo" required></select>
-            </label>
-            <label>Nuevo tipo
-              <select id="refiTipo" required>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual (1 cuota)</option>
-              </select>
-            </label>
-            <label>Nuevas cuotas
-              <input id="refiCuotas" type="number" min="1" max="10" value="4" required>
-            </label>
-            <label>Interés a aplicar (%)
-              <input id="refiInteres" type="number" min="0" max="200" step="0.01" required>
-            </label>
-            <label>Inicio refinanciacion
-              <input id="refiFecha" type="date" required>
-            </label>
-            <div class="hint-row">
-              <span id="refiSaldo">Saldo pendiente: -</span>
+            <div class="modal-body">
+                <div id="details-modal-content"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="details-modal-close-btn-bottom">Cerrar</button>
+                </div>
             </div>
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Refinanciar</button>
-            </div>
-          </form>
         </div>
+    </div>
 
-        <div class="card">
-          <h3>Historial de refinanciaciones</h3>
-          <div class="list-tools">
-            <input id="refisSearch" placeholder="Buscar por préstamo origen, nuevo o fecha">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Préstamo origen</th>
-                  <th>Préstamo nuevo</th>
-                  <th>Saldo refinanciado</th>
-                </tr>
-              </thead>
-              <tbody id="refisTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="refisPager"></div>
-        </div>
-      </section>
+    <!-- Toast Notification container -->
+    <div class="toast-container" id="toast-container"></div>
 
-      <section id="comprobantes" class="panel">
-        <div class="card">
-          <h2>Comprobantes emitidos</h2>
-          <div class="list-tools">
-            <input id="comprobantesSearch" placeholder="Buscar por tipo, cliente, detalle o fecha">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th>Referencia</th>
-                  <th>Cliente</th>
-                  <th>Monto</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody id="comprobantesTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="comprobantesPager"></div>
-        </div>
-      </section>
-
-      <section id="usuarios" class="panel">
-        <div class="card">
-          <h2>Gestión de usuarios</h2>
-          <form id="usuarioForm" class="form-grid">
-            <input type="hidden" id="usuarioId">
-            <label>Nombre
-              <input id="usuarioNombre" required>
-            </label>
-            <label>Usuario
-              <input id="usuarioUsername" required>
-            </label>
-            <label>Rol
-              <select id="usuarioRol" required>
-                <option value="admin">Admin</option>
-                <option value="operador">Operador</option>
-              </select>
-            </label>
-            <label>Clave
-              <input id="usuarioPassword" type="password" required>
-            </label>
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Guardar usuario</button>
-              <button id="usuarioCancelBtn" class="btn btn-secondary" type="button">Cancelar</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="card">
-          <h3>Listado de usuarios</h3>
-          <div class="list-tools">
-            <input id="usuariosSearch" placeholder="Buscar por nombre, usuario o rol">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="usuariosTable"></tbody>
-            </table>
-          </div>
-          <div class="pager" id="usuariosPager"></div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
-
-  <script src="app.js"></script>
+    <!-- JavaScript Bundle -->
+    <script src="app.js"></script>
 </body>
 </html>
