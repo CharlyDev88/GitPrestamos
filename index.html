@@ -124,6 +124,12 @@
                         </button>
                     </li>
                     <li>
+                        <button class="nav-item" data-view="transfers">
+                            <i data-lucide="repeat"></i>
+                            <span>Traspasos entre Sucursales</span>
+                        </button>
+                    </li>
+                    <li>
                         <button class="nav-item" data-view="labels">
                             <i data-lucide="tag"></i>
                             <span>Etiquetas de Precios</span>
@@ -337,6 +343,27 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" id="cash-closing-cancel-btn">Cancelar</button>
                         <button type="submit" class="btn-primary" id="cash-closing-submit-btn">Registrar Cierre</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Transfer Between Branches Modal -->
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Traspaso de Stock entre Sucursales</h3>
+                <button class="modal-close" id="transfer-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="transfer-form">
+                    <div id="transfer-fields"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="transfer-cancel-btn">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="transfer-submit-btn">Confirmar Traspaso</button>
                     </div>
                 </form>
             </div>

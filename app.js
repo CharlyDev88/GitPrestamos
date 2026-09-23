@@ -73,6 +73,9 @@ const STATE = {
     // Notas de Crédito y Débito (referencian una venta con Factura A/B/C original)
     creditNotes: [],
 
+    // Traspasos de stock entre sucursales (Origen -> Destino)
+    transfers: [],
+
     // Contadores de numeración fiscal por sucursal (Punto de Venta) y letra de comprobante
     comprobanteCounters: {},
 
@@ -305,6 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cash-closing-close-btn').addEventListener('click', closeCashClosingModal);
     document.getElementById('cash-closing-cancel-btn').addEventListener('click', closeCashClosingModal);
     document.getElementById('cash-closing-form').addEventListener('submit', handleCashClosingSubmit);
+
+    // Stock transfer between branches modal handlers
+    document.getElementById('transfer-close-btn').addEventListener('click', closeTransferModal);
+    document.getElementById('transfer-cancel-btn').addEventListener('click', closeTransferModal);
+    document.getElementById('transfer-form').addEventListener('submit', handleTransferSubmit);
     
     // Login Submission Handler
     document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -423,6 +431,11 @@ function switchView(viewName) {
             viewTitle.textContent = "Listado de Reposición";
             viewSubtitle.textContent = "Productos bajo stock mínimo agrupados por proveedor, con cantidad sugerida a pedir.";
             renderReplenishmentView(container);
+            break;
+        case 'transfers':
+            viewTitle.textContent = "Traspasos entre Sucursales";
+            viewSubtitle.textContent = "Mover stock de un almacén a otro dentro de la red de sucursales.";
+            renderTransfersView(container);
             break;
         case 'labels':
             viewTitle.textContent = "Etiquetas de Precios";
@@ -2768,15 +2781,18 @@ function openCrudModal(module, action, id = null) {
             
             if (!mat || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) return;
             
-            // Stock availability check en la sucursal elegida para esta venta (solo avisa)
+            // Control de stock DURO por sucursal: no se permite superar el disponible,
+            // contando lo que ya esté cargado en la venta para el mismo producto.
             const sucursalActual = document.getElementById('tx-sucursal-select').value;
             const stockEnSucursal = getStock(mat, sucursalActual);
-            if (qty > stockEnSucursal) {
+            const existing = selectedItems.find(it => it.productId === mat.id);
+            const yaCargado = existing ? existing.qty : 0;
+            if (yaCargado + qty > stockEnSucursal) {
                 const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
-                showToast('Stock Insuficiente', `Stock de ${mat.name} en ${sucNombre} es ${stockEnSucursal} ${mat.unit}.`, 'warning');
+                showToast('Stock Insuficiente', `Solo hay ${stockEnSucursal} ${mat.unit} de ${mat.name} disponibles en ${sucNombre}${yaCargado > 0 ? ` (ya cargaste ${yaCargado})` : ''}.`, 'danger');
+                return;
             }
             
-            const existing = selectedItems.find(it => it.productId === mat.id);
             if (existing) {
                 existing.qty += qty;
                 existing.price = price;
@@ -2806,11 +2822,16 @@ function openCrudModal(module, action, id = null) {
                 return;
             }
             const sucursalActual = document.getElementById('tx-sucursal-select').value;
-            if (getStock(mat, sucursalActual) <= 0) {
-                const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
-                showToast('Sin Stock', `${mat.name} no tiene stock disponible en ${sucNombre}.`, 'warning');
-            }
+            const stockEnSucursal = getStock(mat, sucursalActual);
             const existing = selectedItems.find(it => it.productId === mat.id);
+            const yaCargado = existing ? existing.qty : 0;
+            if (yaCargado + 1 > stockEnSucursal) {
+                const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
+                showToast('Stock Insuficiente', `${mat.name} no tiene stock disponible en ${sucNombre} (disponible: ${stockEnSucursal}).`, 'danger');
+                scanInput.value = '';
+                scanInput.focus();
+                return;
+            }
             if (existing) {
                 existing.qty += 1;
             } else {
@@ -3080,6 +3101,16 @@ function handleFormSubmit(e) {
                 
                 // Stock mutations (Decreasing inventory) en la sucursal de esta venta
                 if (formObj.status === 'Entregado') {
+                    // Validación final de stock por sucursal antes de confirmar (por si cambió
+                    // desde que se abrió el formulario). Si falta stock, se aborta la venta.
+                    for (const line of items) {
+                        const mat = STATE.inventory.find(m => m.id === line.productId);
+                        if (mat && getStock(mat, formObj.sucursalId) < line.qty) {
+                            const sucNombre = (STATE.sucursales.find(s => s.id === formObj.sucursalId) || {}).name || '';
+                            showToast('Stock Insuficiente', `${mat.name} no tiene stock suficiente en ${sucNombre} (disponible: ${getStock(mat, formObj.sucursalId)}, requerido: ${line.qty}).`, 'danger');
+                            return;
+                        }
+                    }
                     items.forEach(line => {
                         const mat = STATE.inventory.find(m => m.id === line.productId);
                         if (mat) adjustStock(mat, formObj.sucursalId, -line.qty);
@@ -4516,7 +4547,18 @@ function renderPOSView(container) {
             inp.addEventListener('change', (e) => {
                 const idx = parseInt(e.target.dataset.idx);
                 const val = parseInt(e.target.value);
-                if (val > 0) { cart[idx].qty = val; renderCart(); }
+                if (val <= 0) return;
+                const line = cart[idx];
+                const mat = STATE.inventory.find(m => m.id === line.productId);
+                const sucursalActual = document.getElementById('pos-sucursal-select').value;
+                const disponible = mat ? getStock(mat, sucursalActual) : 0;
+                if (val > disponible) {
+                    showToast('Stock Insuficiente', `Solo hay ${disponible} ${mat ? mat.unit : ''} disponibles en esta sucursal.`, 'danger');
+                    e.target.value = line.qty; // revierte al valor válido anterior
+                    return;
+                }
+                line.qty = val;
+                renderCart();
             });
         });
         updatePOSChange();
@@ -4536,10 +4578,15 @@ function renderPOSView(container) {
             showToast('Producto no encontrado', `No existe ningún producto con el código "${code}".`, 'danger');
             scanInput.value = ''; scanInput.focus(); return;
         }
-        if (getStock(mat, document.getElementById('pos-sucursal-select').value) <= 0) {
-            showToast('Sin Stock', `${mat.name} no tiene stock disponible en esta sucursal.`, 'warning');
-        }
+        const sucursalActual = document.getElementById('pos-sucursal-select').value;
+        const disponible = getStock(mat, sucursalActual);
         const existing = cart.find(it => it.productId === mat.id);
+        const yaCargado = existing ? existing.qty : 0;
+        if (yaCargado + 1 > disponible) {
+            const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
+            showToast('Stock Insuficiente', `${mat.name} no tiene stock disponible en ${sucNombre} (disponible: ${disponible}).`, 'danger');
+            scanInput.value = ''; scanInput.focus(); return;
+        }
         if (existing) existing.qty += 1;
         else cart.push({ productId: mat.id, name: mat.name, qty: 1, price: mat.price });
         renderCart();
@@ -4586,6 +4633,17 @@ function renderPOSView(container) {
             return;
         }
         const sucursalId = document.getElementById('pos-sucursal-select').value;
+        
+        // Validación final de stock por sucursal antes de confirmar el cobro.
+        for (const line of cart) {
+            const mat = STATE.inventory.find(m => m.id === line.productId);
+            const disponible = mat ? getStock(mat, sucursalId) : 0;
+            if (line.qty > disponible) {
+                showToast('Stock Insuficiente', `${mat ? mat.name : 'Producto'} no tiene stock suficiente en esta sucursal (disponible: ${disponible}).`, 'danger');
+                return;
+            }
+        }
+        
         const turno = document.getElementById('pos-turno-select').value;
         const clientId = document.getElementById('pos-client-select').value;
         const client = STATE.clients.find(c => c.id === clientId);
@@ -4664,6 +4722,24 @@ function renderPOSView(container) {
     });
 
     renderCart();
+
+    // Si se cambia la sucursal con productos ya cargados, se revalida el stock: los que
+    // ya no alcancen se recortan al máximo disponible en la nueva sucursal (o se quitan).
+    document.getElementById('pos-sucursal-select').addEventListener('change', (e) => {
+        const nuevaSucursal = e.target.value;
+        let ajustado = false;
+        cart = cart.filter(it => {
+            const mat = STATE.inventory.find(m => m.id === it.productId);
+            const disponible = mat ? getStock(mat, nuevaSucursal) : 0;
+            if (disponible <= 0) { ajustado = true; return false; }
+            if (it.qty > disponible) { it.qty = disponible; ajustado = true; }
+            return true;
+        });
+        if (ajustado) {
+            showToast('Carrito Ajustado', 'Se recortaron o quitaron productos por falta de stock en la sucursal seleccionada.', 'warning');
+        }
+        renderCart();
+    });
 }
 
 // ==========================================
@@ -5001,11 +5077,14 @@ function saveLocalState() {
             receipts: STATE.receipts,
             payments: STATE.payments,
             cashClosings: STATE.cashClosings,
+            creditNotes: STATE.creditNotes,
+            transfers: STATE.transfers,
             history: STATE.history.slice(0, 300),
             clients: STATE.clients,
             providers: STATE.providers,
             users: STATE.users,
             sucursales: STATE.sucursales,
+            comprobanteCounters: STATE.comprobanteCounters,
             savedAt: new Date().toISOString()
         };
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
@@ -5023,6 +5102,8 @@ function loadLocalState() {
             if (key === 'savedAt') return;
             if (Array.isArray(STATE[key]) && Array.isArray(snapshot[key])) {
                 STATE[key] = snapshot[key];
+            } else if (key === 'comprobanteCounters' && snapshot[key]) {
+                STATE.comprobanteCounters = snapshot[key];
             }
         });
     } catch (e) {
@@ -5175,4 +5256,182 @@ function printCreditNote(id) {
         </div>
     `;
     openTicketWindow(`Nota ${nc.id}`, html);
+}
+
+// ==========================================
+// BALDI - TRASPASOS DE STOCK ENTRE SUCURSALES
+// ==========================================
+function openTransferModal() {
+    const modal = document.getElementById('transfer-modal');
+    const fields = document.getElementById('transfer-fields');
+    modal.classList.add('active');
+    const defaultOrigen = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+
+    fields.innerHTML = `
+        <div class="form-group">
+            <label>Producto</label>
+            <select class="form-control" id="tr-product-select">
+                ${STATE.inventory.map(it => `<option value="${it.id}">${it.name} (${it.sku})</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sucursal Origen</label>
+                <select class="form-control" id="tr-origen-select">
+                    ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultOrigen ? 'selected' : ''}>${s.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sucursal Destino</label>
+                <select class="form-control" id="tr-destino-select">
+                    ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id !== defaultOrigen ? 'selected' : ''}>${s.name}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div class="bulk-price-preview" id="tr-stock-preview">Stock disponible en origen: —</div>
+        <div class="form-group">
+            <label>Cantidad a Trasladar</label>
+            <input type="number" class="form-control" id="tr-qty-input" min="1" value="1" required>
+        </div>
+        <div class="form-group">
+            <label>Observaciones</label>
+            <textarea class="form-control" id="tr-notes-input" rows="2" placeholder="Opcional"></textarea>
+        </div>
+    `;
+
+    const productSelect = document.getElementById('tr-product-select');
+    const origenSelect = document.getElementById('tr-origen-select');
+    const destinoSelect = document.getElementById('tr-destino-select');
+    const qtyInput = document.getElementById('tr-qty-input');
+    const preview = document.getElementById('tr-stock-preview');
+
+    const updatePreview = () => {
+        const item = STATE.inventory.find(it => it.id === productSelect.value);
+        if (!item) return;
+        const stockOrigen = getStock(item, origenSelect.value);
+        const sucNombre = (STATE.sucursales.find(s => s.id === origenSelect.value) || {}).name || '';
+        preview.textContent = `Stock disponible de "${item.name}" en ${sucNombre}: ${stockOrigen} ${item.unit}.`;
+        qtyInput.max = stockOrigen;
+    };
+    [productSelect, origenSelect].forEach(el => el.addEventListener('change', updatePreview));
+    updatePreview();
+
+    // Evita elegir la misma sucursal como origen y destino
+    const syncDestino = () => {
+        if (destinoSelect.value === origenSelect.value) {
+            const alt = STATE.sucursales.find(s => s.id !== origenSelect.value);
+            if (alt) destinoSelect.value = alt.id;
+        }
+    };
+    origenSelect.addEventListener('change', syncDestino);
+}
+
+function closeTransferModal() {
+    document.getElementById('transfer-modal').classList.remove('active');
+}
+
+function handleTransferSubmit(e) {
+    e.preventDefault();
+    const productId = document.getElementById('tr-product-select').value;
+    const origenId = document.getElementById('tr-origen-select').value;
+    const destinoId = document.getElementById('tr-destino-select').value;
+    const qty = parseInt(document.getElementById('tr-qty-input').value);
+    const notes = document.getElementById('tr-notes-input').value;
+
+    const item = STATE.inventory.find(it => it.id === productId);
+    if (!item) { showToast('Error', 'Producto no encontrado.', 'danger'); return; }
+
+    if (origenId === destinoId) {
+        showToast('Error', 'La sucursal de origen y destino no pueden ser la misma.', 'danger');
+        return;
+    }
+    if (isNaN(qty) || qty <= 0) {
+        showToast('Error', 'Ingresá una cantidad válida.', 'danger');
+        return;
+    }
+    const stockOrigen = getStock(item, origenId);
+    if (qty > stockOrigen) {
+        const sucNombre = (STATE.sucursales.find(s => s.id === origenId) || {}).name || '';
+        showToast('Stock Insuficiente', `Solo hay ${stockOrigen} ${item.unit} de "${item.name}" en ${sucNombre}.`, 'danger');
+        return;
+    }
+
+    // Traspaso: resta en origen, suma en destino (nunca se "crea" ni se "pierde" stock)
+    adjustStock(item, origenId, -qty);
+    adjustStock(item, destinoId, qty);
+
+    const origenNombre = (STATE.sucursales.find(s => s.id === origenId) || {}).name || '';
+    const destinoNombre = (STATE.sucursales.find(s => s.id === destinoId) || {}).name || '';
+
+    const newTransfer = {
+        id: `TRA-00${STATE.transfers.length + 1}`,
+        productId, productName: item.name, sku: item.sku,
+        fromSucursalId: origenId, fromSucursalName: origenNombre,
+        toSucursalId: destinoId, toSucursalName: destinoNombre,
+        qty, unit: item.unit, notes,
+        date: new Date().toISOString().split('T')[0],
+        transferredBy: STATE.currentUser ? STATE.currentUser.name : 'N/D'
+    };
+    STATE.transfers.push(newTransfer);
+
+    logHistory('transfers', 'create', `Traspaso de ${qty} ${item.unit} de "${item.name}" de ${origenNombre} a ${destinoNombre}.`, notes);
+    showToast('Traspaso Realizado', `${qty} ${item.unit} de "${item.name}" movidos de ${origenNombre} a ${destinoNombre}.`, 'success');
+
+    saveLocalState();
+    closeTransferModal();
+    switchView(STATE.currentView);
+}
+
+function renderTransfersView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div></div>
+            <button class="btn-primary" id="btn-new-transfer">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Traspaso</span>
+            </button>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th><th>Producto</th><th>Origen</th><th>Destino</th>
+                            <th>Cantidad</th><th>Fecha</th><th>Realizado por</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transfers-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- History component -->
+        <div class="history-section">
+            <div class="history-title">
+                <i data-lucide="history"></i>
+                <span>Historial de Traspasos</span>
+            </div>
+            <div class="history-timeline" id="transfers-history"></div>
+        </div>
+    `;
+    document.getElementById('btn-new-transfer').addEventListener('click', openTransferModal);
+
+    const tbody = document.getElementById('transfers-table-body');
+    if (STATE.transfers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px;">No se registraron traspasos entre sucursales todavía.</td></tr>`;
+    } else {
+        tbody.innerHTML = STATE.transfers.slice().reverse().map(t => `
+            <tr>
+                <td style="font-weight:600;">${t.id}</td>
+                <td>${t.productName} <span class="barcode-mono">(${t.sku})</span></td>
+                <td>${t.fromSucursalName}</td>
+                <td>${t.toSucursalName}</td>
+                <td style="font-weight:700;">${t.qty} ${t.unit}</td>
+                <td>${formatDate(t.date)}</td>
+                <td>${t.transferredBy}</td>
+            </tr>
+        `).join('');
+    }
+    lucide.createIcons();
+    renderModuleHistory('transfers');
 }
