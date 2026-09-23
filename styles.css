@@ -2054,3 +2054,49 @@ body.authenticated .login-overlay {
 }
 .ticket-paper h3 { margin: 4px 0; font-size: 15px; }
 .ticket-paper p { margin: 2px 0; }
+
+/* ==========================================
+   BALDI - PUNTO DE VENTA (POS)
+   ========================================== */
+.pos-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 18px;
+    align-items: start;
+}
+.pos-main { display: flex; flex-direction: column; gap: 14px; }
+.pos-sidebar {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg, 14px);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+}
+.pos-total-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary-light);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-weight: 700;
+}
+.pos-total-display span:first-child {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+.pos-total-display span:last-child {
+    font-size: 1.6rem;
+    color: var(--primary-hover);
+}
+
+@media (max-width: 900px) {
+    .pos-layout { grid-template-columns: 1fr; }
+    .pos-sidebar { position: static; }
+}

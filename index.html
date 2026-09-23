@@ -14,8 +14,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- SheetJS (exportación de Excel) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- JsBarcode (códigos de barra para etiquetas) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -93,6 +91,13 @@
                             <span>Panel Principal</span>
                         </button>
                     </li>
+                    <li class="menu-section">Operación Diaria</li>
+                    <li>
+                        <button class="nav-item" data-view="pos">
+                            <i data-lucide="monitor-check"></i>
+                            <span>Punto de Venta (POS)</span>
+                        </button>
+                    </li>
                     <li class="menu-section">Operaciones</li>
                     <li>
                         <button class="nav-item" data-view="inventory">
@@ -141,6 +146,12 @@
                         <button class="nav-item" data-view="accounts">
                             <i data-lucide="landmark"></i>
                             <span>Cuentas Corrientes</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-item" data-view="cashclosings">
+                            <i data-lucide="calculator"></i>
+                            <span>Cierres de Caja</span>
                         </button>
                     </li>
                     <li class="menu-section">Contactos</li>
@@ -294,6 +305,27 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" id="bulk-price-cancel-btn">Cancelar</button>
                         <button type="submit" class="btn-primary" id="bulk-price-submit-btn">Aplicar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Register Closing Modal -->
+    <div class="modal-overlay" id="cash-closing-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Cierre de Caja Diario</h3>
+                <button class="modal-close" id="cash-closing-close-btn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="cash-closing-form">
+                    <div id="cash-closing-fields"></div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cash-closing-cancel-btn">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="cash-closing-submit-btn">Registrar Cierre</button>
                     </div>
                 </form>
             </div>

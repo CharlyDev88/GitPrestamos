@@ -34,8 +34,9 @@ const STATE = {
         { id: '3', name: 'Distribuidora Almacén Norte', cuit: '30-54218903-4', phone: '0388-420-7666', email: 'pedidos@almacennorte.com.ar', address: 'Av. Belgrano 900, Jujuy' }
     ],
 
-    // Clients (Clientes)
+    // Clients (Clientes) - "Consumidor Final" es el cliente por defecto para ventas de mostrador
     clients: [
+        { id: '0', name: 'Consumidor Final', dni_cuit: '-', phone: '-', email: '-', type: 'Consumidor Final' },
         { id: '1', name: 'Rotisería La Esquina', dni_cuit: '30-71458921-2', phone: '388-582-1492', email: 'compras@rotiserialaesquina.com', type: 'Bar / Restaurante' },
         { id: '2', name: 'Kiosco Don Martín', dni_cuit: '24.582.103', phone: '388-692-0492', email: 'kioscodonmartin@gmail.com', type: 'Kiosco' },
         { id: '3', name: 'Carlos Rodríguez', dni_cuit: '32.194.053', phone: '388-402-5821', email: 'carlos.rod@hotmail.com', type: 'Particular' }
@@ -49,9 +50,9 @@ const STATE = {
 
     // Sales (Ventas) - items incluyen "cost" (foto del costo al momento de vender, para informes de ganancia)
     sales: [
-        { id: 'VEN-001', clientId: '1', clientName: 'Rotisería La Esquina', sucursalId: 'S1', tipoComprobante: 'Factura B', date: '2026-09-15', items: [{ productId: '1', qty: 8, price: 6200, cost: 4200 }, { productId: '2', qty: 5, price: 8500, cost: 5800 }], total: 92100, status: 'Entregado' },
-        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', sucursalId: 'S2', tipoComprobante: 'Ticket No Fiscal', date: '2026-09-16', items: [{ productId: '3', qty: 2, price: 6900, cost: 4600 }], total: 13800, status: 'Entregado' },
-        { id: 'VEN-003', clientId: '2', clientName: 'Kiosco Don Martín', sucursalId: 'S3', tipoComprobante: 'Ticket No Fiscal', date: '2026-09-17', items: [{ productId: '6', qty: 15, price: 990, cost: 650 }], total: 14850, status: 'Pendiente' }
+        { id: 'VEN-001', clientId: '1', clientName: 'Rotisería La Esquina', sucursalId: 'S1', tipoComprobante: 'Factura B', metodoPago: 'Transferencia', date: '2026-09-15', items: [{ productId: '1', qty: 8, price: 6200, cost: 4200 }, { productId: '2', qty: 5, price: 8500, cost: 5800 }], total: 92100, status: 'Entregado' },
+        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', sucursalId: 'S2', tipoComprobante: 'Ticket No Fiscal', metodoPago: 'Efectivo', date: '2026-09-16', items: [{ productId: '3', qty: 2, price: 6900, cost: 4600 }], total: 13800, status: 'Entregado' },
+        { id: 'VEN-003', clientId: '2', clientName: 'Kiosco Don Martín', sucursalId: 'S3', tipoComprobante: 'Ticket No Fiscal', metodoPago: 'Cuenta Corriente', date: '2026-09-17', items: [{ productId: '6', qty: 15, price: 990, cost: 650 }], total: 14850, status: 'Pendiente' }
     ],
 
     // Receipts (Recibos de Cobro)
@@ -64,6 +65,9 @@ const STATE = {
     payments: [
         { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Fiambrera del Norte S.A.', date: '2026-09-10', amount: 168000, method: 'Transferencia' }
     ],
+
+    // Cierres de Caja (arqueos diarios por sucursal) - se completan desde el módulo "Cierres de Caja"
+    cashClosings: [],
 
     // Audit / History log (Historial)
     history: [
@@ -219,6 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('bulk-price-close-btn').addEventListener('click', closeBulkPriceModal);
     document.getElementById('bulk-price-cancel-btn').addEventListener('click', closeBulkPriceModal);
     document.getElementById('bulk-price-form').addEventListener('submit', handleBulkPriceSubmit);
+
+    // Cash register closing modal handlers
+    document.getElementById('cash-closing-close-btn').addEventListener('click', closeCashClosingModal);
+    document.getElementById('cash-closing-cancel-btn').addEventListener('click', closeCashClosingModal);
+    document.getElementById('cash-closing-form').addEventListener('submit', handleCashClosingSubmit);
     
     // Login Submission Handler
     document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -308,6 +317,11 @@ function switchView(viewName) {
     charts = {};
     
     switch (viewName) {
+        case 'pos':
+            viewTitle.textContent = "Punto de Venta (POS)";
+            viewSubtitle.textContent = "Operación de venta diaria: escaneo de productos, cobro y emisión de ticket en el momento.";
+            renderPOSView(container);
+            break;
         case 'dashboard':
             viewTitle.textContent = "Panel Principal";
             viewSubtitle.textContent = "Dashboard de métricas de ventas, reposición y control de stock en tiempo real.";
@@ -342,6 +356,11 @@ function switchView(viewName) {
             viewTitle.textContent = "Cuentas Corrientes";
             viewSubtitle.textContent = "Saldos y movimientos de cuenta corriente de clientes y proveedores.";
             renderAccountsView(container);
+            break;
+        case 'cashclosings':
+            viewTitle.textContent = "Cierres de Caja";
+            viewSubtitle.textContent = "Arqueo diario de caja por sucursal: fondo inicial, ventas en efectivo y diferencias.";
+            renderCashClosingsView(container);
             break;
         case 'sucursales':
             viewTitle.textContent = "Sucursales";
@@ -2361,11 +2380,14 @@ function openCrudModal(module, action, id = null) {
     
     // TRANSACTION: SALES (VENTAS)
     else if (module === 'sales') {
-        let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${data.clientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+        const defaultClientId = data.clientId || '0'; // Consumidor Final por defecto
+        let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${defaultClientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
         let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock: ${m.stock} | Precio: ${formatCurrency(m.price)})</option>`).join('');
         const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
         const sucOptionsVenta = STATE.sucursales.map(s => `<option value="${s.id}" ${(data.sucursalId || defaultSucursal) === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
         const comprobanteOpts = ['Ticket No Fiscal', 'Factura B', 'Factura C'].map(t => `<option value="${t}" ${(data.tipoComprobante || 'Ticket No Fiscal') === t ? 'selected' : ''}>${t}</option>`).join('');
+        const paymentMethods = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
+        const paymentOpts = paymentMethods.map(m => `<option value="${m}" ${(data.metodoPago || 'Efectivo') === m ? 'selected' : ''}>${m}</option>`).join('');
         
         fieldsContainer.innerHTML = `
             <div class="form-row">
@@ -2442,6 +2464,24 @@ function openCrudModal(module, action, id = null) {
 
             <div class="form-row">
                 <div class="form-group">
+                    <label>Forma de Pago</label>
+                    <select class="form-control" name="metodoPago" id="tx-payment-method">
+                        ${paymentOpts}
+                    </select>
+                </div>
+                <div class="form-group" id="tx-cash-received-wrapper">
+                    <label>Monto Recibido ($)</label>
+                    <input type="number" class="form-control" name="montoRecibido" id="tx-cash-received" min="0" step="0.01" value="${data.montoRecibido || ''}" placeholder="Ingrese el efectivo recibido">
+                </div>
+            </div>
+            <div class="form-group" id="tx-change-wrapper" style="display:none;">
+                <label>Vuelto a Entregar</label>
+                <input type="text" class="form-control" id="tx-change-amount" readonly style="font-weight:bold;">
+                <input type="hidden" name="vuelto" id="tx-change-hidden" value="${data.vuelto || 0}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
                     <label>Estado de la Venta</label>
                     <select class="form-control" name="status" required>
                         <option value="Entregado" ${data.status === 'Entregado' ? 'selected' : ''}>Entregado (Baja de Stock)</option>
@@ -2514,6 +2554,7 @@ function openCrudModal(module, action, id = null) {
             
             document.getElementById('tx-total-amount').value = sum;
             lucide.createIcons();
+            if (typeof updateChange === 'function') updateChange();
         };
         
         addBtn.addEventListener('click', () => {
@@ -2578,6 +2619,49 @@ function openCrudModal(module, action, id = null) {
                 scanAddByCode();
             }
         });
+
+        // Forma de pago + cálculo de vuelto (solo aplica cuando se paga en Efectivo)
+        const paymentSelect = document.getElementById('tx-payment-method');
+        const cashWrapper = document.getElementById('tx-cash-received-wrapper');
+        const cashInput = document.getElementById('tx-cash-received');
+        const changeWrapper = document.getElementById('tx-change-wrapper');
+        const changeAmount = document.getElementById('tx-change-amount');
+        const changeHidden = document.getElementById('tx-change-hidden');
+
+        const updatePaymentVisibility = () => {
+            const isCash = paymentSelect.value === 'Efectivo';
+            cashWrapper.style.display = isCash ? '' : 'none';
+            changeWrapper.style.display = isCash ? '' : 'none';
+            if (!isCash) {
+                cashInput.value = '';
+                changeAmount.value = '';
+                changeHidden.value = 0;
+            }
+        };
+        function updateChange() {
+            if (paymentSelect.value !== 'Efectivo') return;
+            const total = parseFloat(document.getElementById('tx-total-amount').value) || 0;
+            const received = parseFloat(cashInput.value) || 0;
+            if (received <= 0) {
+                changeAmount.value = '—';
+                changeAmount.style.color = '';
+                changeHidden.value = 0;
+                return;
+            }
+            const diff = received - total;
+            if (diff < 0) {
+                changeAmount.value = `Falta ${formatCurrency(Math.abs(diff))}`;
+                changeAmount.style.color = 'var(--danger)';
+                changeHidden.value = 0;
+            } else {
+                changeAmount.value = formatCurrency(diff);
+                changeAmount.style.color = 'var(--success)';
+                changeHidden.value = diff;
+            }
+        }
+        paymentSelect.addEventListener('change', () => { updatePaymentVisibility(); updateChange(); });
+        cashInput.addEventListener('input', updateChange);
+        updatePaymentVisibility();
         
         renderSelectedList();
         // Snapshot the current inventory cost for each line so profit reports stay accurate
@@ -2710,6 +2794,8 @@ function handleFormSubmit(e) {
     if (formObj.price !== undefined) formObj.price = parseFloat(formObj.price);
     if (formObj.amount !== undefined) formObj.amount = parseFloat(formObj.amount);
     if (formObj.total !== undefined) formObj.total = parseFloat(formObj.total);
+    if (formObj.montoRecibido !== undefined) formObj.montoRecibido = parseFloat(formObj.montoRecibido) || 0;
+    if (formObj.vuelto !== undefined) formObj.vuelto = parseFloat(formObj.vuelto) || 0;
     
     // Auto-generate a barcode for products that don't have one yet
     if (module === 'inventory' && (!formObj.barcode || formObj.barcode.trim() === '')) {
@@ -2786,7 +2872,7 @@ function handleFormSubmit(e) {
                     clientName: formObj.clientName,
                     date: formObj.date,
                     amount: formObj.total,
-                    method: 'Transferencia'
+                    method: formObj.metodoPago || 'Efectivo'
                 };
                 STATE.receipts.push(newRec);
                 logHistory('receipts', 'create', `Generación automática de cobro ${newRec.id} por venta ${newId}`, `Monto: ${formatCurrency(newRec.amount)}`);
@@ -3458,22 +3544,96 @@ function printShelfLabels(selection) {
 function printBarcodeLabels(selection) {
     let labelsHtml = '';
     selection.forEach(({ product, qty }) => {
+        const barcodeSvg = renderBarcodeSVGString(product.barcode || product.sku);
         for (let i = 0; i < qty; i++) {
             labelsHtml += `
                 <div class="barcode-label">
                     <div class="bl-name">${product.name}</div>
-                    <svg class="jsbarcode" jsbarcode-value="${product.barcode || product.sku}"></svg>
+                    ${barcodeSvg || `<div class="barcode-mono" style="padding:8px 0;">${product.barcode || product.sku}</div>`}
                     <div class="bl-price">${formatCurrency(product.price)}</div>
                 </div>
             `;
         }
     });
-    openPrintWindow('Etiquetas con Código de Barras - Baldi', labelsHtml, true);
+    openPrintWindow('Etiquetas con Código de Barras - Baldi', labelsHtml, false);
     logHistory('inventory', 'print', `Generación de etiquetas con código de barras para ${selection.length} producto(s).`);
 }
 
-// Opens a clean, self-contained print window. `withBarcodes` loads JsBarcode there and
-// renders every .jsbarcode SVG before triggering window.print().
+// ==========================================
+// GENERADOR DE CÓDIGO DE BARRAS EAN-13 (100% NATIVO, SIN LIBRERÍAS EXTERNAS)
+// ==========================================
+// Se implementa el estándar EAN-13 a mano (tablas L/G/R + patrón de paridad oficiales,
+// verificadas por round-trip contra el ejemplo público de Wikipedia) para eliminar por
+// completo la dependencia de una librería de terceros (JsBarcode) al imprimir etiquetas:
+// así el código de barras SIEMPRE se genera, sin depender de que un CDN cargue a tiempo
+// dentro de la ventana emergente de impresión.
+const EAN13_L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+const EAN13_G = ['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+const EAN13_R = ['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+const EAN13_PARITY = ['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+
+function ean13ToBinary(code13) {
+    const digits = code13.split('').map(Number);
+    const first = digits[0];
+    const leftDigits = digits.slice(1, 7);
+    const rightDigits = digits.slice(7, 13);
+    const parity = EAN13_PARITY[first];
+    let bin = '101'; // guarda de inicio
+    leftDigits.forEach((d, i) => { bin += parity[i] === 'L' ? EAN13_L[d] : EAN13_G[d]; });
+    bin += '01010'; // guarda central
+    rightDigits.forEach(d => { bin += EAN13_R[d]; });
+    bin += '101'; // guarda final
+    return bin;
+}
+
+// Normaliza cualquier valor (código de barras EAN-13 válido, un SKU alfanumérico, etc.)
+// a un código EAN-13 numérico válido de 13 dígitos con dígito verificador correcto.
+function normalizeToEan13(rawValue) {
+    let code = String(rawValue || '').replace(/\D/g, '');
+    if (code.length === 13) {
+        const check = ean13CheckDigit(code.slice(0, 12));
+        return code.slice(0, 12) + check; // corrige el dígito verificador si estuviera mal
+    }
+    // Cualquier otro formato (SKU, código corto, etc.) se convierte a un EAN-13 determinístico
+    return generateBarcode(rawValue);
+}
+
+// Genera el SVG del código de barras (barras + texto legible) 100% en el cliente.
+function renderBarcodeSVGString(rawValue) {
+    if (!rawValue) return '';
+    try {
+        const code = normalizeToEan13(rawValue);
+        const binary = ean13ToBinary(code);
+
+        const moduleWidth = 2.2;
+        const barHeight = 48;
+        const quietZone = 12;
+        const totalWidth = Math.round(binary.length * moduleWidth + quietZone * 2);
+        const textHeight = 16;
+        const totalHeight = barHeight + textHeight;
+
+        let bars = '';
+        for (let i = 0; i < binary.length; i++) {
+            if (binary[i] === '1') {
+                const x = (quietZone + i * moduleWidth).toFixed(2);
+                bars += `<rect x="${x}" y="0" width="${moduleWidth}" height="${barHeight}" fill="#000"/>`;
+            }
+        }
+
+        const humanText = `${code.slice(0, 1)}  ${code.slice(1, 7)}  ${code.slice(7, 13)}`;
+
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalHeight}" width="100%" style="display:block; max-width:100%; height:auto;">
+            <rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" fill="#fff"/>
+            <g>${bars}</g>
+            <text x="${totalWidth / 2}" y="${barHeight + 12}" font-family="'Courier New', monospace" font-size="11" letter-spacing="1" text-anchor="middle" fill="#000">${humanText}</text>
+        </svg>`;
+    } catch (e) {
+        console.error('No se pudo generar el código de barras para', rawValue, e);
+        return '';
+    }
+}
+
+// Opens a clean, self-contained print window with the given (already fully-rendered) HTML.
 function openPrintWindow(title, bodyHtml, withBarcodes) {
     const win = window.open('', '_blank', 'width=900,height=700');
     if (!win) {
@@ -3503,39 +3663,18 @@ function openPrintWindow(title, bodyHtml, withBarcodes) {
                 }
                 .barcode-label .bl-name { font-size: 11px; font-weight: 600; min-height: 26px; margin-bottom: 2px; }
                 .barcode-label .bl-price { font-size: 16px; font-weight: 800; }
-                .barcode-label svg { max-width: 100%; height: 45px; }
+                .barcode-label svg { max-width: 100%; height: 50px; }
+                .barcode-mono { font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 1px; }
                 @media print { body { padding: 6px; } }
             </style>
         </head>
         <body>
             <div class="sheet">${bodyHtml}</div>
-            ${withBarcodes ? '<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"><\/script>' : ''}
         </body>
         </html>
     `);
     win.document.close();
-
-    const doPrint = () => {
-        win.focus();
-        win.print();
-    };
-
-    if (withBarcodes) {
-        const check = setInterval(() => {
-            if (win.JsBarcode) {
-                clearInterval(check);
-                win.document.querySelectorAll('.jsbarcode').forEach(svg => {
-                    try {
-                        win.JsBarcode(svg, svg.getAttribute('jsbarcode-value'), { height: 40, fontSize: 12, margin: 4 });
-                    } catch (e) { /* skip invalid codes */ }
-                });
-                setTimeout(doPrint, 150);
-            }
-        }, 100);
-        setTimeout(() => clearInterval(check), 6000);
-    } else {
-        setTimeout(doPrint, 150);
-    }
+    setTimeout(() => { win.focus(); win.print(); }, 200);
 }
 
 // ==========================================
@@ -3574,6 +3713,12 @@ function printTicket(saleId) {
             ${itemsHtml}
             <div class="t-line"></div>
             <div class="t-row" style="font-weight:bold; font-size:14px;"><span>TOTAL</span><span>${formatCurrency(sale.total)}</span></div>
+            <div class="t-line"></div>
+            <p>Forma de Pago: ${sale.metodoPago || 'Efectivo'}</p>
+            ${sale.metodoPago === 'Efectivo' && sale.montoRecibido ? `
+                <div class="t-row"><span>Recibido</span><span>${formatCurrency(sale.montoRecibido)}</span></div>
+                <div class="t-row"><span>Vuelto</span><span>${formatCurrency(sale.vuelto || 0)}</span></div>
+            ` : ''}
             <div class="t-line"></div>
             <p class="t-center">${isFiscal ? '¡Gracias por su compra!' : 'Documento no válido como factura'}</p>
         </div>
@@ -3923,5 +4068,377 @@ function renderSucursalesRows() {
             </td>
         </tr>
     `).join('');
+    lucide.createIcons();
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: PUNTO DE VENTA (POS) - OPERACIÓN DE VENTA DIARIA
+// ==========================================
+// Pantalla rápida de venta de mostrador: escaneo/código, cobro y emisión de ticket
+// inmediata. Complementa (no reemplaza) la vista "Ventas", que sigue sirviendo para
+// gestionar/editar el historial de comprobantes ya emitidos.
+function renderPOSView(container) {
+    const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+    const paymentMethods = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
+
+    container.innerHTML = `
+        <div class="pos-layout">
+            <div class="pos-main">
+                <div class="scan-entry-bar">
+                    <i data-lucide="scan-barcode" class="scan-icon"></i>
+                    <input type="text" id="pos-scan-input" placeholder="Escanear código de barras o ingresar SKU y presionar Enter...">
+                    <button type="button" class="btn-primary" id="pos-btn-scan-add">Agregar</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-wrapper">
+                        <table class="custom-table">
+                            <thead><tr><th>Producto</th><th style="width:90px;">Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+                            <tbody id="pos-cart-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="pos-sidebar">
+                <div class="form-group">
+                    <label>Sucursal (Punto de Venta)</label>
+                    <select class="form-control" id="pos-sucursal-select">
+                        ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select class="form-control" id="pos-client-select">
+                        ${STATE.clients.map(c => `<option value="${c.id}" ${c.id === '0' ? 'selected' : ''}>${c.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Comprobante</label>
+                    <select class="form-control" id="pos-comprobante-select">
+                        <option value="Ticket No Fiscal">Ticket No Fiscal</option>
+                        <option value="Factura B">Factura B</option>
+                        <option value="Factura C">Factura C</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Forma de Pago</label>
+                    <select class="form-control" id="pos-payment-select">
+                        ${paymentMethods.map(m => `<option value="${m}">${m}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group" id="pos-cash-wrapper">
+                    <label>Monto Recibido ($)</label>
+                    <input type="number" class="form-control" id="pos-cash-received" min="0" step="0.01" placeholder="Efectivo entregado por el cliente">
+                </div>
+                <div class="form-group" id="pos-change-wrapper" style="display:none;">
+                    <label>Vuelto</label>
+                    <input type="text" class="form-control" id="pos-change-amount" readonly style="font-weight:bold;">
+                </div>
+                <div class="pos-total-display">
+                    <span>Total</span>
+                    <span id="pos-total-amount">${formatCurrency(0)}</span>
+                </div>
+                <button class="btn-primary" id="pos-btn-checkout" style="width:100%; justify-content:center; padding:14px;">
+                    <i data-lucide="check-circle"></i>
+                    <span>Cobrar y Emitir Ticket</span>
+                </button>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+
+    let cart = [];
+
+    const renderCart = () => {
+        const body = document.getElementById('pos-cart-body');
+        let sum = 0;
+        if (cart.length === 0) {
+            body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">Escanee o ingrese un producto para comenzar la venta.</td></tr>`;
+        } else {
+            body.innerHTML = cart.map((it, idx) => {
+                const sub = it.qty * it.price;
+                sum += sub;
+                return `<tr>
+                    <td>${it.name}</td>
+                    <td><input type="number" class="form-control pos-qty-input" data-idx="${idx}" value="${it.qty}" min="1" style="padding:6px;"></td>
+                    <td>${formatCurrency(it.price)}</td>
+                    <td>${formatCurrency(sub)}</td>
+                    <td style="text-align:right;"><button type="button" class="btn-table-action delete" onclick="window.posRemoveItem(${idx})"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button></td>
+                </tr>`;
+            }).join('');
+        }
+        document.getElementById('pos-total-amount').textContent = formatCurrency(sum);
+        lucide.createIcons();
+        document.querySelectorAll('.pos-qty-input').forEach(inp => {
+            inp.addEventListener('change', (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                const val = parseInt(e.target.value);
+                if (val > 0) { cart[idx].qty = val; renderCart(); }
+            });
+        });
+        updatePOSChange();
+    };
+
+    window.posRemoveItem = (idx) => { cart.splice(idx, 1); renderCart(); };
+
+    const scanInput = document.getElementById('pos-scan-input');
+    const addByCode = () => {
+        const code = scanInput.value.trim();
+        if (!code) return;
+        const mat = STATE.inventory.find(m => (m.barcode && m.barcode === code) || m.sku.toLowerCase() === code.toLowerCase());
+        if (!mat) {
+            showToast('Producto no encontrado', `No existe ningún producto con el código "${code}".`, 'danger');
+            scanInput.value = ''; scanInput.focus(); return;
+        }
+        if (mat.stock <= 0) {
+            showToast('Sin Stock', `${mat.name} no tiene stock disponible.`, 'warning');
+        }
+        const existing = cart.find(it => it.productId === mat.id);
+        if (existing) existing.qty += 1;
+        else cart.push({ productId: mat.id, name: mat.name, qty: 1, price: mat.price });
+        renderCart();
+        scanInput.value = '';
+        scanInput.focus();
+    };
+    document.getElementById('pos-btn-scan-add').addEventListener('click', addByCode);
+    scanInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addByCode(); } });
+    scanInput.focus();
+
+    const paymentSelect = document.getElementById('pos-payment-select');
+    const cashWrapper = document.getElementById('pos-cash-wrapper');
+    const cashInput = document.getElementById('pos-cash-received');
+    const changeWrapper = document.getElementById('pos-change-wrapper');
+    const changeAmount = document.getElementById('pos-change-amount');
+
+    const updatePaymentVisibility = () => {
+        const isCash = paymentSelect.value === 'Efectivo';
+        cashWrapper.style.display = isCash ? '' : 'none';
+        changeWrapper.style.display = isCash ? '' : 'none';
+        if (!isCash) cashInput.value = '';
+    };
+    function updatePOSChange() {
+        if (paymentSelect.value !== 'Efectivo') return;
+        const total = cart.reduce((a, it) => a + it.qty * it.price, 0);
+        const received = parseFloat(cashInput.value) || 0;
+        if (received <= 0) { changeAmount.value = '—'; changeAmount.style.color = ''; return; }
+        const diff = received - total;
+        if (diff < 0) {
+            changeAmount.value = `Falta ${formatCurrency(Math.abs(diff))}`;
+            changeAmount.style.color = 'var(--danger)';
+        } else {
+            changeAmount.value = formatCurrency(diff);
+            changeAmount.style.color = 'var(--success)';
+        }
+    }
+    paymentSelect.addEventListener('change', () => { updatePaymentVisibility(); updatePOSChange(); });
+    cashInput.addEventListener('input', updatePOSChange);
+    updatePaymentVisibility();
+
+    document.getElementById('pos-btn-checkout').addEventListener('click', () => {
+        if (cart.length === 0) {
+            showToast('Carrito Vacío', 'Agregue al menos un producto para cobrar.', 'warning');
+            return;
+        }
+        const sucursalId = document.getElementById('pos-sucursal-select').value;
+        const clientId = document.getElementById('pos-client-select').value;
+        const client = STATE.clients.find(c => c.id === clientId);
+        const tipoComprobante = document.getElementById('pos-comprobante-select').value;
+        const metodoPago = paymentSelect.value;
+        const total = cart.reduce((a, it) => a + it.qty * it.price, 0);
+        const montoRecibido = metodoPago === 'Efectivo' ? (parseFloat(cashInput.value) || 0) : total;
+
+        if (metodoPago === 'Efectivo' && montoRecibido < total) {
+            showToast('Monto Insuficiente', 'El monto recibido es menor al total de la venta.', 'danger');
+            return;
+        }
+
+        const newId = `VEN-00${STATE.sales.length + 1}`;
+        const items = cart.map(it => {
+            const mat = STATE.inventory.find(m => m.id === it.productId);
+            return { productId: it.productId, qty: it.qty, price: it.price, cost: mat ? mat.cost : 0 };
+        });
+
+        const newSale = {
+            id: newId,
+            clientId,
+            clientName: client ? client.name : 'Consumidor Final',
+            sucursalId,
+            tipoComprobante,
+            metodoPago,
+            date: new Date().toISOString().split('T')[0],
+            items,
+            total,
+            status: 'Entregado',
+            montoRecibido,
+            vuelto: metodoPago === 'Efectivo' ? Math.max(0, montoRecibido - total) : 0
+        };
+        STATE.sales.push(newSale);
+
+        // Baja de stock inmediata (operación de venta diaria)
+        items.forEach(line => {
+            const mat = STATE.inventory.find(m => m.id === line.productId);
+            if (mat) mat.stock = Math.max(0, mat.stock - line.qty);
+        });
+
+        // Cobro registrado automáticamente
+        STATE.receipts.push({
+            id: `REC-00${STATE.receipts.length + 1}`,
+            saleId: newId,
+            clientName: newSale.clientName,
+            date: newSale.date,
+            amount: total,
+            method: metodoPago
+        });
+
+        const sucursal = STATE.sucursales.find(s => s.id === sucursalId);
+        logHistory('sales', 'create', `Venta POS registrada. Código: ${newId}`, `Sucursal: ${sucursal ? sucursal.name : ''}, Total: ${formatCurrency(total)}, Pago: ${metodoPago}`);
+        showToast('Venta Registrada', `Venta ${newId} cobrada correctamente.`, 'success');
+
+        printTicket(newId);
+
+        // Reset para la siguiente venta
+        cart = [];
+        cashInput.value = '';
+        renderCart();
+        scanInput.focus();
+    });
+
+    renderCart();
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: CIERRES DE CAJA (ARQUEO DIARIO POR SUCURSAL)
+// ==========================================
+function computeExpectedCash(sucursalId, date, openingFloat) {
+    const cashSalesTotal = STATE.sales
+        .filter(s => s.sucursalId === sucursalId && s.date === date && s.status !== 'Cancelado' && s.metodoPago === 'Efectivo')
+        .reduce((a, s) => a + s.total, 0);
+    return openingFloat + cashSalesTotal;
+}
+
+function openCashClosingModal() {
+    const modal = document.getElementById('cash-closing-modal');
+    const fields = document.getElementById('cash-closing-fields');
+    modal.classList.add('active');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+
+    fields.innerHTML = `
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sucursal</label>
+                <select class="form-control" id="cc-sucursal-select">
+                    ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" class="form-control" id="cc-date-input" value="${todayStr}">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Fondo Inicial de Caja ($)</label>
+            <input type="number" class="form-control" id="cc-opening-input" min="0" value="0">
+        </div>
+        <div class="bulk-price-preview" id="cc-expected-preview">Seleccione sucursal y fecha para calcular el efectivo esperado.</div>
+        <div class="form-group">
+            <label>Efectivo Contado al Cierre ($)</label>
+            <input type="number" class="form-control" id="cc-counted-input" min="0" value="0" required>
+        </div>
+        <div class="form-group">
+            <label>Observaciones</label>
+            <textarea class="form-control" id="cc-notes-input" rows="2" placeholder="Opcional"></textarea>
+        </div>
+    `;
+
+    const sucSel = document.getElementById('cc-sucursal-select');
+    const dateInput = document.getElementById('cc-date-input');
+    const openingInput = document.getElementById('cc-opening-input');
+    const preview = document.getElementById('cc-expected-preview');
+
+    const updatePreview = () => {
+        const expected = computeExpectedCash(sucSel.value, dateInput.value, parseFloat(openingInput.value) || 0);
+        preview.textContent = `Efectivo esperado en caja: ${formatCurrency(expected)} (fondo inicial + ventas en efectivo del día en esa sucursal).`;
+    };
+    [sucSel, dateInput, openingInput].forEach(el => el.addEventListener('input', updatePreview));
+    updatePreview();
+}
+
+function closeCashClosingModal() {
+    document.getElementById('cash-closing-modal').classList.remove('active');
+}
+
+function handleCashClosingSubmit(e) {
+    e.preventDefault();
+    const sucursalId = document.getElementById('cc-sucursal-select').value;
+    const date = document.getElementById('cc-date-input').value;
+    const openingFloat = parseFloat(document.getElementById('cc-opening-input').value) || 0;
+    const countedCash = parseFloat(document.getElementById('cc-counted-input').value) || 0;
+    const notes = document.getElementById('cc-notes-input').value;
+
+    const expectedCash = computeExpectedCash(sucursalId, date, openingFloat);
+    const difference = countedCash - expectedCash;
+
+    const newClosing = {
+        id: `CC-00${STATE.cashClosings.length + 1}`,
+        sucursalId, date, openingFloat, expectedCash, countedCash, difference, notes,
+        closedBy: STATE.currentUser ? STATE.currentUser.name : 'N/D'
+    };
+    STATE.cashClosings.push(newClosing);
+
+    logHistory('cashClosings', 'create', `Cierre de caja registrado para ${formatDate(date)}.`, `Diferencia: ${formatCurrency(difference)}`);
+    const kind = difference === 0 ? 'success' : (difference > 0 ? 'warning' : 'danger');
+    const label = difference === 0 ? 'La caja cerró exacta.' : (difference > 0 ? `Sobrante de ${formatCurrency(difference)}.` : `Faltante de ${formatCurrency(Math.abs(difference))}.`);
+    showToast('Cierre Registrado', label, kind);
+
+    closeCashClosingModal();
+    switchView(STATE.currentView);
+}
+
+function renderCashClosingsView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div></div>
+            <button class="btn-primary" id="btn-new-cash-closing">
+                <i data-lucide="plus"></i>
+                <span>Nuevo Cierre</span>
+            </button>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th><th>Sucursal</th><th>Fondo Inicial</th><th>Ventas Efectivo</th>
+                            <th>Esperado</th><th>Contado</th><th>Diferencia</th><th>Cerrado por</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cash-closings-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    document.getElementById('btn-new-cash-closing').addEventListener('click', openCashClosingModal);
+
+    const tbody = document.getElementById('cash-closings-body');
+    if (STATE.cashClosings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">No hay cierres de caja registrados todavía.</td></tr>`;
+    } else {
+        tbody.innerHTML = STATE.cashClosings.slice().reverse().map(cc => {
+            const suc = STATE.sucursales.find(s => s.id === cc.sucursalId);
+            const cashSales = cc.expectedCash - cc.openingFloat;
+            const diffColor = cc.difference === 0 ? 'var(--success)' : (cc.difference > 0 ? 'var(--warning)' : 'var(--danger)');
+            const diffLabel = cc.difference === 0 ? 'Exacto' : `${cc.difference > 0 ? '+' : ''}${formatCurrency(cc.difference)}`;
+            return `<tr>
+                <td>${formatDate(cc.date)}</td>
+                <td>${suc ? suc.name : '—'}</td>
+                <td>${formatCurrency(cc.openingFloat)}</td>
+                <td>${formatCurrency(cashSales)}</td>
+                <td>${formatCurrency(cc.expectedCash)}</td>
+                <td>${formatCurrency(cc.countedCash)}</td>
+                <td style="font-weight:700; color:${diffColor};">${diffLabel}</td>
+                <td>${cc.closedBy}</td>
+            </tr>`;
+        }).join('');
+    }
     lucide.createIcons();
 }
