@@ -228,6 +228,11 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <div class="active-shift-badge" id="active-shift-badge" style="display:none;">
+                        <i data-lucide="store" style="width:14px; height:14px;"></i>
+                        <span id="active-shift-text">Sucursal — Turno</span>
+                        <button class="btn-text" id="btn-change-shift" title="Cambiar sucursal/turno">Cambiar</button>
+                    </div>
                     <div class="connection-status" id="connection-status" title="Estado de conexión">
                         <span class="connection-dot"></span>
                         <span id="connection-status-text">En línea</span>
@@ -364,6 +369,27 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" id="transfer-cancel-btn">Cancelar</button>
                         <button type="submit" class="btn-primary" id="transfer-submit-btn">Confirmar Traspaso</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Setup Modal: Sucursal + Turno (obligatorio para Vendedor/Depósito) -->
+    <div class="modal-overlay" id="session-setup-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Iniciar Turno de Trabajo</h3>
+                <button class="modal-close" id="session-setup-close-btn" style="display:none;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary" style="margin-bottom:16px;">Seleccioná en qué sucursal y turno vas a trabajar. Esto queda fijo para tus ventas y el cierre de caja hasta que lo cambies.</p>
+                <form id="session-setup-form">
+                    <div id="session-setup-fields"></div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Comenzar a Trabajar</button>
                     </div>
                 </form>
             </div>

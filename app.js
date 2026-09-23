@@ -101,7 +101,13 @@ const STATE = {
         { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@baldi.com', sucursalId: 'S1',
           permissions: { verCostos: true, hacerDescuentos: false, anularTickets: false, cerrarCaja: false, gestionarUsuarios: false, verReportes: false } }
     ],
-    currentUser: null
+    currentUser: null,
+
+    // Sesión de trabajo activa (Sucursal + Turno): la fija el Vendedor/Depósito al iniciar
+    // sesión y queda "pegada" en el POS/Ventas/Cierre de Caja hasta que la cambie. El
+    // Administrador no la necesita, ya que su vista es consolidada y multi-sucursal.
+    activeSucursalId: null,
+    activeTurno: null
 };
 
 // Category list used across selects (inventory, filters, labels, charts)
@@ -313,6 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('transfer-close-btn').addEventListener('click', closeTransferModal);
     document.getElementById('transfer-cancel-btn').addEventListener('click', closeTransferModal);
     document.getElementById('transfer-form').addEventListener('submit', handleTransferSubmit);
+
+    // Session setup (Sucursal + Turno) modal handlers
+    document.getElementById('session-setup-close-btn').addEventListener('click', closeSessionSetupModal);
+    document.getElementById('session-setup-form').addEventListener('submit', handleSessionSetupSubmit);
+    document.getElementById('btn-change-shift').addEventListener('click', () => openSessionSetupModal(true));
     
     // Login Submission Handler
     document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -2594,7 +2605,7 @@ function openCrudModal(module, action, id = null) {
         const defaultClientId = data.clientId || '0'; // Consumidor Final por defecto
         let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${defaultClientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
         let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock Total: ${getTotalStock(m)} | Precio: ${formatCurrency(m.price)})</option>`).join('');
-        const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+        const defaultSucursal = STATE.activeSucursalId || (STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id);
         const sucOptionsVenta = STATE.sucursales.map(s => `<option value="${s.id}" ${(data.sucursalId || defaultSucursal) === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
         const comprobanteOpts = ['Ticket No Fiscal', 'Factura A', 'Factura B', 'Factura C'].map(t => `<option value="${t}" ${(data.tipoComprobante || 'Ticket No Fiscal') === t ? 'selected' : ''}>${t}</option>`).join('');
         const paymentMethods = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
@@ -2623,7 +2634,7 @@ function openCrudModal(module, action, id = null) {
                 <div class="form-group">
                     <label>Turno</label>
                     <select class="form-control" name="turno" required>
-                        ${TURNOS.map(t => `<option value="${t}" ${(data.turno || getCurrentTurno()) === t ? 'selected' : ''}>${t}</option>`).join('')}
+                        ${TURNOS.map(t => `<option value="${t}" ${(data.turno || STATE.activeTurno || getCurrentTurno()) === t ? 'selected' : ''}>${t}</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -3485,10 +3496,104 @@ function attemptLogin(username, password) {
         // Clear login inputs
         document.getElementById('login-username').value = '';
         document.getElementById('login-password').value = '';
+        
+        handlePostLoginSessionSetup();
     } else {
         showToast('Error de Acceso', 'Nombre de usuario o contraseña incorrectos.', 'danger');
     }
 }
+
+// ==========================================
+// SESIÓN DE TRABAJO ACTIVA (SUCURSAL + TURNO)
+// ==========================================
+// El Administrador ve todo consolidado y no necesita fijar sucursal/turno; Vendedor y
+// Depósito sí, porque de eso depende que el POS y el cierre de caja por turno cuadren.
+function needsSessionSetup(user) {
+    return !!user && user.role !== 'Administrador';
+}
+
+function handlePostLoginSessionSetup() {
+    if (!needsSessionSetup(STATE.currentUser)) {
+        STATE.activeSucursalId = null;
+        STATE.activeTurno = null;
+        updateActiveShiftBadge();
+        return;
+    }
+    // Si ya había una sesión de turno guardada (ej: refresco de página), se respeta;
+    // si no, se pide elegir sucursal y turno antes de continuar.
+    const saved = sessionStorage.getItem('baldi_active_shift');
+    if (saved) {
+        try {
+            const { sucursalId, turno } = JSON.parse(saved);
+            STATE.activeSucursalId = sucursalId;
+            STATE.activeTurno = turno;
+            updateActiveShiftBadge();
+            return;
+        } catch (e) { /* ignore, fall through to ask */ }
+    }
+    openSessionSetupModal(false);
+}
+
+function openSessionSetupModal(allowCancel) {
+    const modal = document.getElementById('session-setup-modal');
+    const fields = document.getElementById('session-setup-fields');
+    const closeBtn = document.getElementById('session-setup-close-btn');
+    closeBtn.style.display = allowCancel ? '' : 'none';
+
+    const defaultSucursal = STATE.activeSucursalId || STATE.currentUser.sucursalId;
+    const defaultTurno = STATE.activeTurno || getCurrentTurno();
+
+    fields.innerHTML = `
+        <div class="form-group">
+            <label>Sucursal</label>
+            <select class="form-control" id="ss-sucursal-select">
+                ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Turno</label>
+            <select class="form-control" id="ss-turno-select">
+                ${TURNOS.map(t => `<option value="${t}" ${t === defaultTurno ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+function closeSessionSetupModal() {
+    document.getElementById('session-setup-modal').classList.remove('active');
+}
+
+function handleSessionSetupSubmit(e) {
+    e.preventDefault();
+    const sucursalId = document.getElementById('ss-sucursal-select').value;
+    const turno = document.getElementById('ss-turno-select').value;
+
+    STATE.activeSucursalId = sucursalId;
+    STATE.activeTurno = turno;
+    sessionStorage.setItem('baldi_active_shift', JSON.stringify({ sucursalId, turno }));
+
+    const sucNombre = (STATE.sucursales.find(s => s.id === sucursalId) || {}).name || '';
+    logHistory('system', 'shift-start', `${STATE.currentUser.name} inició turno ${turno} en ${sucNombre}.`);
+    showToast('Turno Iniciado', `Trabajando en ${sucNombre} - Turno ${turno}.`, 'success');
+
+    updateActiveShiftBadge();
+    closeSessionSetupModal();
+    switchView(STATE.currentView || 'dashboard');
+}
+
+function updateActiveShiftBadge() {
+    const badge = document.getElementById('active-shift-badge');
+    if (!badge) return;
+    if (!needsSessionSetup(STATE.currentUser) || !STATE.activeSucursalId) {
+        badge.style.display = 'none';
+        return;
+    }
+    const sucNombre = (STATE.sucursales.find(s => s.id === STATE.activeSucursalId) || {}).name || '';
+    document.getElementById('active-shift-text').textContent = `${sucNombre} — ${STATE.activeTurno}`;
+    badge.style.display = '';
+}
+
 
 function logout() {
     if (STATE.currentUser) {
@@ -3496,7 +3601,11 @@ function logout() {
     }
     
     STATE.currentUser = null;
+    STATE.activeSucursalId = null;
+    STATE.activeTurno = null;
     localStorage.removeItem('baldi_session');
+    sessionStorage.removeItem('baldi_active_shift');
+    updateActiveShiftBadge();
     document.body.className = 'unauthenticated';
     showToast('Sesión Cerrada', 'Has salido del sistema.', 'info');
 }
@@ -3513,6 +3622,7 @@ function checkSession() {
                 document.body.className = 'authenticated';
                 updateSidebarProfile();
                 switchView('dashboard'); // Force render dashboard on valid session
+                handlePostLoginSessionSetup();
                 return;
             }
         } catch (e) {
@@ -4427,7 +4537,7 @@ function renderSucursalesRows() {
 // inmediata. Complementa (no reemplaza) la vista "Ventas", que sigue sirviendo para
 // gestionar/editar el historial de comprobantes ya emitidos.
 function renderPOSView(container) {
-    const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+    const defaultSucursal = STATE.activeSucursalId || (STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id);
     const paymentMethods = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
 
     container.innerHTML = `
@@ -4448,17 +4558,23 @@ function renderPOSView(container) {
                 </div>
             </div>
             <div class="pos-sidebar">
+                ${needsSessionSetup(STATE.currentUser) ? `
+                <div class="bulk-price-preview" style="margin-bottom:4px;">
+                    <i data-lucide="lock" style="width:12px; height:12px; vertical-align:-2px;"></i>
+                    Sucursal y turno fijados por tu sesión de trabajo. Usá "Cambiar" en la barra superior para modificarlos.
+                </div>
+                ` : ''}
                 <div class="form-row">
                     <div class="form-group">
                         <label>Sucursal (Punto de Venta)</label>
-                        <select class="form-control" id="pos-sucursal-select">
+                        <select class="form-control" id="pos-sucursal-select" ${needsSessionSetup(STATE.currentUser) ? 'disabled' : ''}>
                             ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Turno</label>
-                        <select class="form-control" id="pos-turno-select">
-                            ${['Mañana', 'Tarde', 'Noche'].map(t => `<option value="${t}" ${t === getCurrentTurno() ? 'selected' : ''}>${t}</option>`).join('')}
+                        <select class="form-control" id="pos-turno-select" ${needsSessionSetup(STATE.currentUser) ? 'disabled' : ''}>
+                            ${TURNOS.map(t => `<option value="${t}" ${t === (STATE.activeTurno || getCurrentTurno()) ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
                     </div>
                 </div>
@@ -4848,7 +4964,7 @@ function openCashClosingModal() {
     const fields = document.getElementById('cash-closing-fields');
     modal.classList.add('active');
     const todayStr = new Date().toISOString().split('T')[0];
-    const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+    const defaultSucursal = STATE.activeSucursalId || (STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id);
 
     fields.innerHTML = `
         <div class="form-row">
@@ -4861,7 +4977,7 @@ function openCashClosingModal() {
             <div class="form-group">
                 <label>Turno</label>
                 <select class="form-control" id="cc-turno-select">
-                    ${TURNOS.map(t => `<option value="${t}" ${t === getCurrentTurno() ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${TURNOS.map(t => `<option value="${t}" ${t === (STATE.activeTurno || getCurrentTurno()) ? 'selected' : ''}>${t}</option>`).join('')}
                 </select>
             </div>
         </div>

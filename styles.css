@@ -2176,3 +2176,33 @@ body.authenticated .login-overlay {
 @media (max-width: 768px) {
     .connection-status span:not(.connection-dot):not(.sync-pending-badge) { display: none; }
 }
+
+/* ==========================================
+   BALDI - SESIÓN DE TRABAJO (SUCURSAL + TURNO)
+   ========================================== */
+.active-shift-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--primary-light);
+    color: var(--primary-hover);
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.active-shift-badge .btn-text {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+}
+@media (max-width: 900px) {
+    .active-shift-badge span:not(.btn-text) { display: none; }
+}
