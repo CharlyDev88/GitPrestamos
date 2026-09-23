@@ -1,4 +1,4 @@
-/* Modern Design System for Sidera - Distribuidora de Bebidas */
+/* Modern Design System for Baldi - Fiambrería Digital */
 
 :root {
     /* Color Palette - Cyan/Teal "Refreshing Drinks" System */
@@ -1777,3 +1777,280 @@ body.authenticated .login-overlay {
     to { transform: translateY(0); opacity: 1; }
 }
 
+
+/* ==========================================
+   BALDI - EXTENSIONES: Etiquetas, Tickets,
+   Cuentas Corrientes, Reposición, Escaneo
+   ========================================== */
+
+/* Toolbar buttons wrap nicely on smaller screens */
+.view-header-bar .header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-md, 10px);
+    border: 1.5px solid var(--primary);
+    background: #fff;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'Outfit', sans-serif;
+}
+.btn-outline:hover {
+    background: var(--primary-light);
+}
+.btn-outline i { width: 16px; height: 16px; }
+
+/* Checkbox column in tables */
+.custom-table td.checkbox-cell,
+.custom-table th.checkbox-cell {
+    text-align: center;
+    width: 40px;
+}
+.custom-table input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.barcode-mono {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+/* Scan / manual code entry bar in the sale modal */
+.scan-entry-bar {
+    display: flex;
+    gap: 8px;
+    background: var(--primary-light);
+    border: 1.5px dashed var(--primary);
+    border-radius: var(--radius-md, 10px);
+    padding: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+}
+.scan-entry-bar i.scan-icon {
+    color: var(--primary);
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.scan-entry-bar input {
+    flex: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+}
+.scan-entry-bar button {
+    white-space: nowrap;
+}
+
+/* Balance / current account summary cards */
+.balance-summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+.balance-summary-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg, 14px);
+    padding: 16px 18px;
+}
+.balance-summary-card .label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+}
+.balance-summary-card .value {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+.balance-summary-card .value.positive { color: var(--danger); }
+.balance-summary-card .value.negative { color: var(--success); }
+
+.tabs-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+.tab-btn {
+    padding: 10px 18px;
+    border: none;
+    background: none;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s ease;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.ledger-table th, .ledger-table td {
+    font-size: 0.85rem;
+}
+.ledger-table .amount-debit { color: var(--danger); font-weight: 600; }
+.ledger-table .amount-credit { color: var(--success); font-weight: 600; }
+.ledger-table .balance-col { font-weight: 700; }
+
+/* Replenishment view */
+.replenishment-provider-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg, 14px);
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+.replenishment-provider-header {
+    background: var(--primary-light);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.replenishment-provider-header h4 {
+    margin: 0;
+    color: var(--primary-hover);
+    font-size: 1rem;
+}
+
+/* Bulk price fields spacing reuse form-group/form-row already defined */
+.bulk-price-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+
+/* ===== PRICE LABELS (ETIQUETAS) ===== */
+.labels-grid-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+.label-preview-card {
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    background: #fff;
+}
+
+/* Printable sheets are hidden in-app and only shown inside the print window we open */
+.print-sheet { display: none; }
+
+@media print {
+    body * { visibility: hidden; }
+}
+
+.shelf-label {
+    width: 200px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: inline-block;
+    box-sizing: border-box;
+    text-align: center;
+    font-family: 'Outfit', Arial, sans-serif;
+    page-break-inside: avoid;
+}
+.shelf-label .sl-name {
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 32px;
+    margin-bottom: 6px;
+}
+.shelf-label .sl-price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #000;
+}
+.shelf-label .sl-unit {
+    font-size: 10px;
+    color: #555;
+    margin-top: 4px;
+}
+.shelf-label .sl-brand {
+    font-size: 9px;
+    color: #888;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.barcode-label {
+    width: 220px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: inline-block;
+    box-sizing: border-box;
+    text-align: center;
+    font-family: 'Outfit', Arial, sans-serif;
+    page-break-inside: avoid;
+}
+.barcode-label .bl-name {
+    font-size: 11px;
+    font-weight: 600;
+    min-height: 26px;
+    margin-bottom: 2px;
+}
+.barcode-label .bl-price {
+    font-size: 16px;
+    font-weight: 800;
+}
+.barcode-label svg { max-width: 100%; height: 45px; }
+
+/* ===== TICKETS (fiscal / no fiscal) ===== */
+.ticket-paper {
+    width: 300px;
+    margin: 0 auto;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #000;
+}
+.ticket-paper .t-center { text-align: center; }
+.ticket-paper .t-line {
+    border-top: 1px dashed #000;
+    margin: 6px 0;
+}
+.ticket-paper .t-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+}
+.ticket-paper h3 { margin: 4px 0; font-size: 15px; }
+.ticket-paper p { margin: 2px 0; }

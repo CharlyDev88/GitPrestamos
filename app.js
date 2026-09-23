@@ -1,82 +1,93 @@
 /**
- * Sidera - Gestión de Distribuidora de Bebidas
+ * Baldi - Gestión de Fiambrería (3 Sucursales)
  * Core Application Logic & State Management
  */
 
 // --- GLOBAL APPLICATION STATE ---
 const STATE = {
     currentView: 'dashboard',
-    
-    // Inventory items (Bebidas)
+
+    // Sucursales (Puntos de Venta) - Baldi posee 3 locales
+    sucursales: [
+        { id: 'S1', name: 'Casa Central', address: 'Av. San Martín 1450, Libertador Gral. San Martín, Jujuy', phone: '0388-421-1000' },
+        { id: 'S2', name: 'Sucursal Norte', address: 'Ruta 34 Km 12, Libertador Gral. San Martín, Jujuy', phone: '0388-421-2000' },
+        { id: 'S3', name: 'Sucursal Centro', address: 'Belgrano 320, Libertador Gral. San Martín, Jujuy', phone: '0388-421-3000' }
+    ],
+
+    // Inventory items (Fiambres, Quesos, Picadas, Almacén, etc.)
     inventory: [
-        { id: '1', name: 'Coca-Cola Original 2.25L', sku: 'GAS-COC-225', category: 'Gaseosas', stock: 180, minStock: 60, unit: 'Cajones x6', cost: 4200, price: 5600 },
-        { id: '2', name: 'Cerveza Quilmes Clásica 1L', sku: 'CER-QUI-1L', category: 'Cervezas', stock: 90, minStock: 40, unit: 'Cajones x12', cost: 6800, price: 9200 },
-        { id: '3', name: 'Agua Mineral Villavicencio 1.5L', sku: 'AGU-VIL-150', category: 'Aguas', stock: 220, minStock: 80, unit: 'Packs x6', cost: 2100, price: 2900 },
-        { id: '4', name: 'Fernet Branca 750ml', sku: 'LIC-FER-750', category: 'Licores y Aperitivos', stock: 35, minStock: 15, unit: 'Cajas x6', cost: 8900, price: 12500 },
-        { id: '5', name: 'Vino Malbec Trapiche 750ml', sku: 'VIN-TRA-750', category: 'Vinos y Espumantes', stock: 8, minStock: 12, unit: 'Cajas x12', cost: 11000, price: 15800 }, // Stock bajo
-        { id: '6', name: 'Gatorade Naranja 500ml', sku: 'ENE-GAT-500', category: 'Isotónicas y Energizantes', stock: 65, minStock: 25, unit: 'Packs x12', cost: 3200, price: 4500 },
-        { id: '7', name: 'Sidra Real 725ml', sku: 'SID-REA-725', category: 'Vinos y Espumantes', stock: 5, minStock: 20, unit: 'Cajas x12', cost: 3600, price: 5100 } // Stock bajo
+        { id: '1', name: 'Jamón Cocido Fetas x Kg', sku: 'FIA-JCO-KG', barcode: '7790001000012', category: 'Fiambres', providerId: '1', stock: 45, minStock: 15, unit: 'Kg', cost: 4200, price: 6200 },
+        { id: '2', name: 'Salame Milán Fetas x Kg', sku: 'FIA-SAL-KG', barcode: '7790001000029', category: 'Fiambres', providerId: '1', stock: 30, minStock: 12, unit: 'Kg', cost: 5800, price: 8500 },
+        { id: '3', name: 'Queso Cremoso x Kg', sku: 'QUE-CRE-KG', barcode: '7790002000012', category: 'Quesos', providerId: '2', stock: 38, minStock: 15, unit: 'Kg', cost: 4600, price: 6900 },
+        { id: '4', name: 'Queso de Rallar x Kg', sku: 'QUE-RAL-KG', barcode: '7790002000029', category: 'Quesos', providerId: '2', stock: 6, minStock: 10, unit: 'Kg', cost: 5200, price: 7800 }, // Stock bajo
+        { id: '5', name: 'Picada Especial Baldi x 500g', sku: 'PIC-ESP-500', barcode: '7790003000015', category: 'Picadas', providerId: '1', stock: 22, minStock: 10, unit: 'Bandejas', cost: 3200, price: 4900 },
+        { id: '6', name: 'Galletitas Agua Express x 200g', sku: 'GAL-AGU-200', barcode: '7790004000018', category: 'Galletitas y Panificados', providerId: '3', stock: 90, minStock: 30, unit: 'Paquetes', cost: 650, price: 990 },
+        { id: '7', name: 'Jugo de Naranja Exprimido 1L', sku: 'JUG-NAR-1L', barcode: '7790005000011', category: 'Jugos y Bebidas', providerId: '3', stock: 5, minStock: 24, unit: 'Botellas', cost: 900, price: 1450 }, // Stock bajo
+        { id: '8', name: 'Aceitunas Verdes x Kg', sku: 'ALM-ACE-KG', barcode: '7790006000014', category: 'Almacén', providerId: '2', stock: 18, minStock: 8, unit: 'Kg', cost: 2100, price: 3300 },
+        { id: '9', name: 'Bondiola Ahumada Fetas x Kg', sku: 'FIA-BON-KG', barcode: '7790001000036', category: 'Fiambres', providerId: '1', stock: 3, minStock: 10, unit: 'Kg', cost: 6800, price: 9900 } // Stock bajo
     ],
-    
-    // Providers (Distribuidoras / Proveedores)
+
+    // Providers (Proveedores)
     providers: [
-        { id: '1', name: 'Coca-Cola FEMSA Argentina', cuit: '30-50000845-9', phone: '011-4319-3000', email: 'ventas@femsa.com.ar', address: 'Av. del Libertador 1000, CABA' },
-        { id: '2', name: 'Cervecería y Maltería Quilmes', cuit: '30-50001082-8', phone: '0800-333-2020', email: 'comercial@quilmes.com.ar', address: 'Av. Andrés Baranda 197, Quilmes' },
-        { id: '3', name: 'Bodegas Trapiche S.A.', cuit: '30-54218903-4', phone: '0261-520-7666', email: 'pedidos@trapiche.com.ar', address: 'Nueva Mayorga s/n, Coquimbito, Mendoza' }
+        { id: '1', name: 'Fiambrera del Norte S.A.', cuit: '30-50000845-9', phone: '0388-424-3000', email: 'ventas@fiambreranorte.com.ar', address: 'Parque Industrial, Jujuy' },
+        { id: '2', name: 'Lácteos San Isidro', cuit: '30-50001082-8', phone: '0388-423-2020', email: 'comercial@lacteossanisidro.com.ar', address: 'Ruta 66 Km 4, Jujuy' },
+        { id: '3', name: 'Distribuidora Almacén Norte', cuit: '30-54218903-4', phone: '0388-420-7666', email: 'pedidos@almacennorte.com.ar', address: 'Av. Belgrano 900, Jujuy' }
     ],
-    
+
     // Clients (Clientes)
     clients: [
-        { id: '1', name: 'Restaurante La Parrilla del Che', dni_cuit: '30-71458921-2', phone: '11-5823-1492', email: 'compras@laparrilladelche.com', type: 'Bar / Restaurante' },
-        { id: '2', name: 'Kiosco Don Martín', dni_cuit: '24.582.103', phone: '341-692-0492', email: 'kioscodonmartin@gmail.com', type: 'Kiosco' },
-        { id: '3', name: 'Carlos Rodríguez', dni_cuit: '32.194.053', phone: '11-4029-5821', email: 'carlos.rod@hotmail.com', type: 'Particular' }
+        { id: '1', name: 'Rotisería La Esquina', dni_cuit: '30-71458921-2', phone: '388-582-1492', email: 'compras@rotiserialaesquina.com', type: 'Bar / Restaurante' },
+        { id: '2', name: 'Kiosco Don Martín', dni_cuit: '24.582.103', phone: '388-692-0492', email: 'kioscodonmartin@gmail.com', type: 'Kiosco' },
+        { id: '3', name: 'Carlos Rodríguez', dni_cuit: '32.194.053', phone: '388-402-5821', email: 'carlos.rod@hotmail.com', type: 'Particular' }
     ],
-    
+
     // Purchases (Compras)
     purchases: [
-        { id: 'COM-001', providerId: '1', providerName: 'Coca-Cola FEMSA Argentina', date: '2026-08-10', items: [{ productId: '1', qty: 100, cost: 4200 }], total: 420000, status: 'Recibido' },
-        { id: 'COM-002', providerId: '2', providerName: 'Cervecería y Maltería Quilmes', date: '2026-08-14', items: [{ productId: '2', qty: 30, cost: 6800 }], total: 204000, status: 'Recibido' }
+        { id: 'COM-001', providerId: '1', providerName: 'Fiambrera del Norte S.A.', sucursalId: 'S1', date: '2026-09-10', items: [{ productId: '1', qty: 40, cost: 4200 }], total: 168000, status: 'Recibido' },
+        { id: 'COM-002', providerId: '2', providerName: 'Lácteos San Isidro', sucursalId: 'S1', date: '2026-09-14', items: [{ productId: '3', qty: 25, cost: 4600 }], total: 115000, status: 'Recibido' }
     ],
-    
-    // Sales (Ventas)
+
+    // Sales (Ventas) - items incluyen "cost" (foto del costo al momento de vender, para informes de ganancia)
     sales: [
-        { id: 'VEN-001', clientId: '1', clientName: 'Restaurante La Parrilla del Che', date: '2026-08-15', items: [{ productId: '1', qty: 50, price: 5600 }, { productId: '2', qty: 20, price: 9200 }], total: 464000, status: 'Entregado' },
-        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', date: '2026-08-16', items: [{ productId: '3', qty: 20, price: 2900 }], total: 58000, status: 'Entregado' },
-        { id: 'VEN-003', clientId: '2', clientName: 'Kiosco Don Martín', date: '2026-08-17', items: [{ productId: '6', qty: 15, price: 4500 }], total: 67500, status: 'Pendiente' }
+        { id: 'VEN-001', clientId: '1', clientName: 'Rotisería La Esquina', sucursalId: 'S1', tipoComprobante: 'Factura B', date: '2026-09-15', items: [{ productId: '1', qty: 8, price: 6200, cost: 4200 }, { productId: '2', qty: 5, price: 8500, cost: 5800 }], total: 92100, status: 'Entregado' },
+        { id: 'VEN-002', clientId: '3', clientName: 'Carlos Rodríguez', sucursalId: 'S2', tipoComprobante: 'Ticket No Fiscal', date: '2026-09-16', items: [{ productId: '3', qty: 2, price: 6900, cost: 4600 }], total: 13800, status: 'Entregado' },
+        { id: 'VEN-003', clientId: '2', clientName: 'Kiosco Don Martín', sucursalId: 'S3', tipoComprobante: 'Ticket No Fiscal', date: '2026-09-17', items: [{ productId: '6', qty: 15, price: 990, cost: 650 }], total: 14850, status: 'Pendiente' }
     ],
-    
+
     // Receipts (Recibos de Cobro)
     receipts: [
-        { id: 'REC-001', saleId: 'VEN-001', clientName: 'Restaurante La Parrilla del Che', date: '2026-08-15', amount: 464000, method: 'Transferencia' },
-        { id: 'REC-002', saleId: 'VEN-002', clientName: 'Carlos Rodríguez', date: '2026-08-16', amount: 58000, method: 'Efectivo' }
+        { id: 'REC-001', saleId: 'VEN-001', clientName: 'Rotisería La Esquina', date: '2026-09-15', amount: 92100, method: 'Transferencia' },
+        { id: 'REC-002', saleId: 'VEN-002', clientName: 'Carlos Rodríguez', date: '2026-09-16', amount: 13800, method: 'Efectivo' }
     ],
-    
+
     // Payments (Pagos de Compra)
     payments: [
-        { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Coca-Cola FEMSA Argentina', date: '2026-08-10', amount: 420000, method: 'Transferencia' },
-        { id: 'PAG-002', purchaseId: 'COM-002', providerName: 'Cervecería y Maltería Quilmes', date: '2026-08-14', amount: 204000, method: 'Cheque' }
+        { id: 'PAG-001', purchaseId: 'COM-001', providerName: 'Fiambrera del Norte S.A.', date: '2026-09-10', amount: 168000, method: 'Transferencia' }
     ],
-    
+
     // Audit / History log (Historial)
     history: [
-        { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-08-18T08:00:00-03:00', details: 'Base de datos simulada creada con 7 bebidas, 3 proveedores y 3 clientes.' }
+        { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-09-18T08:00:00-03:00', details: 'Base de datos simulada creada con productos de fiambrería, 3 proveedores, 3 clientes y 3 sucursales.' }
     ],
-    
+
     // Active alerts for notification center
     notifications: [
-        { id: 'n1', title: 'Stock Bajo', text: 'La bebida "Sidra Real 725ml" ha quedado bajo el mínimo.', type: 'warning', time: 'Hace 2 horas' },
-        { id: 'n2', title: 'Stock Crítico', text: 'El "Vino Malbec Trapiche 750ml" requiere reposición urgente.', type: 'danger', time: 'Hace 5 horas' },
+        { id: 'n1', title: 'Stock Bajo', text: 'El "Queso de Rallar x Kg" ha quedado bajo el mínimo.', type: 'warning', time: 'Hace 2 horas' },
+        { id: 'n2', title: 'Stock Crítico', text: 'La "Bondiola Ahumada Fetas x Kg" requiere reposición urgente.', type: 'danger', time: 'Hace 5 horas' },
         { id: 'n3', title: 'Nueva Venta', text: 'Se ha registrado una venta pendiente para Kiosco Don Martín.', type: 'success', time: 'Hace 1 día' }
     ],
-    
-    // System Users (Usuarios)
+
+    // System Users (Usuarios) - cada uno asociado a una sucursal por defecto
     users: [
-        { id: '1', name: 'Claudio Vasquez', username: 'admin', password: 'admin123', role: 'Administrador', email: 'claudio@sidera.com' },
-        { id: '2', name: 'Laura Martínez', username: 'vendedor', password: 'vendedor123', role: 'Vendedor', email: 'laura@sidera.com' },
-        { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@sidera.com' }
+        { id: '1', name: 'Claudio Baldi', username: 'admin', password: 'admin123', role: 'Administrador', email: 'claudio@baldi.com', sucursalId: 'S1' },
+        { id: '2', name: 'Laura Martínez', username: 'vendedor', password: 'vendedor123', role: 'Vendedor', email: 'laura@baldi.com', sucursalId: 'S2' },
+        { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@baldi.com', sucursalId: 'S1' }
     ],
     currentUser: null
 };
+
+// Category list used across selects (inventory, filters, labels, charts)
+const CATEGORIES = ['Fiambres', 'Quesos', 'Picadas', 'Galletitas y Panificados', 'Jugos y Bebidas', 'Almacén'];
 
 // Global chart references to allow destroying before rebuilding
 let charts = {};
@@ -204,6 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('details-modal-close-btn').addEventListener('click', closeDetailsModal);
     document.getElementById('details-modal-close-btn-bottom').addEventListener('click', closeDetailsModal);
     
+    // Bulk price update modal handlers
+    document.getElementById('bulk-price-close-btn').addEventListener('click', closeBulkPriceModal);
+    document.getElementById('bulk-price-cancel-btn').addEventListener('click', closeBulkPriceModal);
+    document.getElementById('bulk-price-form').addEventListener('submit', handleBulkPriceSubmit);
+    
     // Login Submission Handler
     document.getElementById('login-form').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -298,19 +314,39 @@ function switchView(viewName) {
             renderDashboard(container);
             break;
         case 'inventory':
-            viewTitle.textContent = "Inventario de Bebidas";
-            viewSubtitle.textContent = "Catálogo de productos, control de stock mínimo y alta de bebidas.";
+            viewTitle.textContent = "Inventario de Productos";
+            viewSubtitle.textContent = "Catálogo de fiambres, quesos, picadas y almacén: stock, precios y códigos de barra.";
             renderInventoryView(container);
             break;
         case 'sales':
             viewTitle.textContent = "Gestión de Ventas";
-            viewSubtitle.textContent = "Registros de ventas de bebidas a clientes y emisión de recibos.";
+            viewSubtitle.textContent = "Registro de ventas por sucursal, lectura de código de barras y emisión de recibos.";
             renderSalesView(container);
             break;
         case 'purchases':
             viewTitle.textContent = "Pedidos de Compra";
-            viewSubtitle.textContent = "Registro de compras a distribuidoras y proveedores para reponer inventario.";
+            viewSubtitle.textContent = "Registro de compras a proveedores para reponer inventario.";
             renderPurchasesView(container);
+            break;
+        case 'replenishment':
+            viewTitle.textContent = "Listado de Reposición";
+            viewSubtitle.textContent = "Productos bajo stock mínimo agrupados por proveedor, con cantidad sugerida a pedir.";
+            renderReplenishmentView(container);
+            break;
+        case 'labels':
+            viewTitle.textContent = "Etiquetas de Precios";
+            viewSubtitle.textContent = "Generación de etiquetas de góndola y etiquetas con código de barras para imprimir.";
+            renderLabelsView(container);
+            break;
+        case 'accounts':
+            viewTitle.textContent = "Cuentas Corrientes";
+            viewSubtitle.textContent = "Saldos y movimientos de cuenta corriente de clientes y proveedores.";
+            renderAccountsView(container);
+            break;
+        case 'sucursales':
+            viewTitle.textContent = "Sucursales";
+            viewSubtitle.textContent = "Administración de los puntos de venta de la fiambrería.";
+            renderSucursalesView(container);
             break;
         case 'receipts':
             viewTitle.textContent = "Recibos emitidos";
@@ -324,22 +360,22 @@ function switchView(viewName) {
             break;
         case 'clients':
             viewTitle.textContent = "Base de Clientes";
-            viewSubtitle.textContent = "Directorio de bares, kioscos, restaurantes y particulares registrados.";
+            viewSubtitle.textContent = "Directorio de bares, kioscos, rotiserías y particulares registrados.";
             renderClientsView(container);
             break;
         case 'providers':
             viewTitle.textContent = "Directorio de Proveedores";
-            viewSubtitle.textContent = "Distribuidoras y bodegas oficiales asociadas al depósito.";
+            viewSubtitle.textContent = "Proveedores de fiambres, lácteos y almacén asociados a la fiambrería.";
             renderProvidersView(container);
             break;
         case 'reports':
             viewTitle.textContent = "Informes y Análisis de Datos";
-            viewSubtitle.textContent = "KPIs avanzados, valoración de existencias y flujo de caja consolidado.";
+            viewSubtitle.textContent = "Ganancias diarias y acumuladas, valoración de existencias y estadísticas por sucursal.";
             renderReportsView(container);
             break;
         case 'users':
             viewTitle.textContent = "Control de Usuarios";
-            viewSubtitle.textContent = "Alta, baja, modificación y roles del personal del depósito.";
+            viewSubtitle.textContent = "Alta, baja, modificación y roles del personal de la fiambrería.";
             renderUsersView(container);
             break;
         default:
@@ -636,7 +672,8 @@ function initDashboardCharts() {
     const pieCtx = document.getElementById('categoryPieChart').getContext('2d');
     
     // Group sales total by category
-    const catTotals = { Gaseosas: 0, Cervezas: 0, Aguas: 0, 'Vinos y Espumantes': 0, 'Licores y Aperitivos': 0, 'Isotónicas y Energizantes': 0 };
+    const catTotals = {};
+    CATEGORIES.forEach(c => catTotals[c] = 0);
     
     STATE.sales.forEach(s => {
         if (s.status === 'Cancelado') return;
@@ -659,12 +696,12 @@ function initDashboardCharts() {
             datasets: [{
                 data: dataValues,
                 backgroundColor: [
-                    '#0891b2', // cyan (Gaseosas)
-                    '#f59e0b', // amber (Cervezas)
-                    '#0ea5e9', // sky blue (Aguas)
-                    '#be123c', // wine red (Vinos y Espumantes)
-                    '#d946ef', // fuchsia (Licores y Aperitivos)
-                    '#22c55e'  // green (Isotónicas y Energizantes)
+                    '#0891b2', // cyan (Fiambres)
+                    '#f59e0b', // amber (Quesos)
+                    '#be123c', // wine red (Picadas)
+                    '#d946ef', // fuchsia (Galletitas y Panificados)
+                    '#0ea5e9', // sky blue (Jugos y Bebidas)
+                    '#22c55e'  // green (Almacén)
                 ],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -713,12 +750,7 @@ function renderInventoryView(container) {
                 </div>
                 <select class="filter-select" id="inventory-filter-cat">
                     <option value="all">Todas las Categorías</option>
-                    <option value="Gaseosas">Gaseosas</option>
-                    <option value="Cervezas">Cervezas</option>
-                    <option value="Aguas">Aguas</option>
-                    <option value="Vinos y Espumantes">Vinos y Espumantes</option>
-                    <option value="Licores y Aperitivos">Licores y Aperitivos</option>
-                    <option value="Isotónicas y Energizantes">Isotónicas y Energizantes</option>
+                    ${CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
                 </select>
                 <select class="filter-select" id="inventory-filter-stock">
                     <option value="all">Todo el Stock</option>
@@ -726,10 +758,20 @@ function renderInventoryView(container) {
                     <option value="ok">Stock Normal</option>
                 </select>
             </div>
-            <button class="btn-primary" id="btn-inventory-add">
-                <i data-lucide="plus"></i>
-                <span>Nueva Bebida</span>
-            </button>
+            <div class="header-actions">
+                <button class="btn-outline" id="btn-inventory-export-excel">
+                    <i data-lucide="file-spreadsheet"></i>
+                    <span>Lista de Precios (Excel)</span>
+                </button>
+                <button class="btn-outline" id="btn-inventory-bulk-price">
+                    <i data-lucide="percent"></i>
+                    <span>Actualización Masiva</span>
+                </button>
+                <button class="btn-primary" id="btn-inventory-add">
+                    <i data-lucide="plus"></i>
+                    <span>Nuevo Producto</span>
+                </button>
+            </div>
         </div>
         
         <div class="table-card">
@@ -738,8 +780,10 @@ function renderInventoryView(container) {
                     <thead>
                         <tr>
                             <th>SKU</th>
+                            <th>Cód. Barras</th>
                             <th>Descripción</th>
                             <th>Categoría</th>
+                            <th>Proveedor</th>
                             <th>Unidad</th>
                             <th>Costo Unit.</th>
                             <th>Precio Venta</th>
@@ -773,6 +817,8 @@ function renderInventoryView(container) {
     document.getElementById('inventory-search').addEventListener('input', filterInventoryTable);
     document.getElementById('inventory-filter-cat').addEventListener('change', filterInventoryTable);
     document.getElementById('inventory-filter-stock').addEventListener('change', filterInventoryTable);
+    document.getElementById('btn-inventory-export-excel').addEventListener('click', exportPriceListExcel);
+    document.getElementById('btn-inventory-bulk-price').addEventListener('click', openBulkPriceModal);
     
     renderInventoryRows(STATE.inventory);
     renderModuleHistory('inventory');
@@ -783,19 +829,22 @@ function renderInventoryRows(items) {
     tbody.innerHTML = '';
     
     if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron bebidas</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron productos</td></tr>`;
         return;
     }
     
     items.forEach(item => {
         const isLow = item.stock <= item.minStock;
         const stateBadge = isLow ? '<span class="status-badge danger">Bajo Mínimo</span>' : '<span class="status-badge success">Normal</span>';
+        const provider = STATE.providers.find(p => p.id === item.providerId);
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="font-weight: 600;">${item.sku}</td>
+            <td class="barcode-mono">${item.barcode || '—'}</td>
             <td>${item.name}</td>
             <td>${item.category}</td>
+            <td>${provider ? provider.name : '—'}</td>
             <td>${item.unit}</td>
             <td>${formatCurrency(item.cost)}</td>
             <td style="font-weight: 600;">${formatCurrency(item.price)}</td>
@@ -911,6 +960,9 @@ function renderProvidersRows(items) {
             <td>${item.address}</td>
             <td style="text-align: center;">
                 <div class="table-actions">
+                    <button class="btn-table-action view" onclick="viewProviderLedger('${item.id}')" title="Ver Cuenta Corriente">
+                        <i data-lucide="landmark"></i>
+                    </button>
                     <button class="btn-table-action edit" onclick="openCrudModal('providers', 'edit', '${item.id}')" title="Editar">
                         <i data-lucide="edit"></i>
                     </button>
@@ -1020,6 +1072,9 @@ function renderClientsRows(items) {
             <td>${item.email}</td>
             <td style="text-align: center;">
                 <div class="table-actions">
+                    <button class="btn-table-action view" onclick="viewClientLedger('${item.id}')" title="Ver Cuenta Corriente">
+                        <i data-lucide="landmark"></i>
+                    </button>
                     <button class="btn-table-action edit" onclick="openCrudModal('clients', 'edit', '${item.id}')" title="Editar">
                         <i data-lucide="edit"></i>
                     </button>
@@ -1197,11 +1252,13 @@ function renderSalesView(container) {
                         <tr>
                             <th>Cód. Venta</th>
                             <th>Cliente</th>
+                            <th>Sucursal</th>
+                            <th>Comprobante</th>
                             <th>Fecha</th>
                             <th>Artículos</th>
                             <th>Monto Total</th>
                             <th>Estado</th>
-                            <th style="width: 120px; text-align: center;">Acciones</th>
+                            <th style="width: 140px; text-align: center;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="sales-table-body">
@@ -1233,7 +1290,7 @@ function renderSalesRows(items) {
     tbody.innerHTML = '';
     
     if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron transacciones de venta</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron transacciones de venta</td></tr>`;
         return;
     }
     
@@ -1243,11 +1300,14 @@ function renderSalesRows(items) {
         if (item.status === 'Cancelado') statusBadge = 'danger';
         
         const itemsCount = item.items.reduce((acc, curr) => acc + curr.qty, 0);
+        const sucursal = STATE.sucursales.find(s => s.id === item.sucursalId);
         
         tr = document.createElement('tr');
         tr.innerHTML = `
             <td style="font-weight: 600;">${item.id}</td>
             <td>${item.clientName}</td>
+            <td>${sucursal ? sucursal.name : '—'}</td>
+            <td><span class="status-badge info">${item.tipoComprobante || 'Ticket No Fiscal'}</span></td>
             <td>${formatDate(item.date)}</td>
             <td>${itemsCount} unidades</td>
             <td style="font-weight: 700;">${formatCurrency(item.total)}</td>
@@ -1256,6 +1316,9 @@ function renderSalesRows(items) {
                 <div class="table-actions">
                     <button class="btn-table-action view" onclick="viewTransactionDetails('sales', '${item.id}')" title="Ver Detalle / Remito">
                         <i data-lucide="eye"></i>
+                    </button>
+                    <button class="btn-table-action edit" onclick="printTicket('${item.id}')" title="Imprimir Ticket">
+                        <i data-lucide="printer"></i>
                     </button>
                     <button class="btn-table-action edit" onclick="openCrudModal('sales', 'edit', '${item.id}')" title="Editar">
                         <i data-lucide="edit"></i>
@@ -1514,6 +1577,12 @@ function renderReportsView(container) {
     const totalReceipts = STATE.receipts.reduce((acc, curr) => acc + curr.amount, 0);
     const totalPayments = STATE.payments.reduce((acc, curr) => acc + curr.amount, 0);
     const netCashflow = totalReceipts - totalPayments;
+
+    // Real profit computed from sold line items (price - cost snapshot)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const profitOf = (sale) => sale.status === 'Cancelado' ? 0 : sale.items.reduce((acc, l) => acc + (l.qty * ((l.price || 0) - (l.cost ?? 0))), 0);
+    const accumulatedProfit = STATE.sales.reduce((acc, s) => acc + profitOf(s), 0);
+    const todayProfit = STATE.sales.filter(s => s.date === todayStr).reduce((acc, s) => acc + profitOf(s), 0);
     
     container.innerHTML = `
         <!-- Top Reports stats -->
@@ -1554,11 +1623,28 @@ function renderReportsView(container) {
                 <div class="kpi-value" style="color: ${netCashflow >= 0 ? 'var(--success)' : 'var(--danger)'};">${formatCurrency(netCashflow)}</div>
                 <span class="text-secondary">Cobros menos Pagos realizados</span>
             </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Ganancia de Hoy</span>
+                    <div class="kpi-icon success"><i data-lucide="sunrise"></i></div>
+                </div>
+                <div class="kpi-value" style="color: var(--success);">${formatCurrency(todayProfit)}</div>
+                <span class="text-secondary">Precio de venta menos costo, ventas de hoy</span>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Ganancia Acumulada</span>
+                    <div class="kpi-icon success"><i data-lucide="trending-up"></i></div>
+                </div>
+                <div class="kpi-value" style="color: var(--success);">${formatCurrency(accumulatedProfit)}</div>
+                <span class="text-secondary">Total histórico registrado en el sistema</span>
+            </div>
         </div>
 
         <div class="reports-tabs">
             <button class="tab-btn active" id="btn-tab-financial">Flujo de Caja Real vs. Proyectado</button>
             <button class="tab-btn" id="btn-tab-products">Rotación & Stock Crítico</button>
+            <button class="tab-btn" id="btn-tab-profit">Ganancias Diarias / por Sucursal</button>
         </div>
 
         <div class="charts-grid" id="reports-charts-container">
@@ -1586,21 +1672,116 @@ function renderReportsView(container) {
     // Tab switching
     const tabFin = document.getElementById('btn-tab-financial');
     const tabProd = document.getElementById('btn-tab-products');
+    const tabProfit = document.getElementById('btn-tab-profit');
+    const allTabs = [tabFin, tabProd, tabProfit];
+    const activate = (tab, renderFn) => {
+        allTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderFn();
+    };
     
-    tabFin.addEventListener('click', () => {
-        tabFin.classList.add('active');
-        tabProd.classList.remove('active');
-        renderFinancialReportChart();
-    });
-    
-    tabProd.addEventListener('click', () => {
-        tabFin.classList.remove('active');
-        tabProd.classList.add('active');
-        renderProductReportChart();
-    });
+    tabFin.addEventListener('click', () => activate(tabFin, renderFinancialReportChart));
+    tabProd.addEventListener('click', () => activate(tabProd, renderProductReportChart));
+    tabProfit.addEventListener('click', () => activate(tabProfit, renderProfitReportChart));
     
     // Initial Chart render
     renderFinancialReportChart();
+}
+
+function renderProfitReportChart() {
+    const chartContainer = document.getElementById('reports-charts-container');
+    chartContainer.innerHTML = `
+        <div class="chart-card" style="grid-column: span 2;">
+            <div class="chart-card-header">
+                <span class="chart-title">Ganancia Diaria (Precio de Venta − Costo)</span>
+                <select class="filter-select" id="profit-sucursal-filter" style="max-width:220px;">
+                    <option value="all">Todas las Sucursales</option>
+                    ${STATE.sucursales.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="chart-container" style="min-height: 320px;">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+        <div class="table-card" style="grid-column: span 2;">
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Fecha</th><th>Sucursal</th><th>Ventas</th><th>Costo</th><th>Ganancia</th></tr>
+                    </thead>
+                    <tbody id="profit-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+
+    const buildAndRender = () => {
+        const filterVal = document.getElementById('profit-sucursal-filter').value;
+        const relevantSales = STATE.sales.filter(s => s.status !== 'Cancelado' && (filterVal === 'all' || s.sucursalId === filterVal));
+
+        // Group by date
+        const byDate = {};
+        relevantSales.forEach(s => {
+            if (!byDate[s.date]) byDate[s.date] = { revenue: 0, cost: 0, profit: 0 };
+            s.items.forEach(l => {
+                byDate[s.date].revenue += l.qty * l.price;
+                byDate[s.date].cost += l.qty * (l.cost ?? 0);
+            });
+            byDate[s.date].profit = byDate[s.date].revenue - byDate[s.date].cost;
+        });
+
+        const dates = Object.keys(byDate).sort();
+        const profitData = dates.map(d => byDate[d].profit);
+
+        if (charts.profit) charts.profit.destroy();
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        charts.profit = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: dates.map(formatDate),
+                datasets: [{
+                    label: 'Ganancia ($)',
+                    data: profitData,
+                    backgroundColor: '#059669',
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (c) => `Ganancia: ${formatCurrency(c.raw)}` } }
+                },
+                scales: {
+                    y: { ticks: { font: { family: 'Outfit' }, callback: (v) => '$' + v/1000 + 'k' }, grid: { color: '#f1f5f9' } },
+                    x: { ticks: { font: { family: 'Outfit' } }, grid: { display: false } }
+                }
+            }
+        });
+
+        const tbody = document.getElementById('profit-table-body');
+        if (dates.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">No hay ventas registradas para este filtro.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = dates.slice().reverse().map(d => {
+            const sucursalesInDay = [...new Set(relevantSales.filter(s => s.date === d).map(s => s.sucursalId))];
+            const sucNames = sucursalesInDay.map(id => (STATE.sucursales.find(s => s.id === id) || {}).name).filter(Boolean).join(', ') || '—';
+            return `<tr>
+                <td>${formatDate(d)}</td>
+                <td>${sucNames}</td>
+                <td>${formatCurrency(byDate[d].revenue)}</td>
+                <td>${formatCurrency(byDate[d].cost)}</td>
+                <td style="font-weight:700; color:var(--success);">${formatCurrency(byDate[d].profit)}</td>
+            </tr>`;
+        }).join('');
+    };
+
+    document.getElementById('profit-sucursal-filter').addEventListener('change', buildAndRender);
+    buildAndRender();
 }
 
 function renderFinancialReportChart() {
@@ -1801,14 +1982,15 @@ function openCrudModal(module, action, id = null) {
     
     // Config title
     const moduleNameEs = {
-        inventory: 'Bebida / Producto',
+        inventory: 'Producto',
         providers: 'Proveedor',
         clients: 'Cliente',
         purchases: 'Compra',
         sales: 'Venta',
         receipts: 'Recibo de Pago',
         payments: 'Orden de Pago',
-        users: 'Usuario'
+        users: 'Usuario',
+        sucursales: 'Sucursal'
     }[module];
     
     const actionLabel = action === 'create' ? 'Agregar' : 'Modificar';
@@ -1823,32 +2005,46 @@ function openCrudModal(module, action, id = null) {
     }
     
     if (module === 'inventory') {
+        const providerOpts = STATE.providers.map(p => `<option value="${p.id}" ${data.providerId === p.id ? 'selected' : ''}>${p.name}</option>`).join('');
         fieldsContainer.innerHTML = `
             <div class="form-group">
-                <label>Descripción de la Bebida</label>
-                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Coca-Cola Original 2.25L">
+                <label>Descripción del Producto</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Jamón Cocido Fetas x Kg">
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>SKU / Código</label>
-                    <input type="text" class="form-control" name="sku" value="${data.sku || ''}" required placeholder="Ej: GAS-001">
+                    <label>SKU / Código Interno</label>
+                    <input type="text" class="form-control" name="sku" value="${data.sku || ''}" required placeholder="Ej: FIA-001">
                 </div>
                 <div class="form-group">
                     <label>Categoría</label>
                     <select class="form-control" name="category" required>
-                        <option value="Gaseosas" ${data.category === 'Gaseosas' ? 'selected' : ''}>Gaseosas</option>
-                        <option value="Cervezas" ${data.category === 'Cervezas' ? 'selected' : ''}>Cervezas</option>
-                        <option value="Aguas" ${data.category === 'Aguas' ? 'selected' : ''}>Aguas</option>
-                        <option value="Vinos y Espumantes" ${data.category === 'Vinos y Espumantes' ? 'selected' : ''}>Vinos y Espumantes</option>
-                        <option value="Licores y Aperitivos" ${data.category === 'Licores y Aperitivos' ? 'selected' : ''}>Licores y Aperitivos</option>
-                        <option value="Isotónicas y Energizantes" ${data.category === 'Isotónicas y Energizantes' ? 'selected' : ''}>Isotónicas y Energizantes</option>
+                        ${CATEGORIES.map(c => `<option value="${c}" ${data.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Código de Barras (EAN-13)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" class="form-control" name="barcode" id="inv-barcode-input" value="${data.barcode || ''}" placeholder="Se genera automáticamente si se deja vacío">
+                        <button type="button" class="btn-secondary" id="btn-generate-barcode" style="white-space:nowrap;" title="Generar código automáticamente">
+                            <i data-lucide="scan-line"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Proveedor</label>
+                    <select class="form-control" name="providerId">
+                        <option value="">-- Sin asignar --</option>
+                        ${providerOpts}
                     </select>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Unidad de Medida</label>
-                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Cajones x6, Packs x12, Botellas">
+                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Kg, Paquetes, Botellas">
                 </div>
                 <div class="form-group">
                     <label>Stock Inicial</label>
@@ -1870,6 +2066,10 @@ function openCrudModal(module, action, id = null) {
                 <input type="number" class="form-control" name="minStock" value="${data.minStock ?? 10}" required min="0">
             </div>
         `;
+        document.getElementById('btn-generate-barcode').addEventListener('click', () => {
+            const skuField = fieldsContainer.querySelector('[name="sku"]');
+            document.getElementById('inv-barcode-input').value = generateBarcode(skuField.value || data.id || Math.random().toString());
+        });
     }
     
     else if (module === 'providers') {
@@ -1899,6 +2099,23 @@ function openCrudModal(module, action, id = null) {
         `;
     }
     
+    else if (module === 'sucursales') {
+        fieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label>Nombre de la Sucursal</label>
+                <input type="text" class="form-control" name="name" value="${data.name || ''}" required placeholder="Ej: Sucursal Sur">
+            </div>
+            <div class="form-group">
+                <label>Dirección</label>
+                <input type="text" class="form-control" name="address" value="${data.address || ''}" required placeholder="Dirección completa del local">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" class="form-control" name="phone" value="${data.phone || ''}" placeholder="Ej: 0388-421-0000">
+            </div>
+        `;
+    }
+
     else if (module === 'clients') {
         fieldsContainer.innerHTML = `
             <div class="form-group">
@@ -1972,6 +2189,7 @@ function openCrudModal(module, action, id = null) {
         let providerOptions = STATE.providers.map(p => `<option value="${p.id}" ${data.providerId === p.id ? 'selected' : ''}>${p.name}</option>`).join('');
         let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Costo: ${formatCurrency(m.cost)})</option>`).join('');
         
+        const sucOptionsCompra = STATE.sucursales.map(s => `<option value="${s.id}" ${data.sucursalId === s.id ? 'selected' : (!data.sucursalId && s.id === (STATE.currentUser && STATE.currentUser.sucursalId)) ? 'selected' : ''}>${s.name}</option>`).join('');
         fieldsContainer.innerHTML = `
             <div class="form-row">
                 <div class="form-group">
@@ -1981,9 +2199,15 @@ function openCrudModal(module, action, id = null) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Fecha de Operación</label>
-                    <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
+                    <label>Sucursal de Recepción</label>
+                    <select class="form-control" name="sucursalId" required>
+                        ${sucOptionsCompra}
+                    </select>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Fecha de Operación</label>
+                <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
             </div>
             
             <!-- Items builder -->
@@ -2139,6 +2363,9 @@ function openCrudModal(module, action, id = null) {
     else if (module === 'sales') {
         let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${data.clientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
         let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock: ${m.stock} | Precio: ${formatCurrency(m.price)})</option>`).join('');
+        const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
+        const sucOptionsVenta = STATE.sucursales.map(s => `<option value="${s.id}" ${(data.sucursalId || defaultSucursal) === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
+        const comprobanteOpts = ['Ticket No Fiscal', 'Factura B', 'Factura C'].map(t => `<option value="${t}" ${(data.tipoComprobante || 'Ticket No Fiscal') === t ? 'selected' : ''}>${t}</option>`).join('');
         
         fieldsContainer.innerHTML = `
             <div class="form-row">
@@ -2152,6 +2379,26 @@ function openCrudModal(module, action, id = null) {
                     <label>Fecha de Operación</label>
                     <input type="date" class="form-control" name="date" value="${data.date || new Date().toISOString().split('T')[0]}" required>
                 </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Punto de Venta (Sucursal)</label>
+                    <select class="form-control" name="sucursalId" required>
+                        ${sucOptionsVenta}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Comprobante</label>
+                    <select class="form-control" name="tipoComprobante" required>
+                        ${comprobanteOpts}
+                    </select>
+                </div>
+            </div>
+
+            <div class="scan-entry-bar">
+                <i data-lucide="scan-barcode" class="scan-icon"></i>
+                <input type="text" id="tx-scan-input" placeholder="Escanear código de barras o ingresar SKU y presionar Enter...">
+                <button type="button" class="btn-primary" id="btn-scan-add">Agregar</button>
             </div>
             
             <!-- Items builder -->
@@ -2295,9 +2542,49 @@ function openCrudModal(module, action, id = null) {
             selectedItems.splice(idx, 1);
             renderSelectedList();
         };
+
+        // Adds a product line by scanned barcode or manually typed SKU/barcode
+        const scanInput = document.getElementById('tx-scan-input');
+        const scanAddByCode = () => {
+            const code = scanInput.value.trim();
+            if (!code) return;
+            const mat = STATE.inventory.find(m =>
+                (m.barcode && m.barcode === code) || m.sku.toLowerCase() === code.toLowerCase()
+            );
+            if (!mat) {
+                showToast('Producto no encontrado', `No existe ningún producto con el código "${code}".`, 'danger');
+                scanInput.value = '';
+                scanInput.focus();
+                return;
+            }
+            if (mat.stock <= 0) {
+                showToast('Sin Stock', `${mat.name} no tiene stock disponible.`, 'warning');
+            }
+            const existing = selectedItems.find(it => it.productId === mat.id);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                selectedItems.push({ productId: mat.id, name: mat.name, qty: 1, price: mat.price });
+            }
+            renderSelectedList();
+            showToast('Producto Agregado', `${mat.name} agregado a la venta por código.`, 'success');
+            scanInput.value = '';
+            scanInput.focus();
+        };
+        document.getElementById('btn-scan-add').addEventListener('click', scanAddByCode);
+        scanInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                scanAddByCode();
+            }
+        });
         
         renderSelectedList();
-        currentCrudContext.getItems = () => selectedItems;
+        // Snapshot the current inventory cost for each line so profit reports stay accurate
+        currentCrudContext.getItems = () => selectedItems.map(it => {
+            const mat = STATE.inventory.find(m => m.id === it.productId);
+            return { ...it, cost: mat ? mat.cost : 0 };
+        });
     }
     
     // RECEIPTS (RECIBOS)
@@ -2424,11 +2711,18 @@ function handleFormSubmit(e) {
     if (formObj.amount !== undefined) formObj.amount = parseFloat(formObj.amount);
     if (formObj.total !== undefined) formObj.total = parseFloat(formObj.total);
     
+    // Auto-generate a barcode for products that don't have one yet
+    if (module === 'inventory' && (!formObj.barcode || formObj.barcode.trim() === '')) {
+        formObj.barcode = generateBarcode(formObj.sku || Math.random().toString());
+    }
+    
     if (action === 'create') {
         // Generate new sequential ID
         let newId = '';
         if (module === 'inventory' || module === 'providers' || module === 'clients' || module === 'users') {
             newId = (STATE[module].length + 1).toString();
+        } else if (module === 'sucursales') {
+            newId = `S${STATE.sucursales.length + 1}`;
         } else if (module === 'purchases') {
             newId = `COM-00${STATE.purchases.length + 1}`;
         } else if (module === 'sales') {
@@ -2639,12 +2933,14 @@ function viewTransactionDetails(module, id) {
         `;
     });
     
+    const sucursal = tx.sucursalId ? STATE.sucursales.find(s => s.id === tx.sucursalId) : null;
+
     content.innerHTML = `
         <div class="invoice-box">
             <div class="invoice-header">
-                <h4>SIDERA CORRALÓN DIGITAL S.A.</h4>
-                <p>Cuit: 30-82749102-3 | Av. San Martín 4900, Rosario</p>
-                <p>Fecha de emisión: ${formatDate(tx.date)}</p>
+                <h4>BALDI FIAMBRERÍA S.A.</h4>
+                <p>Cuit: 30-82749102-3 ${sucursal ? `| ${sucursal.name} - ${sucursal.address}` : ''}</p>
+                <p>Fecha de emisión: ${formatDate(tx.date)} ${tx.tipoComprobante ? `| ${tx.tipoComprobante}` : ''}</p>
             </div>
             
             <div class="invoice-row" style="font-weight: bold; margin-bottom: 12px;">
@@ -2669,8 +2965,16 @@ function viewTransactionDetails(module, id) {
                 <span>Estado actual:</span>
                 <span style="font-weight: bold; color: ${tx.status === 'Cancelado' ? 'var(--danger)' : 'var(--success)'};">${tx.status.toUpperCase()}</span>
             </div>
+            ${module === 'sales' ? `
+            <div class="invoice-divider"></div>
+            <button type="button" class="btn-primary" style="width:100%; justify-content:center;" onclick="printTicket('${tx.id}')">
+                <i data-lucide="printer"></i>
+                <span>Imprimir Ticket</span>
+            </button>
+            ` : ''}
         </div>
     `;
+    lucide.createIcons();
 }
 
 function closeDetailsModal() {
@@ -2848,4 +3152,776 @@ function updateSidebarProfile() {
         name.textContent = STATE.currentUser.name;
         role.textContent = STATE.currentUser.role;
     }
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: CÓDIGOS DE BARRA (EAN-13)
+// ==========================================
+function ean13CheckDigit(code12) {
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+        const digit = parseInt(code12[i], 10) || 0;
+        sum += (i % 2 === 0) ? digit : digit * 3;
+    }
+    const mod = sum % 10;
+    return mod === 0 ? 0 : 10 - mod;
+}
+
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    return hash;
+}
+
+// Generates a deterministic-looking EAN-13 barcode (Argentina prefix 779) from a seed string
+function generateBarcode(seed) {
+    const hash = simpleHash(String(seed) + '-' + Math.random());
+    const numPart = (hash % 1000000000).toString().padStart(9, '0');
+    const code12 = '779' + numPart;
+    const check = ean13CheckDigit(code12);
+    return code12 + check.toString();
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: EXPORTACIÓN DE LISTA DE PRECIOS (EXCEL)
+// ==========================================
+function exportPriceListExcel() {
+    if (typeof XLSX === 'undefined') {
+        showToast('Error', 'No se pudo cargar el motor de Excel. Verifique su conexión a internet.', 'danger');
+        return;
+    }
+
+    const publicList = STATE.inventory.map(it => ({
+        'SKU': it.sku,
+        'Código de Barras': it.barcode || '',
+        'Producto': it.name,
+        'Categoría': it.category,
+        'Unidad': it.unit,
+        'Precio de Venta': it.price,
+        'Stock Actual': it.stock
+    }));
+
+    const internalList = STATE.inventory.map(it => {
+        const prov = STATE.providers.find(p => p.id === it.providerId);
+        return {
+            'SKU': it.sku,
+            'Código de Barras': it.barcode || '',
+            'Producto': it.name,
+            'Categoría': it.category,
+            'Proveedor': prov ? prov.name : '',
+            'Unidad': it.unit,
+            'Costo': it.cost,
+            'Precio de Venta': it.price,
+            'Margen %': it.cost > 0 ? Number((((it.price - it.cost) / it.cost) * 100).toFixed(1)) : '',
+            'Stock Actual': it.stock,
+            'Stock Mínimo': it.minStock
+        };
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(publicList), 'Lista de Precios');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(internalList), 'Detalle Interno (Costos)');
+
+    const filename = `Baldi_Lista_de_Precios_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, filename);
+
+    logHistory('inventory', 'export', 'Exportación de lista de precios a Excel.', `Archivo generado: ${filename}`);
+    showToast('Exportación Exitosa', `Se descargó ${filename}`, 'success');
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: ACTUALIZACIÓN MASIVA DE PRECIOS
+// ==========================================
+function openBulkPriceModal() {
+    const modal = document.getElementById('bulk-price-modal');
+    const fields = document.getElementById('bulk-price-fields');
+    modal.classList.add('active');
+
+    fields.innerHTML = `
+        <div class="form-group">
+            <label>Aplicar a</label>
+            <select class="form-control" id="bulk-cat-select">
+                <option value="all">Todas las Categorías</option>
+                ${CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tipo de Ajuste</label>
+                <select class="form-control" id="bulk-type-select">
+                    <option value="increase">Aumento</option>
+                    <option value="decrease">Descuento</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Porcentaje (%)</label>
+                <input type="number" class="form-control" id="bulk-percent-input" min="0" step="0.1" value="10" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Aplicar sobre</label>
+            <select class="form-control" id="bulk-target-select">
+                <option value="price">Solo Precio de Venta</option>
+                <option value="cost">Solo Costo</option>
+                <option value="both">Precio y Costo</option>
+            </select>
+        </div>
+        <div class="bulk-price-preview" id="bulk-price-preview">Seleccione los parámetros para ver una vista previa.</div>
+    `;
+
+    const catSel = document.getElementById('bulk-cat-select');
+    const typeSel = document.getElementById('bulk-type-select');
+    const pctInput = document.getElementById('bulk-percent-input');
+    const targetSel = document.getElementById('bulk-target-select');
+    const preview = document.getElementById('bulk-price-preview');
+
+    const updatePreview = () => {
+        const cat = catSel.value;
+        const pct = parseFloat(pctInput.value) || 0;
+        const type = typeSel.value;
+        const affected = STATE.inventory.filter(it => cat === 'all' || it.category === cat);
+        preview.textContent = `Esta acción afectará a ${affected.length} producto(s) con un ${type === 'increase' ? 'aumento' : 'descuento'} del ${pct}%.`;
+    };
+    [catSel, typeSel, pctInput, targetSel].forEach(el => el.addEventListener('input', updatePreview));
+    updatePreview();
+}
+
+function closeBulkPriceModal() {
+    document.getElementById('bulk-price-modal').classList.remove('active');
+}
+
+function handleBulkPriceSubmit(e) {
+    e.preventDefault();
+    const cat = document.getElementById('bulk-cat-select').value;
+    const type = document.getElementById('bulk-type-select').value;
+    const pct = parseFloat(document.getElementById('bulk-percent-input').value);
+    const target = document.getElementById('bulk-target-select').value;
+
+    if (isNaN(pct) || pct < 0) {
+        showToast('Error', 'Ingrese un porcentaje válido.', 'danger');
+        return;
+    }
+
+    const factor = type === 'increase' ? (1 + pct / 100) : (1 - pct / 100);
+    const affected = STATE.inventory.filter(it => cat === 'all' || it.category === cat);
+
+    affected.forEach(it => {
+        if (target === 'price' || target === 'both') it.price = Math.max(0, Math.round(it.price * factor));
+        if (target === 'cost' || target === 'both') it.cost = Math.max(0, Math.round(it.cost * factor));
+    });
+
+    logHistory('inventory', 'update', `Actualización masiva de precios (${type === 'increase' ? '+' : '-'}${pct}%) sobre ${cat === 'all' ? 'todas las categorías' : cat}.`, `Productos afectados: ${affected.length}`);
+    showToast('Actualización Aplicada', `Se actualizaron ${affected.length} producto(s).`, 'success');
+
+    closeBulkPriceModal();
+    switchView(STATE.currentView);
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: ETIQUETAS DE PRECIOS (GÓNDOLA Y CÓDIGO DE BARRAS)
+// ==========================================
+function renderLabelsView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div class="search-filter-box">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="labels-search" class="search-input" placeholder="Buscar por SKU o descripción...">
+                </div>
+                <select class="filter-select" id="labels-filter-cat">
+                    <option value="all">Todas las Categorías</option>
+                    ${CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('')}
+                </select>
+            </div>
+            <div class="header-actions">
+                <button class="btn-outline" id="btn-select-all-labels">
+                    <i data-lucide="check-square"></i>
+                    <span>Seleccionar Todo</span>
+                </button>
+                <button class="btn-secondary" id="btn-print-shelf-labels">
+                    <i data-lucide="tag"></i>
+                    <span>Etiquetas de Góndola</span>
+                </button>
+                <button class="btn-primary" id="btn-print-barcode-labels">
+                    <i data-lucide="scan-barcode"></i>
+                    <span>Etiquetas con Código de Barras</span>
+                </button>
+            </div>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="labels-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell"><input type="checkbox" id="labels-check-all"></th>
+                            <th>SKU</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th style="width:110px;">Copias</th>
+                        </tr>
+                    </thead>
+                    <tbody id="labels-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    const renderRows = (items) => {
+        const tbody = document.getElementById('labels-table-body');
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px;">No se encontraron productos</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = items.map(it => `
+            <tr>
+                <td class="checkbox-cell"><input type="checkbox" class="label-item-check" value="${it.id}"></td>
+                <td style="font-weight:600;">${it.sku}</td>
+                <td>${it.name}</td>
+                <td>${it.category}</td>
+                <td>${formatCurrency(it.price)}</td>
+                <td><input type="number" class="form-control label-qty-input" data-id="${it.id}" min="1" value="1" style="padding:6px 8px;"></td>
+            </tr>
+        `).join('');
+    };
+    renderRows(STATE.inventory);
+
+    const filterRows = () => {
+        const q = document.getElementById('labels-search').value.toLowerCase();
+        const cat = document.getElementById('labels-filter-cat').value;
+        renderRows(STATE.inventory.filter(it =>
+            (it.sku.toLowerCase().includes(q) || it.name.toLowerCase().includes(q)) &&
+            (cat === 'all' || it.category === cat)
+        ));
+    };
+    document.getElementById('labels-search').addEventListener('input', filterRows);
+    document.getElementById('labels-filter-cat').addEventListener('change', filterRows);
+
+    document.getElementById('labels-check-all').addEventListener('change', (e) => {
+        document.querySelectorAll('.label-item-check').forEach(cb => cb.checked = e.target.checked);
+    });
+    document.getElementById('btn-select-all-labels').addEventListener('click', () => {
+        const boxes = [...document.querySelectorAll('.label-item-check')];
+        const allChecked = boxes.length > 0 && boxes.every(cb => cb.checked);
+        boxes.forEach(cb => cb.checked = !allChecked);
+    });
+
+    const getSelectedForLabels = () => {
+        const rows = [...document.querySelectorAll('#labels-table-body tr')];
+        const selected = [];
+        rows.forEach(row => {
+            const cb = row.querySelector('.label-item-check');
+            if (cb && cb.checked) {
+                const qtyInput = row.querySelector('.label-qty-input');
+                const qty = parseInt(qtyInput.value) || 1;
+                const product = STATE.inventory.find(p => p.id === cb.value);
+                if (product) selected.push({ product, qty });
+            }
+        });
+        return selected;
+    };
+
+    document.getElementById('btn-print-shelf-labels').addEventListener('click', () => {
+        const selection = getSelectedForLabels();
+        if (selection.length === 0) { showToast('Sin selección', 'Seleccione al menos un producto.', 'warning'); return; }
+        printShelfLabels(selection);
+    });
+    document.getElementById('btn-print-barcode-labels').addEventListener('click', () => {
+        const selection = getSelectedForLabels();
+        if (selection.length === 0) { showToast('Sin selección', 'Seleccione al menos un producto.', 'warning'); return; }
+        printBarcodeLabels(selection);
+    });
+
+    lucide.createIcons();
+}
+
+function printShelfLabels(selection) {
+    let labelsHtml = '';
+    selection.forEach(({ product, qty }) => {
+        for (let i = 0; i < qty; i++) {
+            labelsHtml += `
+                <div class="shelf-label">
+                    <div class="sl-name">${product.name}</div>
+                    <div class="sl-price">${formatCurrency(product.price)}</div>
+                    <div class="sl-unit">${product.unit}</div>
+                    <div class="sl-brand">Baldi Fiambrería</div>
+                </div>
+            `;
+        }
+    });
+    openPrintWindow('Etiquetas de Góndola - Baldi', labelsHtml, false);
+    logHistory('inventory', 'print', `Generación de etiquetas de góndola para ${selection.length} producto(s).`);
+}
+
+function printBarcodeLabels(selection) {
+    let labelsHtml = '';
+    selection.forEach(({ product, qty }) => {
+        for (let i = 0; i < qty; i++) {
+            labelsHtml += `
+                <div class="barcode-label">
+                    <div class="bl-name">${product.name}</div>
+                    <svg class="jsbarcode" jsbarcode-value="${product.barcode || product.sku}"></svg>
+                    <div class="bl-price">${formatCurrency(product.price)}</div>
+                </div>
+            `;
+        }
+    });
+    openPrintWindow('Etiquetas con Código de Barras - Baldi', labelsHtml, true);
+    logHistory('inventory', 'print', `Generación de etiquetas con código de barras para ${selection.length} producto(s).`);
+}
+
+// Opens a clean, self-contained print window. `withBarcodes` loads JsBarcode there and
+// renders every .jsbarcode SVG before triggering window.print().
+function openPrintWindow(title, bodyHtml, withBarcodes) {
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) {
+        showToast('Bloqueado por el navegador', 'Habilite las ventanas emergentes para poder imprimir.', 'danger');
+        return;
+    }
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>${title}</title>
+            <style>
+                body { font-family: Arial, Helvetica, sans-serif; padding: 16px; margin: 0; }
+                .sheet { display: flex; flex-wrap: wrap; gap: 10px; }
+                .shelf-label {
+                    width: 200px; border: 1px solid #333; border-radius: 8px; padding: 10px 12px;
+                    box-sizing: border-box; text-align: center; page-break-inside: avoid;
+                }
+                .shelf-label .sl-name { font-size: 13px; font-weight: 600; min-height: 32px; margin-bottom: 6px; }
+                .shelf-label .sl-price { font-size: 28px; font-weight: 800; color: #000; }
+                .shelf-label .sl-unit { font-size: 10px; color: #555; margin-top: 4px; }
+                .shelf-label .sl-brand { font-size: 9px; color: #888; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+                .barcode-label {
+                    width: 220px; border: 1px solid #333; border-radius: 6px; padding: 8px 10px;
+                    box-sizing: border-box; text-align: center; page-break-inside: avoid;
+                }
+                .barcode-label .bl-name { font-size: 11px; font-weight: 600; min-height: 26px; margin-bottom: 2px; }
+                .barcode-label .bl-price { font-size: 16px; font-weight: 800; }
+                .barcode-label svg { max-width: 100%; height: 45px; }
+                @media print { body { padding: 6px; } }
+            </style>
+        </head>
+        <body>
+            <div class="sheet">${bodyHtml}</div>
+            ${withBarcodes ? '<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"><\/script>' : ''}
+        </body>
+        </html>
+    `);
+    win.document.close();
+
+    const doPrint = () => {
+        win.focus();
+        win.print();
+    };
+
+    if (withBarcodes) {
+        const check = setInterval(() => {
+            if (win.JsBarcode) {
+                clearInterval(check);
+                win.document.querySelectorAll('.jsbarcode').forEach(svg => {
+                    try {
+                        win.JsBarcode(svg, svg.getAttribute('jsbarcode-value'), { height: 40, fontSize: 12, margin: 4 });
+                    } catch (e) { /* skip invalid codes */ }
+                });
+                setTimeout(doPrint, 150);
+            }
+        }, 100);
+        setTimeout(() => clearInterval(check), 6000);
+    } else {
+        setTimeout(doPrint, 150);
+    }
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: IMPRESIÓN DE TICKETS (FISCAL / NO FISCAL)
+// ==========================================
+function printTicket(saleId) {
+    const sale = STATE.sales.find(s => s.id === saleId);
+    if (!sale) return;
+
+    const sucursal = STATE.sucursales.find(s => s.id === sale.sucursalId) || STATE.sucursales[0];
+    const tipo = sale.tipoComprobante || 'Ticket No Fiscal';
+    const isFiscal = tipo !== 'Ticket No Fiscal';
+
+    let itemsHtml = sale.items.map(l => {
+        const p = STATE.inventory.find(pr => pr.id === l.productId);
+        const name = p ? p.name : 'Producto';
+        return `
+            <div class="t-row"><span>${l.qty} x ${name}</span><span>${formatCurrency(l.qty * l.price)}</span></div>
+        `;
+    }).join('');
+
+    const ticketHtml = `
+        <div class="ticket-paper">
+            <div class="t-center">
+                <h3>BALDI FIAMBRERÍA</h3>
+                <p>${sucursal.name}</p>
+                <p>${sucursal.address}</p>
+                <p>CUIT: 30-82749102-3</p>
+            </div>
+            <div class="t-line"></div>
+            <p class="t-center" style="font-weight:bold;">${tipo.toUpperCase()}</p>
+            <p>Fecha: ${formatDate(sale.date)}</p>
+            <p>Comprobante: ${sale.id}</p>
+            <p>Cliente: ${sale.clientName}</p>
+            <div class="t-line"></div>
+            ${itemsHtml}
+            <div class="t-line"></div>
+            <div class="t-row" style="font-weight:bold; font-size:14px;"><span>TOTAL</span><span>${formatCurrency(sale.total)}</span></div>
+            <div class="t-line"></div>
+            <p class="t-center">${isFiscal ? '¡Gracias por su compra!' : 'Documento no válido como factura'}</p>
+        </div>
+    `;
+
+    openTicketWindow(`Ticket ${sale.id}`, ticketHtml);
+}
+
+function openTicketWindow(title, html) {
+    const win = window.open('', '_blank', 'width=400,height=650');
+    if (!win) {
+        showToast('Bloqueado por el navegador', 'Habilite las ventanas emergentes para poder imprimir.', 'danger');
+        return;
+    }
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>${title}</title>
+            <style>
+                body { font-family: 'Courier New', monospace; padding: 12px; margin: 0; }
+                .ticket-paper { width: 280px; margin: 0 auto; font-size: 12px; }
+                .t-center { text-align: center; }
+                .t-line { border-top: 1px dashed #000; margin: 6px 0; }
+                .t-row { display: flex; justify-content: space-between; gap: 6px; }
+                h3 { margin: 4px 0; font-size: 15px; }
+                p { margin: 2px 0; }
+            </style>
+        </head>
+        <body>${html}</body>
+        </html>
+    `);
+    win.document.close();
+    setTimeout(() => { win.focus(); win.print(); }, 200);
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: LISTADO DE REPOSICIÓN POR PROVEEDOR
+// ==========================================
+function renderReplenishmentView(container) {
+    const lowStock = STATE.inventory.filter(it => it.stock <= it.minStock);
+    const byProvider = {};
+    lowStock.forEach(it => {
+        const key = it.providerId || 'none';
+        if (!byProvider[key]) byProvider[key] = [];
+        byProvider[key].push(it);
+    });
+
+    if (Object.keys(byProvider).length === 0) {
+        container.innerHTML = `
+            <div class="table-card" style="padding:48px; text-align:center;">
+                <i data-lucide="check-circle-2" style="width:48px; height:48px; color:var(--success); margin-bottom:12px;"></i>
+                <p style="color:var(--text-muted);">Todos los productos están dentro de sus niveles de stock normales. No hay reposiciones pendientes.</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    let html = `
+        <div class="view-header-bar">
+            <div></div>
+            <div class="header-actions">
+                <button class="btn-outline" id="btn-export-replenishment">
+                    <i data-lucide="file-spreadsheet"></i>
+                    <span>Exportar a Excel</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+    Object.keys(byProvider).forEach(pid => {
+        const provider = STATE.providers.find(p => p.id === pid);
+        const items = byProvider[pid];
+        html += `
+            <div class="replenishment-provider-card">
+                <div class="replenishment-provider-header">
+                    <h4>${provider ? provider.name : 'Sin Proveedor Asignado'}</h4>
+                    ${provider ? `<span class="text-secondary">${provider.phone || ''} ${provider.email ? '| ' + provider.email : ''}</span>` : ''}
+                </div>
+                <div class="table-wrapper">
+                    <table class="custom-table">
+                        <thead><tr><th>SKU</th><th>Producto</th><th>Stock Actual</th><th>Mínimo</th><th>Cantidad Sugerida</th></tr></thead>
+                        <tbody>
+                            ${items.map(it => {
+                                const suggested = Math.max(it.minStock * 2 - it.stock, it.minStock - it.stock, 1);
+                                return `<tr>
+                                    <td>${it.sku}</td>
+                                    <td>${it.name}</td>
+                                    <td style="color:var(--danger); font-weight:700;">${it.stock} ${it.unit}</td>
+                                    <td>${it.minStock}</td>
+                                    <td style="font-weight:700;">${suggested} ${it.unit}</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    lucide.createIcons();
+
+    document.getElementById('btn-export-replenishment').addEventListener('click', () => {
+        if (typeof XLSX === 'undefined') {
+            showToast('Error', 'No se pudo cargar el motor de Excel.', 'danger');
+            return;
+        }
+        const rows = [];
+        Object.keys(byProvider).forEach(pid => {
+            const provider = STATE.providers.find(p => p.id === pid);
+            byProvider[pid].forEach(it => {
+                const suggested = Math.max(it.minStock * 2 - it.stock, it.minStock - it.stock, 1);
+                rows.push({
+                    'Proveedor': provider ? provider.name : 'Sin Asignar',
+                    'SKU': it.sku,
+                    'Producto': it.name,
+                    'Stock Actual': it.stock,
+                    'Stock Mínimo': it.minStock,
+                    'Cantidad Sugerida': suggested,
+                    'Unidad': it.unit
+                });
+            });
+        });
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Reposición');
+        XLSX.writeFile(wb, `Baldi_Reposicion_${new Date().toISOString().split('T')[0]}.xlsx`);
+        logHistory('purchases', 'export', 'Exportación del listado de reposición a Excel.');
+        showToast('Exportación Exitosa', 'Se descargó el listado de reposición.', 'success');
+    });
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: CUENTAS CORRIENTES (CLIENTES / PROVEEDORES)
+// ==========================================
+function renderAccountsView(container) {
+    container.innerHTML = `
+        <div class="tabs-row">
+            <button class="tab-btn active" id="tab-accounts-clients">Clientes</button>
+            <button class="tab-btn" id="tab-accounts-providers">Proveedores</button>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table" id="accounts-table">
+                    <thead id="accounts-table-head"></thead>
+                    <tbody id="accounts-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    const showClients = () => {
+        document.getElementById('tab-accounts-clients').classList.add('active');
+        document.getElementById('tab-accounts-providers').classList.remove('active');
+        document.getElementById('accounts-table-head').innerHTML = `<tr><th>Cliente</th><th>Tipo</th><th>Total Facturado</th><th>Total Cobrado</th><th>Saldo</th><th style="width:100px;text-align:center;">Acciones</th></tr>`;
+        document.getElementById('accounts-table-body').innerHTML = STATE.clients.map(c => {
+            const bal = getClientBalance(c.id);
+            return `<tr>
+                <td style="font-weight:600;">${c.name}</td>
+                <td>${c.type}</td>
+                <td>${formatCurrency(bal.totalSales)}</td>
+                <td>${formatCurrency(bal.totalReceipts)}</td>
+                <td style="font-weight:700;" class="${bal.balance > 0 ? 'amount-debit' : 'amount-credit'}">${formatCurrency(bal.balance)}</td>
+                <td style="text-align:center;">
+                    <button class="btn-table-action view" onclick="viewClientLedger('${c.id}')" title="Ver Cuenta Corriente"><i data-lucide="eye"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+        lucide.createIcons();
+    };
+
+    const showProviders = () => {
+        document.getElementById('tab-accounts-providers').classList.add('active');
+        document.getElementById('tab-accounts-clients').classList.remove('active');
+        document.getElementById('accounts-table-head').innerHTML = `<tr><th>Proveedor</th><th>Total Comprado</th><th>Total Pagado</th><th>Saldo (Le debemos)</th><th style="width:100px;text-align:center;">Acciones</th></tr>`;
+        document.getElementById('accounts-table-body').innerHTML = STATE.providers.map(p => {
+            const bal = getProviderBalance(p.id);
+            return `<tr>
+                <td style="font-weight:600;">${p.name}</td>
+                <td>${formatCurrency(bal.totalPurchases)}</td>
+                <td>${formatCurrency(bal.totalPayments)}</td>
+                <td style="font-weight:700;" class="${bal.balance > 0 ? 'amount-debit' : 'amount-credit'}">${formatCurrency(bal.balance)}</td>
+                <td style="text-align:center;">
+                    <button class="btn-table-action view" onclick="viewProviderLedger('${p.id}')" title="Ver Cuenta Corriente"><i data-lucide="eye"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+        lucide.createIcons();
+    };
+
+    document.getElementById('tab-accounts-clients').addEventListener('click', showClients);
+    document.getElementById('tab-accounts-providers').addEventListener('click', showProviders);
+    showClients();
+}
+
+function getClientBalance(clientId) {
+    const client = STATE.clients.find(c => c.id === clientId);
+    const totalSales = STATE.sales.filter(s => s.clientId === clientId && s.status !== 'Cancelado').reduce((a, s) => a + s.total, 0);
+    const totalReceipts = STATE.receipts.filter(r => {
+        if (r.saleId) {
+            const sale = STATE.sales.find(s => s.id === r.saleId);
+            return sale && sale.clientId === clientId;
+        }
+        return client && r.clientName === client.name;
+    }).reduce((a, r) => a + r.amount, 0);
+    return { totalSales, totalReceipts, balance: totalSales - totalReceipts };
+}
+
+function getProviderBalance(providerId) {
+    const provider = STATE.providers.find(p => p.id === providerId);
+    const totalPurchases = STATE.purchases.filter(p => p.providerId === providerId && p.status !== 'Cancelado').reduce((a, p) => a + p.total, 0);
+    const totalPayments = STATE.payments.filter(pay => {
+        if (pay.purchaseId) {
+            const purchase = STATE.purchases.find(p => p.id === pay.purchaseId);
+            return purchase && purchase.providerId === providerId;
+        }
+        return provider && pay.providerName === provider.name;
+    }).reduce((a, pay) => a + pay.amount, 0);
+    return { totalPurchases, totalPayments, balance: totalPurchases - totalPayments };
+}
+
+function getClientLedger(clientId) {
+    const client = STATE.clients.find(c => c.id === clientId);
+    const rows = [];
+    STATE.sales.filter(s => s.clientId === clientId && s.status !== 'Cancelado').forEach(s => {
+        rows.push({ date: s.date, desc: `Venta ${s.id}`, debit: s.total, credit: 0 });
+    });
+    STATE.receipts.filter(r => {
+        if (r.saleId) {
+            const sale = STATE.sales.find(s => s.id === r.saleId);
+            return sale && sale.clientId === clientId;
+        }
+        return client && r.clientName === client.name;
+    }).forEach(r => {
+        rows.push({ date: r.date, desc: `Recibo ${r.id} (${r.method})`, debit: 0, credit: r.amount });
+    });
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    let bal = 0;
+    return rows.map(r => { bal += r.debit - r.credit; return { ...r, balance: bal }; });
+}
+
+function getProviderLedger(providerId) {
+    const provider = STATE.providers.find(p => p.id === providerId);
+    const rows = [];
+    STATE.purchases.filter(p => p.providerId === providerId && p.status !== 'Cancelado').forEach(p => {
+        rows.push({ date: p.date, desc: `Compra ${p.id}`, debit: p.total, credit: 0 });
+    });
+    STATE.payments.filter(pay => {
+        if (pay.purchaseId) {
+            const purchase = STATE.purchases.find(p => p.id === pay.purchaseId);
+            return purchase && purchase.providerId === providerId;
+        }
+        return provider && pay.providerName === provider.name;
+    }).forEach(pay => {
+        rows.push({ date: pay.date, desc: `Pago ${pay.id} (${pay.method})`, debit: 0, credit: pay.amount });
+    });
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+    let bal = 0;
+    return rows.map(r => { bal += r.debit - r.credit; return { ...r, balance: bal }; });
+}
+
+function renderLedgerModal(title, balanceLabel, ledger) {
+    const modal = document.getElementById('details-modal');
+    document.getElementById('details-modal-title').textContent = title;
+    const bal = ledger.length ? ledger[ledger.length - 1].balance : 0;
+    document.getElementById('details-modal-content').innerHTML = `
+        <div class="balance-summary-row">
+            <div class="balance-summary-card">
+                <span class="label">${balanceLabel}</span>
+                <span class="value ${bal > 0 ? 'positive' : 'negative'}">${formatCurrency(bal)}</span>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="custom-table ledger-table">
+                <thead><tr><th>Fecha</th><th>Concepto</th><th>Debe</th><th>Haber</th><th>Saldo</th></tr></thead>
+                <tbody>
+                    ${ledger.length ? ledger.map(r => `<tr>
+                        <td>${formatDate(r.date)}</td>
+                        <td>${r.desc}</td>
+                        <td class="amount-debit">${r.debit ? formatCurrency(r.debit) : ''}</td>
+                        <td class="amount-credit">${r.credit ? formatCurrency(r.credit) : ''}</td>
+                        <td class="balance-col">${formatCurrency(r.balance)}</td>
+                    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Sin movimientos registrados.</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+    `;
+    modal.classList.add('active');
+}
+
+function viewClientLedger(clientId) {
+    const client = STATE.clients.find(c => c.id === clientId);
+    if (!client) return;
+    renderLedgerModal(`Cuenta Corriente - ${client.name}`, 'Saldo Actual (nos debe)', getClientLedger(clientId));
+}
+
+function viewProviderLedger(providerId) {
+    const provider = STATE.providers.find(p => p.id === providerId);
+    if (!provider) return;
+    renderLedgerModal(`Cuenta Corriente - ${provider.name}`, 'Saldo Actual (le debemos)', getProviderLedger(providerId));
+}
+
+// ==========================================
+// BALDI - EXTENSIÓN: SUCURSALES
+// ==========================================
+function renderSucursalesView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div></div>
+            <button class="btn-primary" id="btn-sucursales-add">
+                <i data-lucide="plus"></i>
+                <span>Nueva Sucursal</span>
+            </button>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead><tr><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th style="width:100px;text-align:center;">Acciones</th></tr></thead>
+                    <tbody id="sucursales-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    document.getElementById('btn-sucursales-add').addEventListener('click', () => openCrudModal('sucursales', 'create'));
+    renderSucursalesRows();
+}
+
+function renderSucursalesRows() {
+    const tbody = document.getElementById('sucursales-table-body');
+    if (STATE.sucursales.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:32px;">No hay sucursales registradas</td></tr>`;
+        lucide.createIcons();
+        return;
+    }
+    tbody.innerHTML = STATE.sucursales.map(s => `
+        <tr>
+            <td style="font-weight:600;">${s.name}</td>
+            <td>${s.address}</td>
+            <td>${s.phone || '—'}</td>
+            <td style="text-align:center;">
+                <div class="table-actions">
+                    <button class="btn-table-action edit" onclick="openCrudModal('sucursales', 'edit', '${s.id}')" title="Editar"><i data-lucide="edit"></i></button>
+                    <button class="btn-table-action delete" onclick="deleteItem('sucursales', '${s.id}')" title="Eliminar"><i data-lucide="trash-2"></i></button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    lucide.createIcons();
 }
