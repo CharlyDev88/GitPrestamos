@@ -154,6 +154,12 @@
                             <span>Cierres de Caja</span>
                         </button>
                     </li>
+                    <li>
+                        <button class="nav-item" data-view="creditnotes">
+                            <i data-lucide="receipt-text"></i>
+                            <span>Notas Crédito / Débito</span>
+                        </button>
+                    </li>
                     <li class="menu-section">Contactos</li>
                     <li>
                         <button class="nav-item" data-view="clients">
@@ -216,6 +222,11 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <div class="connection-status" id="connection-status" title="Estado de conexión">
+                        <span class="connection-dot"></span>
+                        <span id="connection-status-text">En línea</span>
+                        <span class="sync-pending-badge" id="sync-pending-badge" style="display:none;">0</span>
+                    </div>
                     <div class="time-widget">
                         <i data-lucide="calendar"></i>
                         <span id="current-date">Jueves, 25 de Junio, 2026</span>

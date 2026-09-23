@@ -15,16 +15,17 @@ const STATE = {
     ],
 
     // Inventory items (Fiambres, Quesos, Picadas, Almacén, etc.)
+    // El stock se guarda desglosado por sucursal en `stockBySucursal` (ver getStock/getTotalStock).
     inventory: [
-        { id: '1', name: 'Jamón Cocido Fetas x Kg', sku: 'FIA-JCO-KG', barcode: '7790001000012', category: 'Fiambres', providerId: '1', stock: 45, minStock: 15, unit: 'Kg', cost: 4200, price: 6200 },
-        { id: '2', name: 'Salame Milán Fetas x Kg', sku: 'FIA-SAL-KG', barcode: '7790001000029', category: 'Fiambres', providerId: '1', stock: 30, minStock: 12, unit: 'Kg', cost: 5800, price: 8500 },
-        { id: '3', name: 'Queso Cremoso x Kg', sku: 'QUE-CRE-KG', barcode: '7790002000012', category: 'Quesos', providerId: '2', stock: 38, minStock: 15, unit: 'Kg', cost: 4600, price: 6900 },
-        { id: '4', name: 'Queso de Rallar x Kg', sku: 'QUE-RAL-KG', barcode: '7790002000029', category: 'Quesos', providerId: '2', stock: 6, minStock: 10, unit: 'Kg', cost: 5200, price: 7800 }, // Stock bajo
-        { id: '5', name: 'Picada Especial Baldi x 500g', sku: 'PIC-ESP-500', barcode: '7790003000015', category: 'Picadas', providerId: '1', stock: 22, minStock: 10, unit: 'Bandejas', cost: 3200, price: 4900 },
-        { id: '6', name: 'Galletitas Agua Express x 200g', sku: 'GAL-AGU-200', barcode: '7790004000018', category: 'Galletitas y Panificados', providerId: '3', stock: 90, minStock: 30, unit: 'Paquetes', cost: 650, price: 990 },
-        { id: '7', name: 'Jugo de Naranja Exprimido 1L', sku: 'JUG-NAR-1L', barcode: '7790005000011', category: 'Jugos y Bebidas', providerId: '3', stock: 5, minStock: 24, unit: 'Botellas', cost: 900, price: 1450 }, // Stock bajo
-        { id: '8', name: 'Aceitunas Verdes x Kg', sku: 'ALM-ACE-KG', barcode: '7790006000014', category: 'Almacén', providerId: '2', stock: 18, minStock: 8, unit: 'Kg', cost: 2100, price: 3300 },
-        { id: '9', name: 'Bondiola Ahumada Fetas x Kg', sku: 'FIA-BON-KG', barcode: '7790001000036', category: 'Fiambres', providerId: '1', stock: 3, minStock: 10, unit: 'Kg', cost: 6800, price: 9900 } // Stock bajo
+        { id: '1', name: 'Jamón Cocido Fetas x Kg', sku: 'FIA-JCO-KG', barcode: '7790001000012', category: 'Fiambres', providerId: '1', stockBySucursal: { S1: 20, S2: 15, S3: 10 }, minStock: 15, unit: 'Kg', cost: 4200, price: 6200 },
+        { id: '2', name: 'Salame Milán Fetas x Kg', sku: 'FIA-SAL-KG', barcode: '7790001000029', category: 'Fiambres', providerId: '1', stockBySucursal: { S1: 12, S2: 10, S3: 8 }, minStock: 12, unit: 'Kg', cost: 5800, price: 8500 },
+        { id: '3', name: 'Queso Cremoso x Kg', sku: 'QUE-CRE-KG', barcode: '7790002000012', category: 'Quesos', providerId: '2', stockBySucursal: { S1: 15, S2: 13, S3: 10 }, minStock: 15, unit: 'Kg', cost: 4600, price: 6900 },
+        { id: '4', name: 'Queso de Rallar x Kg', sku: 'QUE-RAL-KG', barcode: '7790002000029', category: 'Quesos', providerId: '2', stockBySucursal: { S1: 2, S2: 3, S3: 1 }, minStock: 10, unit: 'Kg', cost: 5200, price: 7800 }, // Stock bajo en las 3 sucursales
+        { id: '5', name: 'Picada Especial Baldi x 500g', sku: 'PIC-ESP-500', barcode: '7790003000015', category: 'Picadas', providerId: '1', stockBySucursal: { S1: 10, S2: 7, S3: 5 }, minStock: 10, unit: 'Bandejas', cost: 3200, price: 4900 },
+        { id: '6', name: 'Galletitas Agua Express x 200g', sku: 'GAL-AGU-200', barcode: '7790004000018', category: 'Galletitas y Panificados', providerId: '3', stockBySucursal: { S1: 35, S2: 30, S3: 25 }, minStock: 30, unit: 'Paquetes', cost: 650, price: 990 },
+        { id: '7', name: 'Jugo de Naranja Exprimido 1L', sku: 'JUG-NAR-1L', barcode: '7790005000011', category: 'Jugos y Bebidas', providerId: '3', stockBySucursal: { S1: 2, S2: 2, S3: 1 }, minStock: 24, unit: 'Botellas', cost: 900, price: 1450 }, // Stock bajo
+        { id: '8', name: 'Aceitunas Verdes x Kg', sku: 'ALM-ACE-KG', barcode: '7790006000014', category: 'Almacén', providerId: '2', stockBySucursal: { S1: 7, S2: 6, S3: 5 }, minStock: 8, unit: 'Kg', cost: 2100, price: 3300 },
+        { id: '9', name: 'Bondiola Ahumada Fetas x Kg', sku: 'FIA-BON-KG', barcode: '7790001000036', category: 'Fiambres', providerId: '1', stockBySucursal: { S1: 1, S2: 1, S3: 1 }, minStock: 10, unit: 'Kg', cost: 6800, price: 9900 } // Stock bajo
     ],
 
     // Providers (Proveedores)
@@ -69,6 +70,12 @@ const STATE = {
     // Cierres de Caja (arqueos diarios por sucursal) - se completan desde el módulo "Cierres de Caja"
     cashClosings: [],
 
+    // Notas de Crédito y Débito (referencian una venta con Factura A/B/C original)
+    creditNotes: [],
+
+    // Contadores de numeración fiscal por sucursal (Punto de Venta) y letra de comprobante
+    comprobanteCounters: {},
+
     // Audit / History log (Historial)
     history: [
         { id: '1', module: 'system', action: 'create', description: 'Inicialización del sistema con datos de prueba.', timestamp: '2026-09-18T08:00:00-03:00', details: 'Base de datos simulada creada con productos de fiambrería, 3 proveedores, 3 clientes y 3 sucursales.' }
@@ -81,11 +88,15 @@ const STATE = {
         { id: 'n3', title: 'Nueva Venta', text: 'Se ha registrado una venta pendiente para Kiosco Don Martín.', type: 'success', time: 'Hace 1 día' }
     ],
 
-    // System Users (Usuarios) - cada uno asociado a una sucursal por defecto
+    // System Users (Usuarios) - cada uno asociado a una sucursal por defecto, con permisos
+    // granulares independientes del rol (se pueden ajustar caso por caso).
     users: [
-        { id: '1', name: 'Claudio Baldi', username: 'admin', password: 'admin123', role: 'Administrador', email: 'claudio@baldi.com', sucursalId: 'S1' },
-        { id: '2', name: 'Laura Martínez', username: 'vendedor', password: 'vendedor123', role: 'Vendedor', email: 'laura@baldi.com', sucursalId: 'S2' },
-        { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@baldi.com', sucursalId: 'S1' }
+        { id: '1', name: 'Claudio Baldi', username: 'admin', password: 'admin123', role: 'Administrador', email: 'claudio@baldi.com', sucursalId: 'S1',
+          permissions: { verCostos: true, hacerDescuentos: true, anularTickets: true, cerrarCaja: true, gestionarUsuarios: true, verReportes: true } },
+        { id: '2', name: 'Laura Martínez', username: 'vendedor', password: 'vendedor123', role: 'Vendedor', email: 'laura@baldi.com', sucursalId: 'S2',
+          permissions: { verCostos: false, hacerDescuentos: true, anularTickets: false, cerrarCaja: true, gestionarUsuarios: false, verReportes: false } },
+        { id: '3', name: 'Pedro Gómez', username: 'deposito', password: 'deposito123', role: 'Depósito', email: 'pedro@baldi.com', sucursalId: 'S1',
+          permissions: { verCostos: true, hacerDescuentos: false, anularTickets: false, cerrarCaja: false, gestionarUsuarios: false, verReportes: false } }
     ],
     currentUser: null
 };
@@ -93,10 +104,67 @@ const STATE = {
 // Category list used across selects (inventory, filters, labels, charts)
 const CATEGORIES = ['Fiambres', 'Quesos', 'Picadas', 'Galletitas y Panificados', 'Jugos y Bebidas', 'Almacén'];
 
+// Permission definitions used across the app (Usuarios modal, POS, Ventas, Cierres de Caja)
+const PERMISSION_DEFS = [
+    { key: 'verCostos', label: 'Ver Costos y Márgenes' },
+    { key: 'hacerDescuentos', label: 'Aplicar Descuentos en Ventas' },
+    { key: 'anularTickets', label: 'Anular Tickets / Ventas' },
+    { key: 'cerrarCaja', label: 'Realizar Cierres de Caja' },
+    { key: 'gestionarUsuarios', label: 'Gestionar Usuarios y Permisos' },
+    { key: 'verReportes', label: 'Ver Reportes de Ganancia' }
+];
+
+const DEFAULT_PERMISSIONS_BY_ROLE = {
+    'Administrador': { verCostos: true, hacerDescuentos: true, anularTickets: true, cerrarCaja: true, gestionarUsuarios: true, verReportes: true },
+    'Vendedor': { verCostos: false, hacerDescuentos: true, anularTickets: false, cerrarCaja: true, gestionarUsuarios: false, verReportes: false },
+    'Depósito': { verCostos: true, hacerDescuentos: false, anularTickets: false, cerrarCaja: false, gestionarUsuarios: false, verReportes: false }
+};
+
+// Checks whether the CURRENT logged-in user has a given granular permission.
+function hasPermission(key) {
+    return !!(STATE.currentUser && STATE.currentUser.permissions && STATE.currentUser.permissions[key]);
+}
+
+// ==========================================
+// STOCK POR SUCURSAL (arquitectura multi-sucursal centralizada)
+// ==========================================
+// Cada producto guarda su stock DESGLOSADO por sucursal en `stockBySucursal`
+// (ej: { S1: 20, S2: 15, S3: 10 }). El costo y el precio de venta siguen siendo
+// globales (catálogo único), pero el stock físico es independiente por local.
+// Estas funciones son el único punto de acceso/escritura al stock, para que
+// el resto del sistema nunca tenga que tocar `stockBySucursal` directamente.
+function getStock(item, sucursalId) {
+    if (!item.stockBySucursal) return 0;
+    return item.stockBySucursal[sucursalId] || 0;
+}
+
+function getTotalStock(item) {
+    if (!item.stockBySucursal) return 0;
+    return STATE.sucursales.reduce((sum, s) => sum + (item.stockBySucursal[s.id] || 0), 0);
+}
+
+function adjustStock(item, sucursalId, delta) {
+    if (!item.stockBySucursal) item.stockBySucursal = {};
+    const current = item.stockBySucursal[sucursalId] || 0;
+    item.stockBySucursal[sucursalId] = Math.max(0, current + delta);
+}
+
+function setStock(item, sucursalId, value) {
+    if (!item.stockBySucursal) item.stockBySucursal = {};
+    item.stockBySucursal[sucursalId] = Math.max(0, value);
+}
+
+// A product is "bajo mínimo" if ANY branch is at/under the threshold (each branch is
+// checked independently, since running low in one sucursal matters even if others are full).
+function isLowStockAnywhere(item) {
+    return STATE.sucursales.some(s => getStock(item, s.id) <= item.minStock);
+}
+
 // Global chart references to allow destroying before rebuilding
 let charts = {};
 
-// Helper to log changes to the unified history
+// Helper to log changes to the unified history. Every entry records who did it (usuario),
+// and when (fecha y hora), as required for the operational audit trail.
 function logHistory(module, action, description, details = '') {
     const log = {
         id: (STATE.history.length + 1).toString(),
@@ -104,9 +172,13 @@ function logHistory(module, action, description, details = '') {
         action,
         description,
         timestamp: new Date().toISOString(),
-        details
+        details,
+        user: STATE.currentUser ? STATE.currentUser.name : 'Sistema',
+        username: STATE.currentUser ? STATE.currentUser.username : '-',
+        sucursalId: STATE.currentUser ? STATE.currentUser.sucursalId : null
     };
     STATE.history.unshift(log); // Add to the top
+    saveLocalState();
     showToast(`Historial Actualizado`, `${description}`, 'info');
 }
 
@@ -150,6 +222,11 @@ const formatDate = (dateStr) => {
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Restaura cualquier dato guardado localmente (ventas/compras hechas offline, stock, etc.)
+    // ANTES de renderizar nada, para que la sesión offline sobreviva a un refresh del navegador.
+    loadLocalState();
+    initOfflineSync();
+    
     // Set current date in top bar
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-AR', options);
@@ -362,6 +439,11 @@ function switchView(viewName) {
             viewSubtitle.textContent = "Arqueo diario de caja por sucursal: fondo inicial, ventas en efectivo y diferencias.";
             renderCashClosingsView(container);
             break;
+        case 'creditnotes':
+            viewTitle.textContent = "Notas de Crédito y Débito";
+            viewSubtitle.textContent = "Comprobantes que ajustan una Factura A/B/C emitida (CAE simulado — ver aclaración).";
+            renderCreditNotesView(container);
+            break;
         case 'sucursales':
             viewTitle.textContent = "Sucursales";
             viewSubtitle.textContent = "Administración de los puntos de venta de la fiambrería.";
@@ -414,7 +496,7 @@ function renderDashboard(container) {
     const totalSalesValue = STATE.sales.reduce((acc, curr) => curr.status !== 'Cancelado' ? acc + curr.total : acc, 0);
     const totalPurchasesValue = STATE.purchases.reduce((acc, curr) => curr.status !== 'Cancelado' ? acc + curr.total : acc, 0);
     const activeClientsCount = STATE.clients.length;
-    const lowStockCount = STATE.inventory.filter(item => item.stock <= item.minStock).length;
+    const lowStockCount = STATE.inventory.filter(item => isLowStockAnywhere(item)).length;
     
     container.innerHTML = `
         <!-- KPI Row -->
@@ -583,7 +665,14 @@ function renderCriticalStockList() {
     const container = document.getElementById('recent-alerts-list');
     container.innerHTML = '';
     
-    const criticals = STATE.inventory.filter(item => item.stock <= item.minStock);
+    // Vista consolidada central: se listan los pares (producto, sucursal) bajo mínimo
+    const criticals = [];
+    STATE.inventory.forEach(item => {
+        STATE.sucursales.forEach(s => {
+            const stock = getStock(item, s.id);
+            if (stock <= item.minStock) criticals.push({ item, sucursal: s, stock });
+        });
+    });
     
     if (criticals.length === 0) {
         container.innerHTML = `
@@ -595,7 +684,7 @@ function renderCriticalStockList() {
         return;
     }
     
-    criticals.forEach(item => {
+    criticals.forEach(({ item, sucursal, stock }) => {
         const row = document.createElement('div');
         row.className = 'list-item';
         row.innerHTML = `
@@ -605,11 +694,11 @@ function renderCriticalStockList() {
                 </div>
                 <div class="list-item-details">
                     <span class="list-item-name">${item.name}</span>
-                    <span class="list-item-sub">SKU: ${item.sku} | Categoría: ${item.category}</span>
+                    <span class="list-item-sub">${sucursal.name} | SKU: ${item.sku}</span>
                 </div>
             </div>
             <div class="list-item-right">
-                <span class="list-item-value" style="color: var(--danger);">${item.stock} ${item.unit}</span>
+                <span class="list-item-value" style="color: var(--danger);">${stock} ${item.unit}</span>
                 <span class="list-item-sub">Mínimo: ${item.minStock}</span>
             </div>
         `;
@@ -760,6 +849,7 @@ function initDashboardCharts() {
 // MODULE 2: INVENTORY (INVENTARIO)
 // ==========================================
 function renderInventoryView(container) {
+    const showCosts = hasPermission('verCostos');
     container.innerHTML = `
         <div class="view-header-bar">
             <div class="search-filter-box">
@@ -776,16 +866,21 @@ function renderInventoryView(container) {
                     <option value="low">Bajo Mínimo</option>
                     <option value="ok">Stock Normal</option>
                 </select>
+                <select class="filter-select" id="inventory-filter-sucursal">
+                    <option value="all">Consolidado (Todas las Sucursales)</option>
+                    ${STATE.sucursales.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                </select>
             </div>
             <div class="header-actions">
                 <button class="btn-outline" id="btn-inventory-export-excel">
                     <i data-lucide="file-spreadsheet"></i>
                     <span>Lista de Precios (Excel)</span>
                 </button>
+                ${hasPermission('verCostos') ? `
                 <button class="btn-outline" id="btn-inventory-bulk-price">
                     <i data-lucide="percent"></i>
                     <span>Actualización Masiva</span>
-                </button>
+                </button>` : ''}
                 <button class="btn-primary" id="btn-inventory-add">
                     <i data-lucide="plus"></i>
                     <span>Nuevo Producto</span>
@@ -804,9 +899,9 @@ function renderInventoryView(container) {
                             <th>Categoría</th>
                             <th>Proveedor</th>
                             <th>Unidad</th>
-                            <th>Costo Unit.</th>
+                            ${showCosts ? '<th>Costo Unit.</th>' : ''}
                             <th>Precio Venta</th>
-                            <th>Stock</th>
+                            <th id="inventory-stock-header">Stock (Todas)</th>
                             <th>Mínimo</th>
                             <th>Estado</th>
                             <th style="width: 100px; text-align: center;">Acciones</th>
@@ -836,26 +931,34 @@ function renderInventoryView(container) {
     document.getElementById('inventory-search').addEventListener('input', filterInventoryTable);
     document.getElementById('inventory-filter-cat').addEventListener('change', filterInventoryTable);
     document.getElementById('inventory-filter-stock').addEventListener('change', filterInventoryTable);
+    document.getElementById('inventory-filter-sucursal').addEventListener('change', filterInventoryTable);
     document.getElementById('btn-inventory-export-excel').addEventListener('click', exportPriceListExcel);
-    document.getElementById('btn-inventory-bulk-price').addEventListener('click', openBulkPriceModal);
+    if (hasPermission('verCostos')) {
+        const bulkBtn = document.getElementById('btn-inventory-bulk-price');
+        if (bulkBtn) bulkBtn.addEventListener('click', openBulkPriceModal);
+    }
     
-    renderInventoryRows(STATE.inventory);
+    renderInventoryRows(STATE.inventory, 'all');
     renderModuleHistory('inventory');
 }
 
-function renderInventoryRows(items) {
+function renderInventoryRows(items, sucursalFilter = 'all') {
     const tbody = document.getElementById('inventory-table-body');
     tbody.innerHTML = '';
+    const showCosts = hasPermission('verCostos');
+    const colCount = showCosts ? 12 : 11;
     
     if (items.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron productos</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: var(--text-muted); padding: 32px;">No se encontraron productos</td></tr>`;
         return;
     }
     
     items.forEach(item => {
-        const isLow = item.stock <= item.minStock;
+        const stockShown = sucursalFilter === 'all' ? getTotalStock(item) : getStock(item, sucursalFilter);
+        const isLow = sucursalFilter === 'all' ? isLowStockAnywhere(item) : stockShown <= item.minStock;
         const stateBadge = isLow ? '<span class="status-badge danger">Bajo Mínimo</span>' : '<span class="status-badge success">Normal</span>';
         const provider = STATE.providers.find(p => p.id === item.providerId);
+        const breakdown = STATE.sucursales.map(s => `${s.name}: ${getStock(item, s.id)}`).join(' · ');
         
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -865,9 +968,9 @@ function renderInventoryRows(items) {
             <td>${item.category}</td>
             <td>${provider ? provider.name : '—'}</td>
             <td>${item.unit}</td>
-            <td>${formatCurrency(item.cost)}</td>
+            ${showCosts ? `<td>${formatCurrency(item.cost)}</td>` : ''}
             <td style="font-weight: 600;">${formatCurrency(item.price)}</td>
-            <td style="font-weight: 700; ${isLow ? 'color: var(--danger);' : ''}">${item.stock}</td>
+            <td style="font-weight: 700; ${isLow ? 'color: var(--danger);' : ''}" title="${breakdown}">${stockShown}</td>
             <td>${item.minStock}</td>
             <td>${stateBadge}</td>
             <td style="text-align: center;">
@@ -890,19 +993,24 @@ function filterInventoryTable() {
     const q = document.getElementById('inventory-search').value.toLowerCase();
     const cat = document.getElementById('inventory-filter-cat').value;
     const stockFilter = document.getElementById('inventory-filter-stock').value;
+    const sucursalFilter = document.getElementById('inventory-filter-sucursal').value;
+    
+    document.getElementById('inventory-stock-header').textContent =
+        sucursalFilter === 'all' ? 'Stock (Todas)' : `Stock (${STATE.sucursales.find(s => s.id === sucursalFilter).name})`;
     
     const filtered = STATE.inventory.filter(item => {
         const matchesQuery = item.sku.toLowerCase().includes(q) || item.name.toLowerCase().includes(q);
         const matchesCat = cat === 'all' || item.category === cat;
         
+        const relevantStock = sucursalFilter === 'all' ? getTotalStock(item) : getStock(item, sucursalFilter);
         let matchesStock = true;
-        if (stockFilter === 'low') matchesStock = item.stock <= item.minStock;
-        if (stockFilter === 'ok') matchesStock = item.stock > item.minStock;
+        if (stockFilter === 'low') matchesStock = sucursalFilter === 'all' ? isLowStockAnywhere(item) : relevantStock <= item.minStock;
+        if (stockFilter === 'ok') matchesStock = sucursalFilter === 'all' ? !isLowStockAnywhere(item) : relevantStock > item.minStock;
         
         return matchesQuery && matchesCat && matchesStock;
     });
     
-    renderInventoryRows(filtered);
+    renderInventoryRows(filtered, sucursalFilter);
 }
 
 
@@ -1330,7 +1438,7 @@ function renderSalesRows(items) {
             <td>${formatDate(item.date)}</td>
             <td>${itemsCount} unidades</td>
             <td style="font-weight: 700;">${formatCurrency(item.total)}</td>
-            <td><span class="status-badge ${statusBadge}">${item.status}</span></td>
+            <td><span class="status-badge ${statusBadge}">${item.status}</span>${item.synced === false ? ' <span class="status-badge warning" title="Pendiente de sincronizar con la nube">⏳ Offline</span>' : ''}</td>
             <td style="text-align: center;">
                 <div class="table-actions">
                     <button class="btn-table-action view" onclick="viewTransactionDetails('sales', '${item.id}')" title="Ver Detalle / Remito">
@@ -1589,8 +1697,8 @@ function filterPaymentsTable() {
 // ==========================================
 function renderReportsView(container) {
     // Computations
-    const stockValue = STATE.inventory.reduce((acc, curr) => acc + (curr.stock * curr.cost), 0);
-    const retailValue = STATE.inventory.reduce((acc, curr) => acc + (curr.stock * curr.price), 0);
+    const stockValue = STATE.inventory.reduce((acc, curr) => acc + (getTotalStock(curr) * curr.cost), 0);
+    const retailValue = STATE.inventory.reduce((acc, curr) => acc + (getTotalStock(curr) * curr.price), 0);
     const expectedMargin = retailValue - stockValue;
     
     const totalReceipts = STATE.receipts.reduce((acc, curr) => acc + curr.amount, 0);
@@ -1896,7 +2004,7 @@ function renderProductReportChart() {
     // Chart 1: Stock vs. Min level
     const ctxStock = document.getElementById('productStockChart').getContext('2d');
     const labels = STATE.inventory.map(item => item.sku);
-    const stockVals = STATE.inventory.map(item => item.stock);
+    const stockVals = STATE.inventory.map(item => getTotalStock(item));
     const minVals = STATE.inventory.map(item => item.minStock);
 
     charts.productStock = new Chart(ctxStock, {
@@ -1979,9 +2087,14 @@ function renderModuleHistory(moduleName) {
                 <span class="history-item-time">${formatDate(log.timestamp)}</span>
             </div>
             <div class="history-item-details">${log.details}</div>
+            <div class="history-item-user">
+                <i data-lucide="user" style="width:12px; height:12px;"></i>
+                ${log.user || 'Sistema'} · ${new Date(log.timestamp).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            </div>
         `;
         list.appendChild(item);
     });
+    lucide.createIcons();
 }
 
 
@@ -2025,6 +2138,13 @@ function openCrudModal(module, action, id = null) {
     
     if (module === 'inventory') {
         const providerOpts = STATE.providers.map(p => `<option value="${p.id}" ${data.providerId === p.id ? 'selected' : ''}>${p.name}</option>`).join('');
+        const showCosts = hasPermission('verCostos');
+        const stockInputsHtml = STATE.sucursales.map(s => `
+            <div class="form-group">
+                <label>Stock en ${s.name}</label>
+                <input type="number" class="form-control" name="stock_${s.id}" value="${data.stockBySucursal ? (data.stockBySucursal[s.id] ?? 0) : 0}" required min="0">
+            </div>
+        `).join('');
         fieldsContainer.innerHTML = `
             <div class="form-group">
                 <label>Descripción del Producto</label>
@@ -2060,16 +2180,17 @@ function openCrudModal(module, action, id = null) {
                     </select>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Unidad de Medida</label>
-                    <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Kg, Paquetes, Botellas">
-                </div>
-                <div class="form-group">
-                    <label>Stock Inicial</label>
-                    <input type="number" class="form-control" name="stock" value="${data.stock ?? 0}" required min="0">
+            <div class="form-group">
+                <label>Unidad de Medida</label>
+                <input type="text" class="form-control" name="unit" value="${data.unit || 'Unidades'}" required placeholder="Ej: Kg, Paquetes, Botellas">
+            </div>
+            <div class="form-group">
+                <label style="margin-bottom:8px; display:block;">Stock por Sucursal</label>
+                <div class="form-row" style="flex-wrap:wrap;">
+                    ${stockInputsHtml}
                 </div>
             </div>
+            ${showCosts ? `
             <div class="form-row">
                 <div class="form-group">
                     <label>Costo de Compra ($)</label>
@@ -2080,8 +2201,16 @@ function openCrudModal(module, action, id = null) {
                     <input type="number" class="form-control" name="price" value="${data.price ?? 0}" required min="0">
                 </div>
             </div>
+            ` : `
             <div class="form-group">
-                <label>Stock Mínimo Alerta</label>
+                <label>Precio de Venta ($)</label>
+                <input type="number" class="form-control" name="price" value="${data.price ?? 0}" required min="0">
+                <input type="hidden" name="cost" value="${data.cost ?? 0}">
+            </div>
+            <p class="text-secondary" style="font-size:0.8rem;">No tenés permiso para ver o modificar el costo de compra.</p>
+            `}
+            <div class="form-group">
+                <label>Stock Mínimo Alerta (por sucursal)</label>
                 <input type="number" class="form-control" name="minStock" value="${data.minStock ?? 10}" required min="0">
             </div>
         `;
@@ -2116,6 +2245,47 @@ function openCrudModal(module, action, id = null) {
                 <input type="text" class="form-control" name="address" value="${data.address || ''}" placeholder="Dirección comercial completa">
             </div>
         `;
+    }
+    
+    else if (module === 'creditNotes') {
+        const eligibleSales = STATE.sales.filter(s => requiresCAE(s.tipoComprobante) && s.status !== 'Cancelado');
+        const saleOpts = eligibleSales.map(s => `<option value="${s.id}">${s.id} - ${s.clientName} (${s.tipoComprobante}, ${formatCurrency(s.total)})</option>`).join('');
+        fieldsContainer.innerHTML = `
+            ${eligibleSales.length === 0 ? `<p class="text-secondary">No hay ninguna Factura A/B/C emitida todavía para asociar una nota.</p>` : `
+            <div class="form-group">
+                <label>Comprobante Asociado (Factura A/B/C)</label>
+                <select class="form-control" name="saleId" id="cn-sale-select" required>
+                    ${saleOpts}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tipo de Nota</label>
+                    <select class="form-control" name="tipo" required>
+                        <option value="Crédito">Nota de Crédito (a favor del cliente)</option>
+                        <option value="Débito">Nota de Débito (a cargo del cliente)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monto ($)</label>
+                    <input type="number" class="form-control" name="amount" id="cn-amount-input" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Motivo</label>
+                <textarea class="form-control" name="motivo" rows="2" required placeholder="Ej: Devolución de mercadería, error de facturación, interés por mora, etc."></textarea>
+            </div>
+            `}
+        `;
+        const saleSelect = document.getElementById('cn-sale-select');
+        if (saleSelect) {
+            const fillDefaultAmount = () => {
+                const sale = STATE.sales.find(s => s.id === saleSelect.value);
+                if (sale) document.getElementById('cn-amount-input').value = sale.total;
+            };
+            saleSelect.addEventListener('change', fillDefaultAmount);
+            fillDefaultAmount();
+        }
     }
     
     else if (module === 'sucursales') {
@@ -2170,6 +2340,8 @@ function openCrudModal(module, action, id = null) {
     }
     
     else if (module === 'users') {
+        const userPerms = data.permissions || DEFAULT_PERMISSIONS_BY_ROLE['Vendedor'];
+        const sucOptionsUser = STATE.sucursales.map(s => `<option value="${s.id}" ${data.sucursalId === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
         fieldsContainer.innerHTML = `
             <div class="form-group">
                 <label>Nombre Completo</label>
@@ -2182,7 +2354,7 @@ function openCrudModal(module, action, id = null) {
                 </div>
                 <div class="form-group">
                     <label>Rol del Sistema</label>
-                    <select class="form-control" name="role" required>
+                    <select class="form-control" name="role" id="user-role-select" required>
                         <option value="Administrador" ${data.role === 'Administrador' ? 'selected' : ''}>Administrador</option>
                         <option value="Vendedor" ${data.role === 'Vendedor' ? 'selected' : ''}>Vendedor</option>
                         <option value="Depósito" ${data.role === 'Depósito' ? 'selected' : ''}>Depósito</option>
@@ -2192,14 +2364,40 @@ function openCrudModal(module, action, id = null) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" class="form-control" name="email" value="${data.email || ''}" required placeholder="laura@sidera.com">
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" required placeholder="laura@baldi.com">
                 </div>
                 <div class="form-group">
                     <label>Contraseña</label>
                     <input type="password" class="form-control" name="password" value="${data.password || ''}" required placeholder="••••••••">
                 </div>
             </div>
+            <div class="form-group">
+                <label>Sucursal Asignada</label>
+                <select class="form-control" name="sucursalId" required>
+                    ${sucOptionsUser}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Permisos del Usuario</label>
+                <div class="permissions-grid">
+                    ${PERMISSION_DEFS.map(p => `
+                        <label class="permission-checkbox">
+                            <input type="checkbox" name="perm_${p.key}" ${userPerms[p.key] ? 'checked' : ''}>
+                            <span>${p.label}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
         `;
+        // Al cambiar el rol, sugiere los permisos por defecto de ese rol (el usuario puede
+        // seguir ajustándolos individualmente antes de guardar).
+        document.getElementById('user-role-select').addEventListener('change', (e) => {
+            const defaults = DEFAULT_PERMISSIONS_BY_ROLE[e.target.value] || {};
+            PERMISSION_DEFS.forEach(p => {
+                const cb = fieldsContainer.querySelector(`[name="perm_${p.key}"]`);
+                if (cb) cb.checked = !!defaults[p.key];
+            });
+        });
     }
     
     // TRANSACTION: PURCHASES (COMPRAS)
@@ -2382,10 +2580,10 @@ function openCrudModal(module, action, id = null) {
     else if (module === 'sales') {
         const defaultClientId = data.clientId || '0'; // Consumidor Final por defecto
         let clientOptions = STATE.clients.map(c => `<option value="${c.id}" ${defaultClientId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
-        let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock: ${m.stock} | Precio: ${formatCurrency(m.price)})</option>`).join('');
+        let materialOptions = STATE.inventory.map(m => `<option value="${m.id}">${m.name} (Stock Total: ${getTotalStock(m)} | Precio: ${formatCurrency(m.price)})</option>`).join('');
         const defaultSucursal = STATE.currentUser ? STATE.currentUser.sucursalId : STATE.sucursales[0].id;
         const sucOptionsVenta = STATE.sucursales.map(s => `<option value="${s.id}" ${(data.sucursalId || defaultSucursal) === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
-        const comprobanteOpts = ['Ticket No Fiscal', 'Factura B', 'Factura C'].map(t => `<option value="${t}" ${(data.tipoComprobante || 'Ticket No Fiscal') === t ? 'selected' : ''}>${t}</option>`).join('');
+        const comprobanteOpts = ['Ticket No Fiscal', 'Factura A', 'Factura B', 'Factura C'].map(t => `<option value="${t}" ${(data.tipoComprobante || 'Ticket No Fiscal') === t ? 'selected' : ''}>${t}</option>`).join('');
         const paymentMethods = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
         const paymentOpts = paymentMethods.map(m => `<option value="${m}" ${(data.metodoPago || 'Efectivo') === m ? 'selected' : ''}>${m}</option>`).join('');
         
@@ -2405,16 +2603,22 @@ function openCrudModal(module, action, id = null) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Punto de Venta (Sucursal)</label>
-                    <select class="form-control" name="sucursalId" required>
+                    <select class="form-control" name="sucursalId" id="tx-sucursal-select" required>
                         ${sucOptionsVenta}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Tipo de Comprobante</label>
-                    <select class="form-control" name="tipoComprobante" required>
-                        ${comprobanteOpts}
+                    <label>Turno</label>
+                    <select class="form-control" name="turno" required>
+                        ${TURNOS.map(t => `<option value="${t}" ${(data.turno || getCurrentTurno()) === t ? 'selected' : ''}>${t}</option>`).join('')}
                     </select>
                 </div>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Comprobante</label>
+                <select class="form-control" name="tipoComprobante" required>
+                    ${comprobanteOpts}
+                </select>
             </div>
 
             <div class="scan-entry-bar">
@@ -2564,9 +2768,12 @@ function openCrudModal(module, action, id = null) {
             
             if (!mat || isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) return;
             
-            // Stock availability check (only warn)
-            if (qty > mat.stock) {
-                showToast('Stock Insuficiente', `Stock actual de ${mat.name} es ${mat.stock} ${mat.unit}.`, 'warning');
+            // Stock availability check en la sucursal elegida para esta venta (solo avisa)
+            const sucursalActual = document.getElementById('tx-sucursal-select').value;
+            const stockEnSucursal = getStock(mat, sucursalActual);
+            if (qty > stockEnSucursal) {
+                const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
+                showToast('Stock Insuficiente', `Stock de ${mat.name} en ${sucNombre} es ${stockEnSucursal} ${mat.unit}.`, 'warning');
             }
             
             const existing = selectedItems.find(it => it.productId === mat.id);
@@ -2598,8 +2805,10 @@ function openCrudModal(module, action, id = null) {
                 scanInput.focus();
                 return;
             }
-            if (mat.stock <= 0) {
-                showToast('Sin Stock', `${mat.name} no tiene stock disponible.`, 'warning');
+            const sucursalActual = document.getElementById('tx-sucursal-select').value;
+            if (getStock(mat, sucursalActual) <= 0) {
+                const sucNombre = (STATE.sucursales.find(s => s.id === sucursalActual) || {}).name || '';
+                showToast('Sin Stock', `${mat.name} no tiene stock disponible en ${sucNombre}.`, 'warning');
             }
             const existing = selectedItems.find(it => it.productId === mat.id);
             if (existing) {
@@ -2788,7 +2997,6 @@ function handleFormSubmit(e) {
     });
     
     // Extra handling for quantities/numeric inputs
-    if (formObj.stock !== undefined) formObj.stock = parseInt(formObj.stock);
     if (formObj.minStock !== undefined) formObj.minStock = parseInt(formObj.minStock);
     if (formObj.cost !== undefined) formObj.cost = parseFloat(formObj.cost);
     if (formObj.price !== undefined) formObj.price = parseFloat(formObj.price);
@@ -2796,6 +3004,27 @@ function handleFormSubmit(e) {
     if (formObj.total !== undefined) formObj.total = parseFloat(formObj.total);
     if (formObj.montoRecibido !== undefined) formObj.montoRecibido = parseFloat(formObj.montoRecibido) || 0;
     if (formObj.vuelto !== undefined) formObj.vuelto = parseFloat(formObj.vuelto) || 0;
+    
+    // Assemble the per-sucursal stock object for Inventario from the stock_S1/S2/S3 inputs
+    if (module === 'inventory') {
+        const stockBySucursal = {};
+        STATE.sucursales.forEach(s => {
+            const key = `stock_${s.id}`;
+            stockBySucursal[s.id] = parseInt(formObj[key]) || 0;
+            delete formObj[key];
+        });
+        formObj.stockBySucursal = stockBySucursal;
+    }
+    
+    // Assemble the permissions object for Usuarios from the individual perm_ checkboxes
+    if (module === 'users') {
+        const permissions = {};
+        PERMISSION_DEFS.forEach(p => {
+            permissions[p.key] = formObj[`perm_${p.key}`] === 'on';
+            delete formObj[`perm_${p.key}`];
+        });
+        formObj.permissions = permissions;
+    }
     
     // Auto-generate a barcode for products that don't have one yet
     if (module === 'inventory' && (!formObj.barcode || formObj.barcode.trim() === '')) {
@@ -2817,9 +3046,23 @@ function handleFormSubmit(e) {
             newId = `REC-00${STATE.receipts.length + 1}`;
         } else if (module === 'payments') {
             newId = `PAG-00${STATE.payments.length + 1}`;
+        } else if (module === 'creditNotes') {
+            newId = `${formObj.tipo === 'Débito' ? 'ND' : 'NC'}-00${STATE.creditNotes.length + 1}`;
         }
         
         formObj.id = newId;
+        
+        // Notas de Crédito/Débito: se completan datos derivados de la venta asociada
+        // (cliente, sucursal, letra) y se genera su propia numeración/CAE simulado.
+        if (module === 'creditNotes') {
+            const relatedSale = STATE.sales.find(s => s.id === formObj.saleId);
+            formObj.clientId = relatedSale ? relatedSale.clientId : null;
+            formObj.clientName = relatedSale ? relatedSale.clientName : 'Cliente';
+            formObj.sucursalId = relatedSale ? relatedSale.sucursalId : STATE.sucursales[0].id;
+            formObj.letra = relatedSale ? extractLetra(relatedSale.tipoComprobante) : 'B';
+            formObj.date = new Date().toISOString().split('T')[0];
+            formObj.fiscalData = buildFiscalData(formObj.sucursalId, `Nota de ${formObj.tipo} ${formObj.letra}`);
+        }
         
         // Transaction lines insertion
         if (module === 'sales' || module === 'purchases') {
@@ -2835,28 +3078,36 @@ function handleFormSubmit(e) {
                 const client = STATE.clients.find(c => c.id === formObj.clientId);
                 formObj.clientName = client ? client.name : 'Cliente S.A.';
                 
-                // Stock mutations (Decreasing inventory)
+                // Stock mutations (Decreasing inventory) en la sucursal de esta venta
                 if (formObj.status === 'Entregado') {
                     items.forEach(line => {
                         const mat = STATE.inventory.find(m => m.id === line.productId);
-                        if (mat) {
-                            mat.stock -= line.qty;
-                            if (mat.stock < 0) mat.stock = 0; // prevent negative stock
-                        }
+                        if (mat) adjustStock(mat, formObj.sucursalId, -line.qty);
                     });
                 }
             } else {
                 const provider = STATE.providers.find(p => p.id === formObj.providerId);
                 formObj.providerName = provider ? provider.name : 'Distribuidora';
                 
-                // Stock mutations (Increasing inventory)
+                // Stock mutations (Increasing inventory) en la sucursal de recepción
                 if (formObj.status === 'Recibido') {
                     items.forEach(line => {
                         const mat = STATE.inventory.find(m => m.id === line.productId);
-                        if (mat) mat.stock += line.qty;
+                        if (mat) adjustStock(mat, formObj.sucursalId, line.qty);
                     });
                 }
             }
+        }
+        
+        // Marca de sincronización (modo offline): las ventas/compras cargadas sin conexión
+        // quedan pendientes hasta que vuelva internet (ver initOfflineSync/syncPendingData).
+        if (module === 'sales' || module === 'purchases') {
+            formObj.synced = navigator.onLine;
+        }
+        // Si el comprobante requiere CAE (Factura A/B/C), se genera la numeración y el
+        // CAE SIMULADO correspondiente (ver aclaración en buildFiscalData).
+        if (module === 'sales' && requiresCAE(formObj.tipoComprobante)) {
+            formObj.fiscalData = buildFiscalData(formObj.sucursalId, formObj.tipoComprobante);
         }
         
         // Append element
@@ -2914,7 +3165,7 @@ function handleFormSubmit(e) {
                     if (original.status !== 'Entregado' && formObj.status === 'Entregado') {
                         items.forEach(line => {
                             const mat = STATE.inventory.find(m => m.id === line.productId);
-                            if (mat) mat.stock = Math.max(0, mat.stock - line.qty);
+                            if (mat) adjustStock(mat, formObj.sucursalId || original.sucursalId, -line.qty);
                         });
                     }
                 } else {
@@ -2924,7 +3175,7 @@ function handleFormSubmit(e) {
                     if (original.status !== 'Recibido' && formObj.status === 'Recibido') {
                         items.forEach(line => {
                             const mat = STATE.inventory.find(m => m.id === line.productId);
-                            if (mat) mat.stock += line.qty;
+                            if (mat) adjustStock(mat, formObj.sucursalId || original.sucursalId, line.qty);
                         });
                     }
                 }
@@ -2933,17 +3184,31 @@ function handleFormSubmit(e) {
             // Merge form modifications
             STATE[module][index] = { ...original, ...formObj };
             
+            // If the currently logged-in user edited their own account, refresh the live
+            // session reference so permission changes apply immediately.
+            if (module === 'users' && STATE.currentUser && STATE.currentUser.id === id) {
+                STATE.currentUser = STATE[module][index];
+            }
+            
             logHistory(module, 'update', `Modificación en ${module}. Código: ${id}`, `Valores nuevos: ${JSON.stringify(formObj)}`);
             showToast('Modificación Realizada', `Se guardaron los cambios para ${id}`, 'success');
         }
     }
     
+    saveLocalState();
+    updateConnectionBadge();
     closeModal();
     switchView(STATE.currentView); // Refresh current screen
 }
 
 // Global deletion helper
 function deleteItem(module, id) {
+    // Anular una venta requiere el permiso específico "anularTickets"
+    if (module === 'sales' && !hasPermission('anularTickets')) {
+        showToast('Permiso Denegado', 'Tu usuario no tiene permiso para anular tickets/ventas.', 'danger');
+        return;
+    }
+    
     const confirmation = confirm(`¿Está seguro de que desea eliminar o anular el elemento con código ${id}?`);
     if (!confirmation) return;
     
@@ -2959,12 +3224,12 @@ function deleteItem(module, id) {
             if (oldStatus === 'Entregado' && module === 'sales') {
                 tx.items.forEach(line => {
                     const mat = STATE.inventory.find(m => m.id === line.productId);
-                    if (mat) mat.stock += line.qty; // Return items to stock
+                    if (mat) adjustStock(mat, tx.sucursalId, line.qty); // Return items to stock
                 });
             } else if (oldStatus === 'Recibido' && module === 'purchases') {
                 tx.items.forEach(line => {
                     const mat = STATE.inventory.find(m => m.id === line.productId);
-                    if (mat) mat.stock = Math.max(0, mat.stock - line.qty); // Deduct items from stock
+                    if (mat) adjustStock(mat, tx.sucursalId, -line.qty); // Deduct items from stock
                 });
             }
             
@@ -2981,6 +3246,7 @@ function deleteItem(module, id) {
         }
     }
     
+    saveLocalState();
     switchView(STATE.currentView);
 }
 
@@ -3174,7 +3440,7 @@ function attemptLogin(username, password) {
     
     if (user) {
         STATE.currentUser = user;
-        localStorage.setItem('sidera_session', JSON.stringify(user));
+        localStorage.setItem('baldi_session', JSON.stringify(user));
         
         document.body.className = 'authenticated';
         updateSidebarProfile();
@@ -3199,13 +3465,13 @@ function logout() {
     }
     
     STATE.currentUser = null;
-    localStorage.removeItem('sidera_session');
+    localStorage.removeItem('baldi_session');
     document.body.className = 'unauthenticated';
     showToast('Sesión Cerrada', 'Has salido del sistema.', 'info');
 }
 
 function checkSession() {
-    const session = localStorage.getItem('sidera_session');
+    const session = localStorage.getItem('baldi_session');
     if (session) {
         try {
             const user = JSON.parse(session);
@@ -3286,11 +3552,13 @@ function exportPriceListExcel() {
         'Categoría': it.category,
         'Unidad': it.unit,
         'Precio de Venta': it.price,
-        'Stock Actual': it.stock
+        'Stock Total (Todas las Sucursales)': getTotalStock(it)
     }));
 
     const internalList = STATE.inventory.map(it => {
         const prov = STATE.providers.find(p => p.id === it.providerId);
+        const stockCols = {};
+        STATE.sucursales.forEach(s => { stockCols[`Stock ${s.name}`] = getStock(it, s.id); });
         return {
             'SKU': it.sku,
             'Código de Barras': it.barcode || '',
@@ -3301,14 +3569,17 @@ function exportPriceListExcel() {
             'Costo': it.cost,
             'Precio de Venta': it.price,
             'Margen %': it.cost > 0 ? Number((((it.price - it.cost) / it.cost) * 100).toFixed(1)) : '',
-            'Stock Actual': it.stock,
-            'Stock Mínimo': it.minStock
+            ...stockCols,
+            'Stock Total': getTotalStock(it),
+            'Stock Mínimo (por sucursal)': it.minStock
         };
     });
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(publicList), 'Lista de Precios');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(internalList), 'Detalle Interno (Costos)');
+    if (hasPermission('verCostos')) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(internalList), 'Detalle Interno (Costos)');
+    }
 
     const filename = `Baldi_Lista_de_Precios_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, filename);
@@ -3687,6 +3958,7 @@ function printTicket(saleId) {
     const sucursal = STATE.sucursales.find(s => s.id === sale.sucursalId) || STATE.sucursales[0];
     const tipo = sale.tipoComprobante || 'Ticket No Fiscal';
     const isFiscal = tipo !== 'Ticket No Fiscal';
+    const fd = sale.fiscalData;
 
     let itemsHtml = sale.items.map(l => {
         const p = STATE.inventory.find(pr => pr.id === l.productId);
@@ -3695,6 +3967,17 @@ function printTicket(saleId) {
             <div class="t-row"><span>${l.qty} x ${name}</span><span>${formatCurrency(l.qty * l.price)}</span></div>
         `;
     }).join('');
+
+    const fiscalBoxHtml = fd ? `
+        <div class="t-line"></div>
+        <div class="fiscal-sim-box">
+            <p class="t-center" style="font-weight:bold; color:#b91c1c;">⚠ CAE SIMULADO — NO VÁLIDO ANTE ARCA/AFIP</p>
+            <p>Punto de Venta: ${fd.puntoVenta} &nbsp; Nº: ${fd.numero}</p>
+            <p>CAE (demo): ${fd.cae}</p>
+            <p>Vto. CAE (demo): ${formatDate(fd.caeVencimiento)}</p>
+            ${renderQrPlaceholder(fd, sucursal, sale.total)}
+        </div>
+    ` : '';
 
     const ticketHtml = `
         <div class="ticket-paper">
@@ -3711,6 +3994,7 @@ function printTicket(saleId) {
             <p>Cliente: ${sale.clientName}</p>
             <div class="t-line"></div>
             ${itemsHtml}
+            ${sale.descuentoMonto > 0 ? `<div class="t-row"><span>Descuento (${sale.descuentoPct}%)</span><span>-${formatCurrency(sale.descuentoMonto)}</span></div>` : ''}
             <div class="t-line"></div>
             <div class="t-row" style="font-weight:bold; font-size:14px;"><span>TOTAL</span><span>${formatCurrency(sale.total)}</span></div>
             <div class="t-line"></div>
@@ -3719,6 +4003,7 @@ function printTicket(saleId) {
                 <div class="t-row"><span>Recibido</span><span>${formatCurrency(sale.montoRecibido)}</span></div>
                 <div class="t-row"><span>Vuelto</span><span>${formatCurrency(sale.vuelto || 0)}</span></div>
             ` : ''}
+            ${fiscalBoxHtml}
             <div class="t-line"></div>
             <p class="t-center">${isFiscal ? '¡Gracias por su compra!' : 'Documento no válido como factura'}</p>
         </div>
@@ -3747,6 +4032,15 @@ function openTicketWindow(title, html) {
                 .t-row { display: flex; justify-content: space-between; gap: 6px; }
                 h3 { margin: 4px 0; font-size: 15px; }
                 p { margin: 2px 0; }
+                .fiscal-sim-box { border: 2px dashed #b91c1c; padding: 8px; margin-top: 6px; border-radius: 6px; }
+                .qr-simulado-box { text-align: center; margin-top: 8px; }
+                .qr-simulado-grid {
+                    display: inline-grid; grid-template-columns: repeat(7, 6px); grid-template-rows: repeat(7, 6px);
+                    gap: 1px; background: #fff; padding: 4px; border: 1px solid #000;
+                }
+                .qr-simulado-grid span { width: 6px; height: 6px; background: #fff; }
+                .qr-simulado-grid span.on { background: #000; }
+                .qr-simulado-label { font-size: 9px; color: #b91c1c; font-weight: bold; margin-top: 3px; }
             </style>
         </head>
         <body>${html}</body>
@@ -3757,22 +4051,31 @@ function openTicketWindow(title, html) {
 }
 
 // ==========================================
-// BALDI - EXTENSIÓN: LISTADO DE REPOSICIÓN POR PROVEEDOR
+// BALDI - EXTENSIÓN: LISTADO DE REPOSICIÓN POR PROVEEDOR (Y POR SUCURSAL)
 // ==========================================
 function renderReplenishmentView(container) {
-    const lowStock = STATE.inventory.filter(it => it.stock <= it.minStock);
+    // Genera una fila por cada combinación (producto, sucursal) que esté bajo mínimo,
+    // ya que el stock ahora es independiente por local.
+    const lowRows = [];
+    STATE.inventory.forEach(it => {
+        STATE.sucursales.forEach(s => {
+            const stock = getStock(it, s.id);
+            if (stock <= it.minStock) lowRows.push({ item: it, sucursal: s, stock });
+        });
+    });
+
     const byProvider = {};
-    lowStock.forEach(it => {
-        const key = it.providerId || 'none';
+    lowRows.forEach(row => {
+        const key = row.item.providerId || 'none';
         if (!byProvider[key]) byProvider[key] = [];
-        byProvider[key].push(it);
+        byProvider[key].push(row);
     });
 
     if (Object.keys(byProvider).length === 0) {
         container.innerHTML = `
             <div class="table-card" style="padding:48px; text-align:center;">
                 <i data-lucide="check-circle-2" style="width:48px; height:48px; color:var(--success); margin-bottom:12px;"></i>
-                <p style="color:var(--text-muted);">Todos los productos están dentro de sus niveles de stock normales. No hay reposiciones pendientes.</p>
+                <p style="color:var(--text-muted);">Todos los productos están dentro de sus niveles de stock normales en todas las sucursales. No hay reposiciones pendientes.</p>
             </div>
         `;
         lucide.createIcons();
@@ -3793,7 +4096,7 @@ function renderReplenishmentView(container) {
 
     Object.keys(byProvider).forEach(pid => {
         const provider = STATE.providers.find(p => p.id === pid);
-        const items = byProvider[pid];
+        const rows = byProvider[pid];
         html += `
             <div class="replenishment-provider-card">
                 <div class="replenishment-provider-header">
@@ -3802,14 +4105,15 @@ function renderReplenishmentView(container) {
                 </div>
                 <div class="table-wrapper">
                     <table class="custom-table">
-                        <thead><tr><th>SKU</th><th>Producto</th><th>Stock Actual</th><th>Mínimo</th><th>Cantidad Sugerida</th></tr></thead>
+                        <thead><tr><th>SKU</th><th>Producto</th><th>Sucursal</th><th>Stock Actual</th><th>Mínimo</th><th>Cantidad Sugerida</th></tr></thead>
                         <tbody>
-                            ${items.map(it => {
-                                const suggested = Math.max(it.minStock * 2 - it.stock, it.minStock - it.stock, 1);
+                            ${rows.map(({ item: it, sucursal, stock }) => {
+                                const suggested = Math.max(it.minStock * 2 - stock, it.minStock - stock, 1);
                                 return `<tr>
                                     <td>${it.sku}</td>
                                     <td>${it.name}</td>
-                                    <td style="color:var(--danger); font-weight:700;">${it.stock} ${it.unit}</td>
+                                    <td>${sucursal.name}</td>
+                                    <td style="color:var(--danger); font-weight:700;">${stock} ${it.unit}</td>
                                     <td>${it.minStock}</td>
                                     <td style="font-weight:700;">${suggested} ${it.unit}</td>
                                 </tr>`;
@@ -3832,13 +4136,14 @@ function renderReplenishmentView(container) {
         const rows = [];
         Object.keys(byProvider).forEach(pid => {
             const provider = STATE.providers.find(p => p.id === pid);
-            byProvider[pid].forEach(it => {
-                const suggested = Math.max(it.minStock * 2 - it.stock, it.minStock - it.stock, 1);
+            byProvider[pid].forEach(({ item: it, sucursal, stock }) => {
+                const suggested = Math.max(it.minStock * 2 - stock, it.minStock - stock, 1);
                 rows.push({
                     'Proveedor': provider ? provider.name : 'Sin Asignar',
                     'SKU': it.sku,
                     'Producto': it.name,
-                    'Stock Actual': it.stock,
+                    'Sucursal': sucursal.name,
+                    'Stock Actual': stock,
                     'Stock Mínimo': it.minStock,
                     'Cantidad Sugerida': suggested,
                     'Unidad': it.unit
@@ -3926,7 +4231,13 @@ function getClientBalance(clientId) {
         }
         return client && r.clientName === client.name;
     }).reduce((a, r) => a + r.amount, 0);
-    return { totalSales, totalReceipts, balance: totalSales - totalReceipts };
+    // Notas de Crédito reducen lo que debe el cliente; Notas de Débito lo aumentan.
+    const creditNotesTotal = STATE.creditNotes.filter(n => n.clientId === clientId && n.tipo === 'Crédito').reduce((a, n) => a + n.amount, 0);
+    const debitNotesTotal = STATE.creditNotes.filter(n => n.clientId === clientId && n.tipo === 'Débito').reduce((a, n) => a + n.amount, 0);
+    return {
+        totalSales, totalReceipts,
+        balance: totalSales - totalReceipts - creditNotesTotal + debitNotesTotal
+    };
 }
 
 function getProviderBalance(providerId) {
@@ -3956,6 +4267,13 @@ function getClientLedger(clientId) {
         return client && r.clientName === client.name;
     }).forEach(r => {
         rows.push({ date: r.date, desc: `Recibo ${r.id} (${r.method})`, debit: 0, credit: r.amount });
+    });
+    STATE.creditNotes.filter(n => n.clientId === clientId).forEach(n => {
+        if (n.tipo === 'Crédito') {
+            rows.push({ date: n.date, desc: `Nota de Crédito ${n.id} (${n.motivo})`, debit: 0, credit: n.amount });
+        } else {
+            rows.push({ date: n.date, desc: `Nota de Débito ${n.id} (${n.motivo})`, debit: n.amount, credit: 0 });
+        }
     });
     rows.sort((a, b) => a.date.localeCompare(b.date));
     let bal = 0;
@@ -4099,11 +4417,19 @@ function renderPOSView(container) {
                 </div>
             </div>
             <div class="pos-sidebar">
-                <div class="form-group">
-                    <label>Sucursal (Punto de Venta)</label>
-                    <select class="form-control" id="pos-sucursal-select">
-                        ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sucursal (Punto de Venta)</label>
+                        <select class="form-control" id="pos-sucursal-select">
+                            ${STATE.sucursales.map(s => `<option value="${s.id}" ${s.id === defaultSucursal ? 'selected' : ''}>${s.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Turno</label>
+                        <select class="form-control" id="pos-turno-select">
+                            ${['Mañana', 'Tarde', 'Noche'].map(t => `<option value="${t}" ${t === getCurrentTurno() ? 'selected' : ''}>${t}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Cliente</label>
@@ -4115,6 +4441,7 @@ function renderPOSView(container) {
                     <label>Tipo de Comprobante</label>
                     <select class="form-control" id="pos-comprobante-select">
                         <option value="Ticket No Fiscal">Ticket No Fiscal</option>
+                        <option value="Factura A">Factura A</option>
                         <option value="Factura B">Factura B</option>
                         <option value="Factura C">Factura C</option>
                     </select>
@@ -4133,6 +4460,12 @@ function renderPOSView(container) {
                     <label>Vuelto</label>
                     <input type="text" class="form-control" id="pos-change-amount" readonly style="font-weight:bold;">
                 </div>
+                ${hasPermission('hacerDescuentos') ? `
+                <div class="form-group">
+                    <label>Descuento (%)</label>
+                    <input type="number" class="form-control" id="pos-discount-input" min="0" max="100" step="1" value="0">
+                </div>
+                ` : ''}
                 <div class="pos-total-display">
                     <span>Total</span>
                     <span id="pos-total-amount">${formatCurrency(0)}</span>
@@ -4148,15 +4481,22 @@ function renderPOSView(container) {
 
     let cart = [];
 
+    // Calcula subtotal, descuento (si el usuario tiene permiso) y total final del carrito.
+    const computePosTotals = () => {
+        const subtotal = cart.reduce((a, it) => a + it.qty * it.price, 0);
+        const discountInput = document.getElementById('pos-discount-input');
+        const discountPct = (hasPermission('hacerDescuentos') && discountInput) ? (parseFloat(discountInput.value) || 0) : 0;
+        const discountAmount = subtotal * (discountPct / 100);
+        return { subtotal, discountPct, discountAmount, total: Math.max(0, subtotal - discountAmount) };
+    };
+
     const renderCart = () => {
         const body = document.getElementById('pos-cart-body');
-        let sum = 0;
         if (cart.length === 0) {
             body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">Escanee o ingrese un producto para comenzar la venta.</td></tr>`;
         } else {
             body.innerHTML = cart.map((it, idx) => {
                 const sub = it.qty * it.price;
-                sum += sub;
                 return `<tr>
                     <td>${it.name}</td>
                     <td><input type="number" class="form-control pos-qty-input" data-idx="${idx}" value="${it.qty}" min="1" style="padding:6px;"></td>
@@ -4166,7 +4506,11 @@ function renderPOSView(container) {
                 </tr>`;
             }).join('');
         }
-        document.getElementById('pos-total-amount').textContent = formatCurrency(sum);
+        const totals = computePosTotals();
+        document.getElementById('pos-total-amount').textContent =
+            totals.discountAmount > 0
+                ? `${formatCurrency(totals.total)} (desc. ${formatCurrency(totals.discountAmount)})`
+                : formatCurrency(totals.total);
         lucide.createIcons();
         document.querySelectorAll('.pos-qty-input').forEach(inp => {
             inp.addEventListener('change', (e) => {
@@ -4177,6 +4521,9 @@ function renderPOSView(container) {
         });
         updatePOSChange();
     };
+
+    const discountInputEl = document.getElementById('pos-discount-input');
+    if (discountInputEl) discountInputEl.addEventListener('input', renderCart);
 
     window.posRemoveItem = (idx) => { cart.splice(idx, 1); renderCart(); };
 
@@ -4189,8 +4536,8 @@ function renderPOSView(container) {
             showToast('Producto no encontrado', `No existe ningún producto con el código "${code}".`, 'danger');
             scanInput.value = ''; scanInput.focus(); return;
         }
-        if (mat.stock <= 0) {
-            showToast('Sin Stock', `${mat.name} no tiene stock disponible.`, 'warning');
+        if (getStock(mat, document.getElementById('pos-sucursal-select').value) <= 0) {
+            showToast('Sin Stock', `${mat.name} no tiene stock disponible en esta sucursal.`, 'warning');
         }
         const existing = cart.find(it => it.productId === mat.id);
         if (existing) existing.qty += 1;
@@ -4217,7 +4564,7 @@ function renderPOSView(container) {
     };
     function updatePOSChange() {
         if (paymentSelect.value !== 'Efectivo') return;
-        const total = cart.reduce((a, it) => a + it.qty * it.price, 0);
+        const total = computePosTotals().total;
         const received = parseFloat(cashInput.value) || 0;
         if (received <= 0) { changeAmount.value = '—'; changeAmount.style.color = ''; return; }
         const diff = received - total;
@@ -4239,11 +4586,13 @@ function renderPOSView(container) {
             return;
         }
         const sucursalId = document.getElementById('pos-sucursal-select').value;
+        const turno = document.getElementById('pos-turno-select').value;
         const clientId = document.getElementById('pos-client-select').value;
         const client = STATE.clients.find(c => c.id === clientId);
         const tipoComprobante = document.getElementById('pos-comprobante-select').value;
         const metodoPago = paymentSelect.value;
-        const total = cart.reduce((a, it) => a + it.qty * it.price, 0);
+        const posTotals = computePosTotals();
+        const total = posTotals.total;
         const montoRecibido = metodoPago === 'Efectivo' ? (parseFloat(cashInput.value) || 0) : total;
 
         if (metodoPago === 'Efectivo' && montoRecibido < total) {
@@ -4262,21 +4611,26 @@ function renderPOSView(container) {
             clientId,
             clientName: client ? client.name : 'Consumidor Final',
             sucursalId,
+            turno,
             tipoComprobante,
             metodoPago,
             date: new Date().toISOString().split('T')[0],
             items,
             total,
+            descuentoPct: posTotals.discountPct || 0,
+            descuentoMonto: posTotals.discountAmount || 0,
+            fiscalData: requiresCAE(tipoComprobante) ? buildFiscalData(sucursalId, tipoComprobante) : null,
             status: 'Entregado',
             montoRecibido,
-            vuelto: metodoPago === 'Efectivo' ? Math.max(0, montoRecibido - total) : 0
+            vuelto: metodoPago === 'Efectivo' ? Math.max(0, montoRecibido - total) : 0,
+            synced: navigator.onLine
         };
         STATE.sales.push(newSale);
 
-        // Baja de stock inmediata (operación de venta diaria)
+        // Baja de stock inmediata (operación de venta diaria) en la sucursal del POS
         items.forEach(line => {
             const mat = STATE.inventory.find(m => m.id === line.productId);
-            if (mat) mat.stock = Math.max(0, mat.stock - line.qty);
+            if (mat) adjustStock(mat, sucursalId, -line.qty);
         });
 
         // Cobro registrado automáticamente
@@ -4291,13 +4645,20 @@ function renderPOSView(container) {
 
         const sucursal = STATE.sucursales.find(s => s.id === sucursalId);
         logHistory('sales', 'create', `Venta POS registrada. Código: ${newId}`, `Sucursal: ${sucursal ? sucursal.name : ''}, Total: ${formatCurrency(total)}, Pago: ${metodoPago}`);
-        showToast('Venta Registrada', `Venta ${newId} cobrada correctamente.`, 'success');
+        if (!navigator.onLine) {
+            showToast('Venta Guardada (Offline)', `Venta ${newId} cobrada y guardada localmente. Se sincronizará al recuperar conexión.`, 'warning');
+        } else {
+            showToast('Venta Registrada', `Venta ${newId} cobrada correctamente.`, 'success');
+        }
+        saveLocalState();
+        updateConnectionBadge();
 
         printTicket(newId);
 
         // Reset para la siguiente venta
         cart = [];
         cashInput.value = '';
+        if (discountInputEl) discountInputEl.value = '0';
         renderCart();
         scanInput.focus();
     });
@@ -4306,8 +4667,82 @@ function renderPOSView(container) {
 }
 
 // ==========================================
-// BALDI - EXTENSIÓN: CIERRES DE CAJA (ARQUEO DIARIO POR SUCURSAL)
+// BALDI - FACTURACIÓN ELECTRÓNICA (SIMULADA) - A/B/C, NOTAS DE CRÉDITO/DÉBITO
 // ==========================================
+// IMPORTANTE: el CAE y el QR generados acá son 100% SIMULADOS para fines de demostración
+// y desarrollo de la interfaz. La emisión real de CAE requiere un backend propio con el
+// certificado digital de ARCA/AFIP (WSAA + WSFEv1), que NO puede vivir en este archivo de
+// frontend por razones de seguridad. Todo comprobante simulado se marca de forma visible
+// como "SIMULADO — NO VÁLIDO ANTE ARCA/AFIP" para que nunca se confunda con uno real.
+const COMPROBANTE_LETRAS = ['A', 'B', 'C'];
+
+// Cada sucursal opera como su propio Punto de Venta (0001, 0002, 0003...), con numeración
+// independiente por letra de comprobante — tal como exige la numeración fiscal real.
+function getPuntoVenta(sucursalId) {
+    const idx = STATE.sucursales.findIndex(s => s.id === sucursalId);
+    return String(idx + 1).padStart(4, '0');
+}
+
+function getNextComprobanteNumber(sucursalId, letra) {
+    if (!STATE.comprobanteCounters) STATE.comprobanteCounters = {};
+    if (!STATE.comprobanteCounters[sucursalId]) STATE.comprobanteCounters[sucursalId] = { A: 0, B: 0, C: 0 };
+    STATE.comprobanteCounters[sucursalId][letra] = (STATE.comprobanteCounters[sucursalId][letra] || 0) + 1;
+    return String(STATE.comprobanteCounters[sucursalId][letra]).padStart(8, '0');
+}
+
+// Genera un "CAE" simulado (14 dígitos, mismo formato visual que uno real) y su vencimiento
+// a 10 días — pero NUNCA debe tratarse como válido: sólo sirve para probar la interfaz.
+function generateSimulatedCAE() {
+    const digits = Array.from({ length: 14 }, () => Math.floor(Math.random() * 10)).join('');
+    const vencimiento = new Date();
+    vencimiento.setDate(vencimiento.getDate() + 10);
+    return { cae: digits, vencimiento: vencimiento.toISOString().split('T')[0] };
+}
+
+// Determina si un tipo de comprobante requiere numeración/CAE fiscal (facturas y notas),
+// a diferencia de un Ticket No Fiscal que no lo necesita.
+function requiresCAE(tipoComprobante) {
+    return /^Factura|^Nota de/.test(tipoComprobante || '');
+}
+
+function extractLetra(tipoComprobante) {
+    const match = /([ABC])$/.exec(tipoComprobante || '');
+    return match ? match[1] : 'B';
+}
+
+// Arma los datos fiscales (punto de venta, número, CAE simulado) de un comprobante nuevo.
+function buildFiscalData(sucursalId, tipoComprobante) {
+    if (!requiresCAE(tipoComprobante)) return null;
+    const letra = extractLetra(tipoComprobante);
+    const puntoVenta = getPuntoVenta(sucursalId);
+    const numero = getNextComprobanteNumber(sucursalId, letra);
+    const { cae, vencimiento } = generateSimulatedCAE();
+    return { puntoVenta, numero, cae, caeVencimiento: vencimiento, simulado: true };
+}
+
+// Placeholder visual de QR (recuadro con los datos que en un comprobante real irían
+// codificados en el QR de ARCA). No es un QR escaneable real — ver aclaración arriba.
+function renderQrPlaceholder(fiscalData, sucursal, total) {
+    if (!fiscalData) return '';
+    const payload = `CUIT:30-82749102-3|PV:${fiscalData.puntoVenta}|Nº:${fiscalData.numero}|Total:${total}|CAE:${fiscalData.cae}`;
+    return `
+        <div class="qr-simulado-box">
+            <div class="qr-simulado-grid">${Array.from({ length: 49 }).map((_, i) => `<span class="${(simpleHash(payload + i) % 3 === 0) ? 'on' : ''}"></span>`).join('')}</div>
+            <div class="qr-simulado-label">QR SIMULADO — NO VÁLIDO</div>
+        </div>
+    `;
+}
+const PAYMENT_METHODS = ['Efectivo', 'Tarjeta de Débito', 'Tarjeta de Crédito', 'Transferencia', 'Mercado Pago', 'Cuenta Corriente'];
+const TURNOS = ['Mañana', 'Tarde', 'Noche'];
+
+// Determina el turno actual según la hora del día (se usa como valor por defecto en el POS).
+function getCurrentTurno() {
+    const hour = new Date().getHours();
+    if (hour < 14) return 'Mañana';
+    if (hour < 20) return 'Tarde';
+    return 'Noche';
+}
+
 function computeExpectedCash(sucursalId, date, openingFloat) {
     const cashSalesTotal = STATE.sales
         .filter(s => s.sucursalId === sucursalId && s.date === date && s.status !== 'Cancelado' && s.metodoPago === 'Efectivo')
@@ -4315,7 +4750,24 @@ function computeExpectedCash(sucursalId, date, openingFloat) {
     return openingFloat + cashSalesTotal;
 }
 
+// Arqueo detallado: para cada medio de pago, cuánto "debería" haber según lo vendido
+// (filtrado por sucursal + fecha + turno). El Efectivo suma también el fondo inicial.
+function computeExpectedByPaymentMethod(sucursalId, date, turno, openingFloat) {
+    const salesInShift = STATE.sales.filter(s =>
+        s.sucursalId === sucursalId && s.date === date && s.status !== 'Cancelado' && (!turno || s.turno === turno)
+    );
+    return PAYMENT_METHODS.map(method => {
+        const total = salesInShift.filter(s => (s.metodoPago || 'Efectivo') === method).reduce((a, s) => a + s.total, 0);
+        const expected = method === 'Efectivo' ? total + openingFloat : total;
+        return { method, expected };
+    });
+}
+
 function openCashClosingModal() {
+    if (!hasPermission('cerrarCaja')) {
+        showToast('Permiso Denegado', 'Tu usuario no tiene permiso para realizar cierres de caja.', 'danger');
+        return;
+    }
     const modal = document.getElementById('cash-closing-modal');
     const fields = document.getElementById('cash-closing-fields');
     modal.classList.add('active');
@@ -4331,36 +4783,71 @@ function openCashClosingModal() {
                 </select>
             </div>
             <div class="form-group">
+                <label>Turno</label>
+                <select class="form-control" id="cc-turno-select">
+                    ${TURNOS.map(t => `<option value="${t}" ${t === getCurrentTurno() ? 'selected' : ''}>${t}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
                 <label>Fecha</label>
                 <input type="date" class="form-control" id="cc-date-input" value="${todayStr}">
             </div>
+            <div class="form-group">
+                <label>Fondo Inicial de Caja ($)</label>
+                <input type="number" class="form-control" id="cc-opening-input" min="0" value="0">
+            </div>
         </div>
-        <div class="form-group">
-            <label>Fondo Inicial de Caja ($)</label>
-            <input type="number" class="form-control" id="cc-opening-input" min="0" value="0">
+        <label style="font-size:0.75rem; font-weight:bold; margin: 10px 0 6px; display:block;">ARQUEO POR MEDIO DE PAGO</label>
+        <div class="table-wrapper">
+            <table class="custom-table ledger-table">
+                <thead><tr><th>Medio de Pago</th><th>Esperado (Sistema)</th><th>Real / Conciliado</th><th>Diferencia</th></tr></thead>
+                <tbody id="cc-breakdown-body"></tbody>
+            </table>
         </div>
-        <div class="bulk-price-preview" id="cc-expected-preview">Seleccione sucursal y fecha para calcular el efectivo esperado.</div>
-        <div class="form-group">
-            <label>Efectivo Contado al Cierre ($)</label>
-            <input type="number" class="form-control" id="cc-counted-input" min="0" value="0" required>
-        </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-top:12px;">
             <label>Observaciones</label>
             <textarea class="form-control" id="cc-notes-input" rows="2" placeholder="Opcional"></textarea>
         </div>
     `;
 
     const sucSel = document.getElementById('cc-sucursal-select');
+    const turnoSel = document.getElementById('cc-turno-select');
     const dateInput = document.getElementById('cc-date-input');
     const openingInput = document.getElementById('cc-opening-input');
-    const preview = document.getElementById('cc-expected-preview');
+    const breakdownBody = document.getElementById('cc-breakdown-body');
 
-    const updatePreview = () => {
-        const expected = computeExpectedCash(sucSel.value, dateInput.value, parseFloat(openingInput.value) || 0);
-        preview.textContent = `Efectivo esperado en caja: ${formatCurrency(expected)} (fondo inicial + ventas en efectivo del día en esa sucursal).`;
+    const renderBreakdown = () => {
+        const openingFloat = parseFloat(openingInput.value) || 0;
+        const breakdown = computeExpectedByPaymentMethod(sucSel.value, dateInput.value, turnoSel.value, openingFloat);
+        breakdownBody.innerHTML = breakdown.map(row => `
+            <tr data-method="${row.method}">
+                <td>${row.method}</td>
+                <td class="cc-expected-cell">${formatCurrency(row.expected)}</td>
+                <td><input type="number" class="form-control cc-real-input" data-method="${row.method}" min="0" step="0.01" value="${row.expected}" style="padding:6px 8px; max-width:140px;"></td>
+                <td class="cc-diff-cell" style="font-weight:700;">${formatCurrency(0)}</td>
+            </tr>
+        `).join('');
+
+        breakdownBody.querySelectorAll('.cc-real-input').forEach(input => {
+            input.addEventListener('input', () => updateDifferenceRow(input));
+            updateDifferenceRow(input);
+        });
     };
-    [sucSel, dateInput, openingInput].forEach(el => el.addEventListener('input', updatePreview));
-    updatePreview();
+
+    function updateDifferenceRow(input) {
+        const tr = input.closest('tr');
+        const expected = parseFloat(tr.querySelector('.cc-expected-cell').textContent.replace(/[^\d.-]/g, '')) || 0;
+        const real = parseFloat(input.value) || 0;
+        const diff = real - expected;
+        const diffCell = tr.querySelector('.cc-diff-cell');
+        diffCell.textContent = (diff > 0 ? '+' : '') + formatCurrency(diff);
+        diffCell.style.color = diff === 0 ? 'var(--success)' : (diff > 0 ? 'var(--warning)' : 'var(--danger)');
+    }
+
+    [sucSel, turnoSel, dateInput, openingInput].forEach(el => el.addEventListener('input', renderBreakdown));
+    renderBreakdown();
 }
 
 function closeCashClosingModal() {
@@ -4370,46 +4857,97 @@ function closeCashClosingModal() {
 function handleCashClosingSubmit(e) {
     e.preventDefault();
     const sucursalId = document.getElementById('cc-sucursal-select').value;
+    const turno = document.getElementById('cc-turno-select').value;
     const date = document.getElementById('cc-date-input').value;
     const openingFloat = parseFloat(document.getElementById('cc-opening-input').value) || 0;
-    const countedCash = parseFloat(document.getElementById('cc-counted-input').value) || 0;
     const notes = document.getElementById('cc-notes-input').value;
 
-    const expectedCash = computeExpectedCash(sucursalId, date, openingFloat);
-    const difference = countedCash - expectedCash;
+    const breakdown = [];
+    document.querySelectorAll('#cc-breakdown-body tr').forEach(tr => {
+        const method = tr.dataset.method;
+        const expected = parseFloat(tr.querySelector('.cc-expected-cell').textContent.replace(/[^\d.-]/g, '')) || 0;
+        const real = parseFloat(tr.querySelector('.cc-real-input').value) || 0;
+        breakdown.push({ method, expected, real, difference: real - expected });
+    });
+
+    const totalDifference = breakdown.reduce((a, r) => a + r.difference, 0);
+    const cashRow = breakdown.find(r => r.method === 'Efectivo');
 
     const newClosing = {
         id: `CC-00${STATE.cashClosings.length + 1}`,
-        sucursalId, date, openingFloat, expectedCash, countedCash, difference, notes,
+        sucursalId, turno, date, openingFloat,
+        expectedCash: cashRow ? cashRow.expected : openingFloat,
+        countedCash: cashRow ? cashRow.real : 0,
+        difference: totalDifference,
+        breakdown,
+        notes,
         closedBy: STATE.currentUser ? STATE.currentUser.name : 'N/D'
     };
     STATE.cashClosings.push(newClosing);
 
-    logHistory('cashClosings', 'create', `Cierre de caja registrado para ${formatDate(date)}.`, `Diferencia: ${formatCurrency(difference)}`);
-    const kind = difference === 0 ? 'success' : (difference > 0 ? 'warning' : 'danger');
-    const label = difference === 0 ? 'La caja cerró exacta.' : (difference > 0 ? `Sobrante de ${formatCurrency(difference)}.` : `Faltante de ${formatCurrency(Math.abs(difference))}.`);
+    logHistory('cashClosings', 'create', `Cierre de caja (${turno}) registrado para ${formatDate(date)}.`, `Diferencia total: ${formatCurrency(totalDifference)}`);
+    const kind = totalDifference === 0 ? 'success' : (totalDifference > 0 ? 'warning' : 'danger');
+    const label = totalDifference === 0 ? 'La caja cerró exacta en todos los medios de pago.' : (totalDifference > 0 ? `Sobrante total de ${formatCurrency(totalDifference)}.` : `Faltante total de ${formatCurrency(Math.abs(totalDifference))}.`);
     showToast('Cierre Registrado', label, kind);
 
+    saveLocalState();
     closeCashClosingModal();
     switchView(STATE.currentView);
+}
+
+function viewCashClosingDetail(closingId) {
+    const cc = STATE.cashClosings.find(c => c.id === closingId);
+    if (!cc) return;
+    const suc = STATE.sucursales.find(s => s.id === cc.sucursalId);
+    const modal = document.getElementById('details-modal');
+    document.getElementById('details-modal-title').textContent = `Cierre de Caja ${cc.id} - ${suc ? suc.name : ''}`;
+    document.getElementById('details-modal-content').innerHTML = `
+        <div class="balance-summary-row">
+            <div class="balance-summary-card">
+                <span class="label">Turno / Fecha</span>
+                <span class="value" style="font-size:1rem;">${cc.turno || '—'} · ${formatDate(cc.date)}</span>
+            </div>
+            <div class="balance-summary-card">
+                <span class="label">Diferencia Total</span>
+                <span class="value ${cc.difference < 0 ? 'positive' : 'negative'}">${cc.difference > 0 ? '+' : ''}${formatCurrency(cc.difference)}</span>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="custom-table ledger-table">
+                <thead><tr><th>Medio de Pago</th><th>Esperado</th><th>Real / Conciliado</th><th>Diferencia</th></tr></thead>
+                <tbody>
+                    ${(cc.breakdown || []).map(r => `<tr>
+                        <td>${r.method}</td>
+                        <td>${formatCurrency(r.expected)}</td>
+                        <td>${formatCurrency(r.real)}</td>
+                        <td style="font-weight:700; color:${r.difference === 0 ? 'var(--success)' : (r.difference > 0 ? 'var(--warning)' : 'var(--danger)')};">${r.difference > 0 ? '+' : ''}${formatCurrency(r.difference)}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+        ${cc.notes ? `<p style="margin-top:12px;"><strong>Observaciones:</strong> ${cc.notes}</p>` : ''}
+        <p class="text-secondary" style="margin-top:8px; font-size:0.8rem;">Cerrado por ${cc.closedBy}</p>
+    `;
+    modal.classList.add('active');
 }
 
 function renderCashClosingsView(container) {
     container.innerHTML = `
         <div class="view-header-bar">
             <div></div>
+            ${hasPermission('cerrarCaja') ? `
             <button class="btn-primary" id="btn-new-cash-closing">
                 <i data-lucide="plus"></i>
                 <span>Nuevo Cierre</span>
-            </button>
+            </button>` : ''}
         </div>
         <div class="table-card">
             <div class="table-wrapper">
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>Fecha</th><th>Sucursal</th><th>Fondo Inicial</th><th>Ventas Efectivo</th>
-                            <th>Esperado</th><th>Contado</th><th>Diferencia</th><th>Cerrado por</th>
+                            <th>Fecha</th><th>Turno</th><th>Sucursal</th><th>Fondo Inicial</th>
+                            <th>Efectivo Esperado</th><th>Efectivo Contado</th><th>Dif. Total</th><th>Cerrado por</th><th></th>
                         </tr>
                     </thead>
                     <tbody id="cash-closings-body"></tbody>
@@ -4417,28 +4955,224 @@ function renderCashClosingsView(container) {
             </div>
         </div>
     `;
-    document.getElementById('btn-new-cash-closing').addEventListener('click', openCashClosingModal);
+    const btn = document.getElementById('btn-new-cash-closing');
+    if (btn) btn.addEventListener('click', openCashClosingModal);
 
     const tbody = document.getElementById('cash-closings-body');
     if (STATE.cashClosings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">No hay cierres de caja registrados todavía.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:32px;">No hay cierres de caja registrados todavía.</td></tr>`;
     } else {
         tbody.innerHTML = STATE.cashClosings.slice().reverse().map(cc => {
             const suc = STATE.sucursales.find(s => s.id === cc.sucursalId);
-            const cashSales = cc.expectedCash - cc.openingFloat;
             const diffColor = cc.difference === 0 ? 'var(--success)' : (cc.difference > 0 ? 'var(--warning)' : 'var(--danger)');
             const diffLabel = cc.difference === 0 ? 'Exacto' : `${cc.difference > 0 ? '+' : ''}${formatCurrency(cc.difference)}`;
             return `<tr>
                 <td>${formatDate(cc.date)}</td>
+                <td>${cc.turno || '—'}</td>
                 <td>${suc ? suc.name : '—'}</td>
                 <td>${formatCurrency(cc.openingFloat)}</td>
-                <td>${formatCurrency(cashSales)}</td>
                 <td>${formatCurrency(cc.expectedCash)}</td>
                 <td>${formatCurrency(cc.countedCash)}</td>
                 <td style="font-weight:700; color:${diffColor};">${diffLabel}</td>
                 <td>${cc.closedBy}</td>
+                <td><button class="btn-table-action view" onclick="viewCashClosingDetail('${cc.id}')" title="Ver desglose por medio de pago"><i data-lucide="eye"></i></button></td>
             </tr>`;
         }).join('');
     }
     lucide.createIcons();
+}
+
+// ==========================================
+// BALDI - MODO OFFLINE COMPLETO + SINCRONIZACIÓN AUTOMÁTICA
+// ==========================================
+// El sistema sigue funcionando 100% sin conexión: las ventas y demás operaciones se
+// registran en memoria y se persisten en localStorage (para sobrevivir a un refresh o
+// cierre del navegador mientras no hay internet). En un despliegue real, `syncPendingData()`
+// es el punto de enganche para reemplazar por llamadas reales a tu backend/API en la nube.
+const LOCAL_STORAGE_KEY = 'baldi_pos_local_state_v1';
+let isSyncing = false;
+
+function saveLocalState() {
+    try {
+        const snapshot = {
+            inventory: STATE.inventory,
+            sales: STATE.sales,
+            purchases: STATE.purchases,
+            receipts: STATE.receipts,
+            payments: STATE.payments,
+            cashClosings: STATE.cashClosings,
+            history: STATE.history.slice(0, 300),
+            clients: STATE.clients,
+            providers: STATE.providers,
+            users: STATE.users,
+            sucursales: STATE.sucursales,
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(snapshot));
+    } catch (e) {
+        console.error('No se pudo guardar el estado local (localStorage).', e);
+    }
+}
+
+function loadLocalState() {
+    try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!raw) return;
+        const snapshot = JSON.parse(raw);
+        Object.keys(snapshot).forEach(key => {
+            if (key === 'savedAt') return;
+            if (Array.isArray(STATE[key]) && Array.isArray(snapshot[key])) {
+                STATE[key] = snapshot[key];
+            }
+        });
+    } catch (e) {
+        console.error('No se pudo restaurar el estado local (localStorage). Se continúa con los datos de demostración.', e);
+    }
+}
+
+function getPendingSyncCount() {
+    const pendingSales = STATE.sales.filter(s => s.synced === false).length;
+    const pendingPurchases = STATE.purchases.filter(p => p.synced === false).length;
+    return pendingSales + pendingPurchases;
+}
+
+function updateConnectionBadge() {
+    const el = document.getElementById('connection-status');
+    const text = document.getElementById('connection-status-text');
+    const badge = document.getElementById('sync-pending-badge');
+    if (!el) return;
+    const online = navigator.onLine;
+    el.classList.toggle('offline', !online);
+    text.textContent = online ? (isSyncing ? 'Sincronizando…' : 'En línea') : 'Sin conexión (Modo Offline)';
+    const pending = getPendingSyncCount();
+    if (pending > 0) {
+        badge.style.display = '';
+        badge.textContent = pending;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+// Simula la sincronización con un backend en la nube: en producción, este es el lugar
+// donde se haría un POST real de cada venta/compra pendiente a tu API, y solo se marca
+// `synced: true` cuando el servidor confirma haberla recibido.
+function syncPendingData() {
+    if (isSyncing || !navigator.onLine) return;
+    const pending = getPendingSyncCount();
+    if (pending === 0) return;
+
+    isSyncing = true;
+    updateConnectionBadge();
+
+    setTimeout(() => {
+        STATE.sales.forEach(s => { if (s.synced === false) s.synced = true; });
+        STATE.purchases.forEach(p => { if (p.synced === false) p.synced = true; });
+        isSyncing = false;
+        saveLocalState();
+        updateConnectionBadge();
+        showToast('Sincronización Completa', `${pending} operación(es) registradas offline se sincronizaron con la nube.`, 'success');
+        if (['sales', 'purchases', 'dashboard'].includes(STATE.currentView)) {
+            switchView(STATE.currentView);
+        }
+    }, 1500); // demora simulada de red
+}
+
+function initOfflineSync() {
+    updateConnectionBadge();
+    window.addEventListener('online', () => {
+        showToast('Conexión Restablecida', 'Sincronizando operaciones pendientes con la nube...', 'info');
+        updateConnectionBadge();
+        syncPendingData();
+    });
+    window.addEventListener('offline', () => {
+        showToast('Sin Conexión', 'Modo offline activado: las ventas se siguen registrando localmente.', 'warning');
+        updateConnectionBadge();
+    });
+    // Reintenta sincronizar cada 30s por si el evento 'online' no se disparó a tiempo
+    setInterval(() => { if (navigator.onLine) syncPendingData(); }, 30000);
+}
+
+// ==========================================
+// BALDI - NOTAS DE CRÉDITO Y DÉBITO (referencian una Factura A/B/C emitida)
+// ==========================================
+function renderCreditNotesView(container) {
+    container.innerHTML = `
+        <div class="view-header-bar">
+            <div></div>
+            <button class="btn-primary" id="btn-new-credit-note">
+                <i data-lucide="plus"></i>
+                <span>Nueva Nota</span>
+            </button>
+        </div>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr><th>Nº</th><th>Tipo</th><th>Comprobante Asociado</th><th>Cliente</th><th>Fecha</th><th>Monto</th><th>Motivo</th><th style="width:80px;text-align:center;">Acciones</th></tr>
+                    </thead>
+                    <tbody id="credit-notes-body"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    document.getElementById('btn-new-credit-note').addEventListener('click', () => openCrudModal('creditNotes', 'create'));
+
+    const tbody = document.getElementById('credit-notes-body');
+    if (STATE.creditNotes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">No hay notas de crédito o débito emitidas.</td></tr>`;
+    } else {
+        tbody.innerHTML = STATE.creditNotes.slice().reverse().map(nc => `
+            <tr>
+                <td style="font-weight:600;">${nc.id}</td>
+                <td><span class="status-badge ${nc.tipo === 'Crédito' ? 'success' : 'warning'}">Nota de ${nc.tipo} ${nc.letra}</span></td>
+                <td>${nc.saleId}</td>
+                <td>${nc.clientName}</td>
+                <td>${formatDate(nc.date)}</td>
+                <td style="font-weight:700;">${formatCurrency(nc.amount)}</td>
+                <td>${nc.motivo}</td>
+                <td style="text-align:center;">
+                    <button class="btn-table-action edit" onclick="printCreditNote('${nc.id}')" title="Imprimir">
+                        <i data-lucide="printer"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    lucide.createIcons();
+}
+
+function printCreditNote(id) {
+    const nc = STATE.creditNotes.find(n => n.id === id);
+    if (!nc) return;
+    const sucursal = STATE.sucursales.find(s => s.id === nc.sucursalId) || STATE.sucursales[0];
+    const fd = nc.fiscalData;
+    const fiscalBoxHtml = fd ? `
+        <div class="t-line"></div>
+        <div class="fiscal-sim-box">
+            <p class="t-center" style="font-weight:bold; color:#b91c1c;">⚠ CAE SIMULADO — NO VÁLIDO ANTE ARCA/AFIP</p>
+            <p>Punto de Venta: ${fd.puntoVenta} &nbsp; Nº: ${fd.numero}</p>
+            <p>CAE (demo): ${fd.cae}</p>
+            <p>Vto. CAE (demo): ${formatDate(fd.caeVencimiento)}</p>
+            ${renderQrPlaceholder(fd, sucursal, nc.amount)}
+        </div>
+    ` : '';
+    const html = `
+        <div class="ticket-paper">
+            <div class="t-center">
+                <h3>BALDI FIAMBRERÍA</h3>
+                <p>${sucursal.name}</p>
+                <p>CUIT: 30-82749102-3</p>
+            </div>
+            <div class="t-line"></div>
+            <p class="t-center" style="font-weight:bold;">NOTA DE ${nc.tipo.toUpperCase()} ${nc.letra}</p>
+            <p>Fecha: ${formatDate(nc.date)}</p>
+            <p>Comprobante asociado: ${nc.saleId}</p>
+            <p>Cliente: ${nc.clientName}</p>
+            <p>Motivo: ${nc.motivo}</p>
+            <div class="t-line"></div>
+            <div class="t-row" style="font-weight:bold; font-size:14px;"><span>TOTAL</span><span>${formatCurrency(nc.amount)}</span></div>
+            ${fiscalBoxHtml}
+        </div>
+    `;
+    openTicketWindow(`Nota ${nc.id}`, html);
 }

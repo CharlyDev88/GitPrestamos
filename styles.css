@@ -2100,3 +2100,79 @@ body.authenticated .login-overlay {
     .pos-layout { grid-template-columns: 1fr; }
     .pos-sidebar { position: static; }
 }
+
+/* ==========================================
+   BALDI - MODO OFFLINE / ESTADO DE CONEXIÓN
+   ========================================== */
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--success-light);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--success);
+    white-space: nowrap;
+}
+.connection-status.offline {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+.connection-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+}
+.connection-status.offline .connection-dot {
+    background: var(--danger);
+    animation: pulse-dot 1.4s infinite;
+}
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+.sync-pending-badge {
+    background: var(--warning);
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.history-item-user {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+}
+.permission-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: none;
+    cursor: pointer;
+}
+.permission-checkbox input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+@media (max-width: 768px) {
+    .connection-status span:not(.connection-dot):not(.sync-pending-badge) { display: none; }
+}
