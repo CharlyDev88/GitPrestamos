@@ -1,405 +1,1557 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baldi - Fiambrería Digital</title>
-    <!-- Google Fonts: Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- SheetJS (exportación de Excel) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- CSS Stylesheet -->
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema de gestión de inventario del pañol de la Escuela Técnica Ing. Herminio Arrieta.">
+  <meta name="author" content="Carlos Vasquez">
+  <meta name="contact" content="carlitosvasquez005@gmail.com">
+  <meta name="reply-to" content="carlitosvasquez005@gmail.com">
+  <meta name="copyright" content="Colegio Técnico Ing. Herminio Arrieta">
+  <link rel="author" href="mailto:carlitosvasquez005@gmail.com">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <meta name="robots" content="noindex">
+  <title>Escuela Técnica "Ing. Herminio Arrieta"</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="unauthenticated">
+<body>
+  <div class="background-shape shape-a"></div>
+  <div class="background-shape shape-b"></div>
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- Login Screen Overlay -->
-    <div class="login-overlay" id="login-screen">
-        <div class="login-card">
-            <div class="login-brand">
-                <div class="brand-icon-login">
-                    <i data-lucide="ham"></i>
-                </div>
-                <h2>Baldi</h2>
-                <p>Fiambrería Digital</p>
-            </div>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-username">Usuario</label>
-                    <input type="text" id="login-username" class="form-control" placeholder="admin / vendedor" required autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Contraseña</label>
-                    <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
-                </div>
-                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 14px; gap: 8px;">
-                    <span>Iniciar Sesión</span>
-                    <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
-                </button>
-            </form>
-            
-            <div class="login-helper">
-                <div class="helper-title">
-                    <i data-lucide="help-circle"></i>
-                    <span>Cuentas de Demostración</span>
-                </div>
-                <div class="helper-cred" onclick="fillCreds('admin', 'admin123')">
-                    <strong>Administrador:</strong> <span>admin</span> / <span>admin123</span>
-                </div>
-                <div class="helper-cred" onclick="fillCreds('vendedor', 'vendedor123')">
-                    <strong>Vendedor:</strong> <span>vendedor</span> / <span>vendedor123</span>
-                </div>
-                <div class="helper-cred" onclick="fillCreds('deposito', 'deposito123')">
-                    <strong>Depósito:</strong> <span>deposito</span> / <span>deposito123</span>
-                </div>
-            </div>
+  <main class="shell">
+    <section id="login-view" class="auth-layout">
+      <div class="auth-copy">
+        <img class="auth-crest" src="img/escudo-etha.png" alt="Escudo de la Escuela Técnica Ing. Herminio Arrieta" width="120" height="120">
+        <p class="eyebrow">Escuela Técnica "Ing. Herminio Arrieta"</p>
+        <span class="demo-badge" data-demo-badge hidden>Versión demo · datos ficticios</span>
+        <h1>Sistema de Gestión de Inventario</h1>
+        <p class="hero__text">
+          Sistema web para administrar inventario, préstamos, devoluciones y responsables del taller.
+        </p>
+      </div>
+
+      <section class="panel auth-panel">
+        <div class="panel__header">
+          <h2>Ingresar</h2>
+          <p>Accedé según tu rol dentro de la escuela.</p>
         </div>
-    </div>
+        <form id="login-form" class="form-grid single-column">
+          <label>
+            Usuario
+            <input name="username" type="text" placeholder="usuario" autocomplete="username" required>
+          </label>
+          <label>
+            Contraseña
+            <input name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+          </label>
+          <button type="submit" class="button button--primary">Iniciar sesión</button>
+        </form>
+        <p id="login-error" class="form-error" hidden></p>
+        <div id="demo-access" class="demo-access" hidden>
+          <h3>Versión demo · elegí un usuario de prueba</h3>
+          <p>Los datos son ficticios. Contraseña de todos los usuarios: <strong id="demo-password"></strong></p>
+          <div id="demo-users" class="demo-users"></div>
+        </div>
+      </section>
+      <footer class="site-footer site-footer--auth">
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+        </footer>
+    </section>
 
-    <!-- Main Workspace Application Layout -->
-    <div class="app-layout">
-        <!-- Sidebar backdrop overlay (mobile only) -->
-        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    <section id="password-view" class="auth-layout" hidden>
+      <div class="auth-copy">
+        <p class="eyebrow">Seguridad</p>
+        <h1>Cambiar contraseña</h1>
+        <p id="password-intro" class="hero__text">Elegí una contraseña nueva para tu usuario.</p>
+      </div>
 
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-icon">
-                    <i data-lucide="ham"></i>
-                </div>
-                <div class="brand-info">
-                    <span class="brand-name">Baldi</span>
-                    <span class="brand-sub">Fiambrería Digital</span>
-                </div>
-                <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Cerrar menú">
-                    <i data-lucide="x"></i>
-                </button>
+      <section class="panel auth-panel">
+        <div class="panel__header">
+          <h2>Nueva contraseña</h2>
+          <p>Mínimo 8 caracteres, con letras y números, sin incluir tu nombre de usuario.</p>
+        </div>
+        <form id="password-form" class="form-grid single-column">
+          <label>
+            Contraseña actual
+            <input name="currentPassword" type="password" autocomplete="current-password" required>
+          </label>
+          <label>
+            Contraseña nueva
+            <input name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+          </label>
+          <label>
+            Repetir contraseña nueva
+            <input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+          </label>
+          <button type="submit" class="button button--primary">Guardar contraseña</button>
+          <button id="password-cancel-button" type="button" class="button button--ghost">Cancelar</button>
+        </form>
+        <p id="password-error" class="form-error" hidden></p>
+      </section>
+      <footer class="site-footer site-footer--auth">
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+        </footer>
+    </section>
+
+    <section id="app-view" hidden>
+      <div class="dashboard-shell">
+        <aside class="sidebar">
+          <div class="sidebar__profile">
+            <img class="sidebar__crest" src="img/escudo-etha.png" alt="Escudo de la Escuela Técnica Ing. Herminio Arrieta" width="80" height="80">
+            <div class="avatar-circle">
+              <span id="sidebar-initials">PE</span>
             </div>
-            
-            <nav class="sidebar-menu">
-                <ul>
-                    <li>
-                        <button class="nav-item active" data-view="dashboard">
-                            <i data-lucide="layout-dashboard"></i>
-                            <span>Panel Principal</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Operación Diaria</li>
-                    <li>
-                        <button class="nav-item" data-view="pos">
-                            <i data-lucide="monitor-check"></i>
-                            <span>Punto de Venta (POS)</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Operaciones</li>
-                    <li>
-                        <button class="nav-item" data-view="inventory">
-                            <i data-lucide="boxes"></i>
-                            <span>Inventario</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="sales">
-                            <i data-lucide="shopping-cart"></i>
-                            <span>Ventas</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="purchases">
-                            <i data-lucide="shopping-bag"></i>
-                            <span>Compras</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="replenishment">
-                            <i data-lucide="truck"></i>
-                            <span>Reposición</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="transfers">
-                            <i data-lucide="repeat"></i>
-                            <span>Traspasos entre Sucursales</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="labels">
-                            <i data-lucide="tag"></i>
-                            <span>Etiquetas de Precios</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Finanzas</li>
-                    <li>
-                        <button class="nav-item" data-view="receipts">
-                            <i data-lucide="file-text"></i>
-                            <span>Recibos</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="payments">
-                            <i data-lucide="credit-card"></i>
-                            <span>Pagos</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="accounts">
-                            <i data-lucide="landmark"></i>
-                            <span>Cuentas Corrientes</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="cashclosings">
-                            <i data-lucide="calculator"></i>
-                            <span>Cierres de Caja</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="creditnotes">
-                            <i data-lucide="receipt-text"></i>
-                            <span>Notas Crédito / Débito</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Contactos</li>
-                    <li>
-                        <button class="nav-item" data-view="clients">
-                            <i data-lucide="users"></i>
-                            <span>Clientes</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="providers">
-                            <i data-lucide="truck"></i>
-                            <span>Proveedores</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Administración</li>
-                    <li>
-                        <button class="nav-item" data-view="sucursales">
-                            <i data-lucide="store"></i>
-                            <span>Sucursales</span>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="nav-item" data-view="users">
-                            <i data-lucide="user-cog"></i>
-                            <span>Usuarios</span>
-                        </button>
-                    </li>
-                    <li class="menu-section">Reportes</li>
-                    <li>
-                        <button class="nav-item" data-view="reports">
-                            <i data-lucide="bar-chart-3"></i>
-                            <span>Reportes</span>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="user-avatar" id="sidebar-user-avatar">CC</div>
-                <div class="user-details">
-                    <span class="user-name" id="sidebar-user-name">Cargando...</span>
-                    <span class="user-role" id="sidebar-user-role">Cargando...</span>
-                </div>
-                <button class="btn-icon" title="Cerrar Sesión" id="btn-logout">
-                    <i data-lucide="log-out"></i>
-                </button>
+            <div class="sidebar__identity">
+              <h2 id="sidebar-name">Usuario</h2>
+              <p id="sidebar-user">@usuario</p>
             </div>
+            <button type="button" id="sidebar-menu-toggle" class="sidebar__menu-toggle" aria-expanded="false" aria-controls="sidebar-menu">
+              <span aria-hidden="true">☰</span> Menú
+            </button>
+          </div>
+
+          <div id="sidebar-menu" class="sidebar__menu">
+
+          <nav class="sidebar__nav">
+            <button type="button" class="sidebar__link is-active" data-view="dashboard">Dashboard</button>
+            <button type="button" class="sidebar__link" data-view="inventory">Inventario</button>
+            <button type="button" class="sidebar__link" data-view="loan-form">Préstamo</button>
+            <button type="button" class="sidebar__link" data-view="consumption-form">Consumos</button>
+            <button type="button" class="sidebar__link" data-view="stock-entry-form">Ingresos</button>
+            <button type="button" class="sidebar__link" data-view="purchase-request-form">Pedido de compra</button>
+            <button type="button" class="sidebar__link" data-view="purchase-invoice">Factura de compra</button>
+            <button type="button" class="sidebar__link" data-view="returns">Devolución</button>
+            <button type="button" class="sidebar__link" data-view="item-form">Materiales</button>
+            <button type="button" class="sidebar__link" data-view="users">Usuarios</button>
+            <button type="button" class="sidebar__link" data-view="permissions">Permisos</button>
+            <button type="button" class="sidebar__link" data-view="reports">Informes</button>
+            <div class="sidebar__group">
+              <button type="button" class="sidebar__link sidebar__link--parent" data-toggle-submenu="master-data">Datos maestros</button>
+              <div class="sidebar__submenu" data-submenu="master-data">
+                <button type="button" class="sidebar__sublink" data-view="master-data-categories">Categorías</button>
+                <button type="button" class="sidebar__sublink" data-view="master-data-locations">Ubicaciones</button>
+                <button type="button" class="sidebar__sublink" data-view="master-data-cost-centers">Centro de Costos</button>
+                <button type="button" class="sidebar__sublink" data-view="master-data-suppliers">Proveedores</button>
+                <button type="button" class="sidebar__sublink" data-view="master-data-orientations">Orientaciones</button>
+                <button type="button" class="sidebar__sublink" data-view="master-data-responsibles">Responsables</button>
+              </div>
+            </div>
+            <button type="button" class="sidebar__link" data-view="activity">Actividad</button>
+          </nav>
+
+          <div class="sidebar__footer">
+            <p id="welcome-text"></p>
+            <button id="change-password-button" type="button" class="button button--ghost button--sidebar">Cambiar contraseña</button>
+            <button id="logout-button" type="button" class="button button--ghost button--sidebar">Cerrar sesión</button>
+          </div>
+          </div>
         </aside>
 
-        <!-- Main Workspace Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="top-header">
-                <div class="header-left">
-                    <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menú">
-                        <i data-lucide="menu"></i>
-                    </button>
-                    <div>
-                        <h1 id="view-title">Panel Principal</h1>
-                        <p id="view-subtitle" class="text-secondary">Simulación de operaciones y KPIs de la Distribuidora en tiempo real</p>
-                    </div>
+        <div class="dashboard-content" id="dashboard-top">
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">Sistema de Gestión <span class="demo-badge demo-badge--inline" data-demo-badge hidden>Demo · datos ficticios</span></p>
+              <h1>Escuela Técnica "Ing. Herminio Arrieta"</h1>
+            </div>
+          </header>
+
+          <section class="stats-grid" data-view-panel="dashboard">
+            <article class="stat-card stat-card--dark stat-card--metric">
+              <span>Elementos</span>
+              <strong id="summary-tools">0</strong>
+            </article>
+            <button type="button" class="stat-card stat-card--metric stat-card--link" data-alert-view="active-loans" aria-label="Ver préstamos activos">
+              <span>Préstamos activos</span>
+              <strong id="summary-loans">0</strong>
+              <small class="stat-card__hint">Ver detalle →</small>
+            </button>
+            <article class="stat-card stat-card--metric">
+              <span>Alertas</span>
+              <strong id="summary-alerts">0</strong>
+            </article>
+            <article class="stat-card">
+              <span>Rol activo</span>
+              <strong id="summary-role">-</strong>
+            </article>
+          </section>
+
+          <section class="dashboard-grid">
+            <div class="dashboard-main">
+              <section class="panel panel--chart" data-view-panel="dashboard">
+                <div class="panel__header panel__header--split">
+                  <div>
+                    <h2>Resumen visual</h2>
+                    <p>Disponibilidad por categoría del pañol.</p>
+                  </div>
+                  <span class="panel-badge">Check now</span>
                 </div>
-                <div class="header-right">
-                    <div class="active-shift-badge" id="active-shift-badge" style="display:none;">
-                        <i data-lucide="store" style="width:14px; height:14px;"></i>
-                        <span id="active-shift-text">Sucursal — Turno</span>
-                        <button class="btn-text" id="btn-change-shift" title="Cambiar sucursal/turno">Cambiar</button>
+                <div id="category-chart" class="bar-chart"></div>
+              </section>
+
+              <section id="loan-stats-panel" class="panel panel--chart" data-view-panel="dashboard">
+                <div class="panel__header panel__header--split">
+                  <div>
+                    <h2>Préstamos y devoluciones</h2>
+                    <p>Movimientos de cada mes en los últimos 12 meses y préstamos abiertos al cierre del mes.</p>
+                  </div>
+                  <button type="button" id="loan-stats-toggle" class="button button--ghost" aria-pressed="false">Ver tabla</button>
+                </div>
+                <div id="loan-stats-legend" class="chart-legend" aria-hidden="true"></div>
+                <div id="loan-stats-chart" class="loan-stats-chart" role="img" aria-label="Gráfico mensual de préstamos y devoluciones"></div>
+                <div id="loan-stats-table" class="loan-stats-table" hidden></div>
+              </section>
+
+              <section id="inventory-panel" class="panel" data-view-panel="inventory">
+                <div class="panel__header">
+                  <h2>Inventario</h2>
+                  <p>Estado actual de herramientas, equipos e insumos.</p>
+                </div>
+                <div class="inventory-filters">
+                  <label>
+                    Buscar
+                    <input id="inventory-search" type="text" placeholder="Nombre, código, subcódigo o nota">
+                  </label>
+                  <label>
+                    Categoría
+                    <select id="inventory-category-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                  <label>
+                    Ubicación
+                    <select id="inventory-location-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="inventory-list" class="card-list"></div>
+              </section>
+
+              <section id="loan-panel" class="panel" data-view-panel="returns">
+                <div class="panel__header">
+                  <h2>Devoluciones</h2>
+                  <p>Seguimiento de responsables y devoluciones totales o parciales.</p>
+                </div>
+                <div class="returns-filters">
+                  <label>
+                    Fecha
+                    <input id="returns-date-filter" type="date">
+                  </label>
+                  <label>
+                    Material
+                    <input id="returns-material-filter" type="text" placeholder="Nombre o código">
+                  </label>
+                  <label>
+                    Responsable
+                    <input id="returns-borrower-filter" type="text" placeholder="Buscar por apellido y nombre o DNI">
+                  </label>
+                </div>
+                <div id="loan-list" class="card-list"></div>
+                <div class="returns-pagination">
+                  <button type="button" id="returns-prev-page" class="button button--ghost">Anterior</button>
+                  <span id="returns-page-info">Página 1</span>
+                  <button type="button" id="returns-next-page" class="button button--ghost">Siguiente</button>
+                </div>
+              </section>
+
+              <section id="active-loans-panel" class="panel" data-view-panel="active-loans">
+                <div class="panel__header panel__header--split">
+                  <div>
+                    <h2>Préstamos activos</h2>
+                    <p>Materiales prestados con devolución pendiente: responsable, cantidades, fechas y estado.</p>
+                  </div>
+                  <button type="button" class="button button--ghost" data-alert-view="dashboard">← Volver al dashboard</button>
+                </div>
+                <div class="active-loans-filters">
+                  <label>
+                    Buscar
+                    <input id="active-loans-search" type="text" placeholder="Material, código, responsable, DNI o sector">
+                  </label>
+                  <label>
+                    Estado
+                    <select id="active-loans-status">
+                      <option value="">Todos</option>
+                      <option value="overdue">Vencidos</option>
+                      <option value="soon">Vencen en 7 días</option>
+                      <option value="ok">En plazo</option>
+                    </select>
+                  </label>
+                  <label>
+                    Ordenar por
+                    <select id="active-loans-sort">
+                      <option value="due">Vencimiento (más próximo primero)</option>
+                      <option value="recent">Fecha de préstamo (más reciente primero)</option>
+                      <option value="borrower">Responsable (A-Z)</option>
+                      <option value="item">Material (A-Z)</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="active-loans-summary" class="active-loans-summary"></div>
+                <div id="active-loans-table" class="active-loans-table"></div>
+              </section>
+
+              <section id="overdue-panel" class="panel" data-view-panel="overdue-loans">
+                <div class="panel__header">
+                  <h2>Vencidos</h2>
+                  <p>Préstamos vencidos con filtros por fecha, material y responsable.</p>
+                </div>
+                <div class="returns-filters">
+                  <label>
+                    Fecha
+                    <input id="overdue-date-filter" type="date">
+                  </label>
+                  <label>
+                    Material
+                    <input id="overdue-material-filter" type="text" placeholder="Nombre o código">
+                  </label>
+                  <label>
+                    Responsable
+                    <input id="overdue-borrower-filter" type="text" placeholder="Buscar por apellido y nombre o DNI">
+                  </label>
+                </div>
+                <div id="overdue-list" class="card-list"></div>
+                <div class="returns-pagination">
+                  <button type="button" id="overdue-prev-page" class="button button--ghost">Anterior</button>
+                  <span id="overdue-page-info">Página 1</span>
+                  <button type="button" id="overdue-next-page" class="button button--ghost">Siguiente</button>
+                </div>
+              </section>
+
+              <section id="low-stock-panel" class="panel" data-view-panel="low-stock">
+                <div class="panel__header">
+                  <h2>Stock Bajo</h2>
+                  <p>Materiales por debajo del nivel mínimo con filtros de búsqueda, categoría y ubicación.</p>
+                </div>
+                <div class="materials-toolbar">
+                  <label>
+                    Buscar material
+                    <input id="low-stock-search" type="text" placeholder="Nombre, código, subcódigo o nota">
+                  </label>
+                  <label>
+                    Categoría
+                    <select id="low-stock-category-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                  <label>
+                    Ubicación
+                    <select id="low-stock-location-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="low-stock-list" class="card-list"></div>
+              </section>
+
+              <section id="item-panel" class="panel" data-view-panel="item-form">
+                <div class="panel__header">
+                  <h2>Materiales</h2>
+                  <p>Alta, edición y baja de materiales del pañol. Disponible solo para el pañolero.</p>
+                </div>
+                <div class="materials-toolbar">
+                  <label>
+                    Buscar material
+                    <input id="materials-search" type="text" placeholder="Nombre, código, subcódigo o nota">
+                  </label>
+                  <label>
+                    Categoría
+                    <select id="materials-category-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                  <label>
+                    Ubicación
+                    <select id="materials-location-filter">
+                      <option value="">Todas</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="materials-workspace">
+                  <div class="materials-form-panel">
+                    <form id="item-form" class="form-grid">
+                      <input name="id" type="hidden">
+                      <label>
+                        Nombre
+                        <input name="name" type="text" placeholder="Taladro percutor" required>
+                      </label>
+                      <label>
+                        Categoría
+                        <select name="category" id="item-category-select" required></select>
+                      </label>
+                      <label>
+                        Código interno
+                        <input name="code" type="text" placeholder="PAN-001" required>
+                      </label>
+                      <label>
+                        Subcódigo
+                        <input name="subcode" type="text" placeholder="A-01">
+                      </label>
+                      <label>
+                        Ubicación
+                        <select name="location" id="item-location-select" required></select>
+                      </label>
+                      <label>
+                        Stock
+                        <input name="stock" type="number" min="0" value="1" required>
+                      </label>
+                      <label>
+                        Stock mínimo
+                        <input name="stockMinimum" type="number" min="0" value="1" required>
+                      </label>
+                      <label>
+                        Costo Unitario
+                        <input name="amount" type="number" min="0" step="0.01" value="0">
+                      </label>
+                      <label class="materials-form-notes">
+                        Observaciones
+                        <textarea name="notes" rows="3" placeholder="Ubicación, estado o taller..."></textarea>
+                      </label>
+                      <div class="materials-form-actions">
+                        <button type="submit" id="item-submit-button" class="button button--success">Guardar material</button>
+                        <button type="button" id="item-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="materials-list-panel">
+                    <div class="materials-list-header">
+                      <h3>Materiales cargados</h3>
+                      <p>Seleccioná uno para editarlo o eliminarlo.</p>
                     </div>
-                    <div class="connection-status" id="connection-status" title="Estado de conexión">
-                        <span class="connection-dot"></span>
-                        <span id="connection-status-text">En línea</span>
-                        <span class="sync-pending-badge" id="sync-pending-badge" style="display:none;">0</span>
+                    <div id="materials-admin-list" class="activity-list"></div>
+                    <div class="materials-pagination">
+                      <button type="button" id="materials-prev-page" class="button button--ghost">Anterior</button>
+                      <span id="materials-page-info">Página 1</span>
+                      <button type="button" id="materials-next-page" class="button button--ghost">Siguiente</button>
                     </div>
-                    <div class="time-widget">
-                        <i data-lucide="calendar"></i>
-                        <span id="current-date">Jueves, 25 de Junio, 2026</span>
+                  </div>
+                </div>
+              </section>
+
+              <section id="permissions-panel" class="panel" data-view-panel="permissions">
+                <div class="panel__header">
+                  <h2>Permisos por rol</h2>
+                  <p>Elegí qué puede hacer cada rol. El administrador siempre tiene todos los permisos; usuarios y permisos son exclusivos del administrador.</p>
+                </div>
+                <div id="permissions-matrix" class="permissions-matrix"></div>
+                <div class="permissions-actions">
+                  <p id="permissions-status" class="form-hint">Sin cambios pendientes.</p>
+                  <button type="button" id="permissions-discard" class="button button--ghost" disabled>Descartar cambios</button>
+                  <button type="button" id="permissions-save" class="button button--success" disabled>Guardar cambios</button>
+                </div>
+              </section>
+
+              <section id="users-panel" class="panel" data-view-panel="users">
+                <div class="panel__header">
+                  <h2>Usuarios</h2>
+                  <p>Alta, edición y baja de usuarios del sistema. Disponible solo para administración.</p>
+                </div>
+                <div class="materials-toolbar">
+                  <label>
+                    Buscar usuario
+                    <input id="users-search" type="text" placeholder="Nombre o usuario">
+                  </label>
+                  <label>
+                    Rol
+                    <select id="users-role-filter">
+                      <option value="">Todos</option>
+                      <option value="admin">Admin</option>
+                      <option value="directivo">Directivo</option>
+                      <option value="administrativo">Administrativo</option>
+                      <option value="docente">Docente</option>
+                      <option value="panolero">Pañolero</option>
+                    </select>
+                  </label>
+                  <div></div>
+                </div>
+                <div class="materials-workspace">
+                  <div class="materials-form-panel">
+                    <form id="user-form" class="form-grid">
+                      <input name="id" type="hidden">
+                      <label>
+                        Nombre completo
+                        <input name="name" type="text" placeholder="María López" required>
+                      </label>
+                      <label>
+                        Usuario
+                        <input name="username" type="text" placeholder="mlopez" required>
+                      </label>
+                      <label>
+                        Rol
+                        <select name="role" id="user-role-select" required>
+                          <option value="admin">Admin</option>
+                          <option value="directivo">Directivo</option>
+                          <option value="administrativo">Administrativo</option>
+                          <option value="docente">Docente</option>
+                          <option value="panolero">Pañolero</option>
+                        </select>
+                      </label>
+                      <label>
+                        Contraseña
+                        <input name="password" type="password" placeholder="Dejar vacía para conservar la actual">
+                      </label>
+                      <div class="materials-form-actions">
+                        <button type="submit" id="user-submit-button" class="button button--success">Guardar usuario</button>
+                        <button type="button" id="user-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="materials-list-panel">
+                    <div class="materials-list-header">
+                      <h3>Usuarios cargados</h3>
+                      <p>Seleccioná uno para editarlo o eliminarlo.</p>
                     </div>
-                    <div class="notification-bell">
-                        <button class="btn-icon relative" id="notification-btn">
-                            <i data-lucide="bell"></i>
-                            <span class="badge-dot"></span>
-                        </button>
-                        <div class="notification-dropdown" id="notification-dropdown">
-                            <div class="dropdown-header">
-                                <h3>Notificaciones</h3>
-                                <button class="btn-text" id="clear-notifications">Limpiar</button>
-                            </div>
-                            <div class="dropdown-list" id="notification-list">
-                                <!-- Dynamic notifications go here -->
-                            </div>
+                    <div id="users-admin-list" class="activity-list"></div>
+                    <div class="materials-pagination">
+                      <button type="button" id="users-prev-page" class="button button--ghost">Anterior</button>
+                      <span id="users-page-info">Página 1</span>
+                      <button type="button" id="users-next-page" class="button button--ghost">Siguiente</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="stock-entry-panel" class="panel" data-view-panel="stock-entry-form">
+                <div class="panel__header">
+                  <h2>Ingresos al inventario</h2>
+                  <p>Registrá ingresos por donación o compra para materiales existentes o nuevos.</p>
+                </div>
+                <div class="materials-workspace">
+                  <div class="materials-form-panel">
+                    <form id="stock-entry-form" class="form-grid">
+                      <label>
+                        Tipo de ingreso
+                        <select name="entryType" id="stock-entry-type-select" required>
+                          <option value="donacion">Donación</option>
+                          <option value="compra">Compra</option>
+                        </select>
+                      </label>
+                      <label>
+                        Aplicar sobre
+                        <select name="targetType" id="stock-entry-target-type" required>
+                          <option value="existing">Material existente</option>
+                          <option value="new">Material nuevo</option>
+                        </select>
+                      </label>
+                      <label id="stock-entry-donor-wrapper" hidden>
+                        Donante
+                        <input name="donor" type="text" placeholder="Nombre del donante o institución">
+                      </label>
+                      <label id="stock-entry-estimated-unit-cost-wrapper" hidden>
+                        Costo unitario estimado
+                        <input name="estimatedUnitCost" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" value="0">
+                      </label>
+                      <label id="stock-entry-purchase-request-wrapper" hidden>
+                        Pedido de compra confirmado
+                        <select name="purchaseRequestId" id="stock-entry-purchase-request-select"></select>
+                      </label>
+
+                      <div id="stock-entry-existing-fields" class="type-specific-fields">
+                        <label>
+                          Buscar material
+                          <input id="stock-entry-item-search" type="text" placeholder="Nombre, código o subcódigo">
+                        </label>
+                        <label>
+                          Material
+                          <select name="itemId" id="stock-entry-item-select"></select>
+                        </label>
+                      </div>
+
+                      <div id="stock-entry-new-fields" class="type-specific-fields" hidden>
+                        <label>
+                          Nombre
+                          <input name="name" type="text" placeholder="Taladro percutor">
+                        </label>
+                        <label>
+                          Categoría
+                          <select name="category" id="stock-entry-category-select"></select>
+                        </label>
+                        <label>
+                          Código interno
+                          <input name="code" type="text" placeholder="PAN-001">
+                        </label>
+                        <label>
+                          Subcódigo
+                          <input name="subcode" type="text" placeholder="A-01">
+                        </label>
+                        <label>
+                          Ubicación
+                          <select name="location" id="stock-entry-location-select"></select>
+                        </label>
+                        <label>
+                          Stock mínimo
+                          <input name="stockMinimum" type="number" min="0" value="0">
+                        </label>
+                        <label id="stock-entry-new-amount-label">
+                          Costo Unitario
+                          <input name="amount" type="number" min="0" step="0.01" value="0">
+                        </label>
+                        <label class="materials-form-notes">
+                          Observaciones del material
+                          <textarea name="notes" rows="3" placeholder="Estado, procedencia o detalle del material"></textarea>
+                        </label>
+                      </div>
+
+                      <div id="stock-entry-purchase-items" class="selection-list" hidden></div>
+
+                      <div id="stock-entry-purchase-meta-row" class="type-specific-fields" hidden>
+                        <label id="stock-entry-provider-wrapper" hidden>
+                          Proveedor
+                          <input name="provider" type="text" placeholder="Proveedor de la compra">
+                        </label>
+                        <label id="stock-entry-invoice-wrapper" hidden>
+                          Factura
+                          <input name="invoice" type="text" placeholder="Número de factura">
+                        </label>
+                      </div>
+
+                      <label>
+                        Cantidad ingresada
+                        <input name="quantity" type="number" min="1" value="1" required>
+                      </label>
+                      <label class="materials-form-notes">
+                        Observación del movimiento
+                        <textarea name="observation" rows="3" placeholder="Detalle de la donación o de la compra"></textarea>
+                      </label>
+                      <div class="materials-form-actions">
+                        <button type="submit" class="button button--success">Registrar ingreso</button>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="materials-list-panel">
+                    <div class="materials-list-header">
+                      <h3>Últimos ingresos</h3>
+                      <p>Movimiento de stock generado por compras o donaciones.</p>
+                    </div>
+                    <div id="stock-entries-list" class="activity-list"></div>
+                    <div class="materials-pagination">
+                      <button type="button" id="stock-entries-prev-page" class="button button--ghost">Anterior</button>
+                      <span id="stock-entries-page-info">Página 1</span>
+                      <button type="button" id="stock-entries-next-page" class="button button--ghost">Siguiente</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="purchase-request-panel" class="panel" data-view-panel="purchase-request-form">
+                <div class="panel__header">
+                  <h2>Pedido de compra</h2>
+                  <p>Generá pedidos con materiales en alerta de stock y materiales adicionales a elección.</p>
+                </div>
+                <div class="materials-workspace">
+                  <div class="materials-form-panel">
+                    <form id="purchase-request-form" class="form-grid single-column">
+                      <div class="materials-list-header">
+                        <h3>Materiales con stock bajo</h3>
+                        <p>Marcá los materiales sugeridos y ajustá la cantidad si lo necesitás.</p>
+                      </div>
+                      <div id="purchase-low-stock-list" class="selection-list"></div>
+
+                      <div class="materials-list-header">
+                        <h3>Agregar material a elección</h3>
+                        <p>Sumá materiales adicionales al pedido de compra.</p>
+                      </div>
+                      <div class="selector-stack">
+                        <label>
+                          Buscar material
+                          <input id="purchase-item-search" type="text" placeholder="Nombre, código o subcódigo">
+                        </label>
+                        <label>
+                          Material
+                          <select id="purchase-item-select"></select>
+                        </label>
+                        <label>
+                          Cantidad solicitada
+                          <input id="purchase-item-quantity" type="number" min="1" value="1">
+                        </label>
+                        <button type="button" id="purchase-add-item-button" class="button button--ghost">Agregar al pedido</button>
+                      </div>
+
+                      <div class="materials-list-header">
+                        <h3>Detalle del pedido</h3>
+                        <p>Lista final de materiales incluidos antes de generar el pedido.</p>
+                      </div>
+                      <div id="purchase-request-draft" class="activity-list"></div>
+
+                      <label>
+                        Centro de costos
+                        <select name="costCenter" id="purchase-cost-center-select">
+                          <option value="">Seleccionar</option>
+                        </select>
+                      </label>
+
+                      <label class="materials-form-notes">
+                        Observación
+                        <textarea name="observation" rows="3" placeholder="Motivo del pedido, proveedor sugerido o detalle adicional"></textarea>
+                      </label>
+                      <button type="submit" class="button button--success">Generar pedido de compra</button>
+                    </form>
+                  </div>
+                  <div class="materials-list-panel">
+                    <div class="materials-list-header">
+                      <h3>Pedidos generados</h3>
+                      <p>Historial reciente de pedidos emitidos desde el sistema.</p>
+                    </div>
+                    <div id="purchase-requests-list" class="activity-list"></div>
+                    <div class="materials-pagination">
+                      <button type="button" id="purchase-requests-prev-page" class="button button--ghost">Anterior</button>
+                      <span id="purchase-requests-page-info">Página 1</span>
+                      <button type="button" id="purchase-requests-next-page" class="button button--ghost">Siguiente</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="purchase-confirmation-panel" class="panel" data-view-panel="purchase-confirmation">
+                <div class="panel__header panel__header--split">
+                  <div>
+                    <h2 id="confirmation-title">Confirmar pedido de compra</h2>
+                    <p id="confirmation-subtitle">Confirmación total o parcial: lo que no se confirma queda pendiente.</p>
+                  </div>
+                  <button type="button" class="button button--ghost" data-alert-view="purchase-request-form">← Volver a pedidos</button>
+                </div>
+                <form id="confirmation-form" class="confirmation-form">
+                  <div class="confirmation-header-fields">
+                    <label>
+                      Proveedor
+                      <select name="supplierId" id="confirmation-supplier-select" required></select>
+                    </label>
+                    <label>
+                      N° de factura / comprobante
+                      <input name="invoice" type="text" placeholder="A-0001-00001234">
+                    </label>
+                    <label class="confirmation-observation">
+                      Observación
+                      <input name="observation" type="text" placeholder="Plazo de entrega, condiciones, etc.">
+                    </label>
+                  </div>
+                  <p id="confirmation-supplier-hint" class="form-hint" hidden>No hay proveedores cargados. Cargalos en Datos maestros → Proveedores.</p>
+                  <div id="confirmation-lines" class="confirmation-lines"></div>
+                  <div class="confirmation-totals">
+                    <div class="confirmation-totals__item">
+                      <span>Subtotal (con bonificaciones)</span>
+                      <strong id="confirmation-subtotal">$ 0,00</strong>
+                    </div>
+                    <label class="confirmation-totals__item">
+                      <span>Subtotal de retenciones</span>
+                      <input name="withholdings" id="confirmation-withholdings" type="number" min="0" step="any" value="0">
+                    </label>
+                    <label class="confirmation-totals__item">
+                      <span>Total de factura</span>
+                      <input name="invoiceTotal" id="confirmation-invoice-total" type="number" min="0" step="any" required>
+                    </label>
+                    <div class="confirmation-totals__actions">
+                      <button type="submit" class="button button--success">Confirmar pedido</button>
+                    </div>
+                  </div>
+                  <p id="confirmation-total-warning" class="form-warning" hidden></p>
+                </form>
+                <div id="confirmation-history" class="confirmation-history"></div>
+              </section>
+
+              <section id="purchase-invoice-panel" class="panel" data-view-panel="purchase-invoice">
+                <div class="panel__header">
+                  <div>
+                    <h2>Factura de compra</h2>
+                    <p>Compra sin pedido previo: ingresa el stock y actualiza el costo de cada material.</p>
+                  </div>
+                </div>
+                <form id="invoice-form" class="confirmation-form">
+                  <div class="confirmation-header-fields confirmation-header-fields--four">
+                    <label>
+                      Proveedor
+                      <select name="supplierId" id="invoice-supplier-select" required></select>
+                    </label>
+                    <label>
+                      N° de factura / comprobante
+                      <input name="invoice" type="text" placeholder="A-0001-00001234" required>
+                    </label>
+                    <label>
+                      Fecha de factura
+                      <input name="invoiceDate" id="invoice-date" type="date" required>
+                    </label>
+                    <label class="confirmation-observation">
+                      Observación
+                      <input name="observation" type="text" placeholder="Condiciones, forma de pago, etc.">
+                    </label>
+                  </div>
+                  <p id="invoice-supplier-hint" class="form-hint" hidden>No hay proveedores cargados. Cargalos en Datos maestros → Proveedores.</p>
+                  <div class="invoice-add-row">
+                    <label>
+                      Buscar material
+                      <input id="invoice-item-search" type="search" placeholder="Nombre, código o subcódigo">
+                    </label>
+                    <label>
+                      Material
+                      <select id="invoice-item-select"></select>
+                    </label>
+                    <button type="button" id="invoice-add-item-button" class="button button--action-blue">Agregar material</button>
+                  </div>
+                  <div id="invoice-lines" class="confirmation-lines"></div>
+                  <div class="confirmation-totals">
+                    <div class="confirmation-totals__item">
+                      <span>Subtotal (con bonificaciones)</span>
+                      <strong id="invoice-subtotal">$ 0,00</strong>
+                    </div>
+                    <label class="confirmation-totals__item">
+                      <span>Subtotal de retenciones</span>
+                      <input name="withholdings" id="invoice-withholdings" type="number" min="0" step="any" value="0">
+                    </label>
+                    <label class="confirmation-totals__item">
+                      <span>Total de factura</span>
+                      <input name="invoiceTotal" id="invoice-total" type="number" min="0" step="any" required>
+                      <small id="invoice-total-hint" class="invoice-total-hint">Suma de los subtotales. Podés modificarlo.</small>
+                    </label>
+                    <div class="confirmation-totals__actions">
+                      <button type="submit" class="button button--success">Registrar factura</button>
+                    </div>
+                  </div>
+                  <p id="invoice-total-warning" class="form-warning" hidden></p>
+                </form>
+                <div class="materials-list-header">
+                  <h3>Últimas facturas registradas</h3>
+                  <p>Facturas cargadas sin pedido de compra. Se muestran de a 10, de la última cargada a la más antigua. Desde / Hasta filtran por fecha de factura.</p>
+                </div>
+                <div class="invoice-filters">
+                  <label>
+                    Buscar
+                    <input id="invoice-filter-search" type="search" placeholder="N° de factura, material u observación">
+                  </label>
+                  <label>
+                    Proveedor
+                    <select id="invoice-filter-supplier"></select>
+                  </label>
+                  <label>
+                    Desde
+                    <input id="invoice-filter-from" type="date">
+                  </label>
+                  <label>
+                    Hasta
+                    <input id="invoice-filter-to" type="date">
+                  </label>
+                </div>
+                <div id="invoice-history" class="confirmation-history__list"></div>
+              </section>
+
+              <section id="activity-panel" class="panel" data-view-panel="activity">
+                <div class="panel__header">
+                  <h2>Actividad reciente</h2>
+                  <p>Últimos movimientos registrados en el sistema.</p>
+                </div>
+                <div class="activity-filters">
+                  <label>
+                    Desde
+                    <input id="activity-date-from" type="date">
+                  </label>
+                  <label>
+                    Hasta
+                    <input id="activity-date-to" type="date">
+                  </label>
+                  <label>
+                    Tipo de movimiento
+                    <select id="activity-type-filter">
+                      <option value="">Todos</option>
+                      <option value="loan">Préstamos</option>
+                      <option value="return">Devoluciones</option>
+                      <option value="consumption">Consumos</option>
+                    </select>
+                  </label>
+                  <label>
+                    Responsable
+                    <input id="activity-responsible-filter" type="text" placeholder="Apellido y nombre o DNI">
+                  </label>
+                  <label>
+                    Mostrar
+                    <select id="activity-limit-filter">
+                      <option value="50">Últimos 50</option>
+                      <option value="100">Últimos 100</option>
+                      <option value="200">Últimos 200</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="activity-list" class="activity-list"></div>
+              </section>
+
+              <section id="reports-panel" class="panel" data-view-panel="reports">
+                <div class="panel__header">
+                  <h2>Informes</h2>
+                  <p>Consultá reportes operativos del pañol con filtros por tipo de informe.</p>
+                </div>
+                <div class="reports-layout">
+                  <div class="reports-filters-panel">
+                    <label>
+                      Tipo de informe
+                      <select id="report-type-select">
+                        <option value="materials-stock">Materiales y stock actual</option>
+                        <option value="pending-returns">Devoluciones pendientes</option>
+                        <option value="low-stock">Stock en alerta</option>
+                        <option value="overdue-loans">Préstamos vencidos</option>
+                        <option value="student-clearance">Libre de deuda por alumno</option>
+                        <option value="consumptions-cost-center">Consumos por centro de costo</option>
+                      </select>
+                    </label>
+
+                    <div class="reports-filters-grid" data-report-filter="materials-stock">
+                      <label>
+                        Buscar material
+                        <input id="report-materials-search" type="text" placeholder="Nombre, código, subcódigo o nota">
+                      </label>
+                      <label>
+                        Categoría
+                        <select id="report-materials-category">
+                          <option value="">Todas</option>
+                        </select>
+                      </label>
+                      <label>
+                        Ubicación
+                        <select id="report-materials-location">
+                          <option value="">Todas</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="pending-returns" hidden>
+                      <label>
+                        Fecha
+                        <input id="report-returns-date" type="date">
+                      </label>
+                      <label>
+                        Material
+                        <input id="report-returns-material" type="text" placeholder="Nombre o código">
+                      </label>
+                      <label>
+                        Responsable
+                        <input id="report-returns-responsible" type="text" placeholder="Apellido y nombre o DNI">
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="low-stock" hidden>
+                      <label>
+                        Buscar material
+                        <input id="report-low-stock-search" type="text" placeholder="Nombre, código, subcódigo o nota">
+                      </label>
+                      <label>
+                        Categoría
+                        <select id="report-low-stock-category">
+                          <option value="">Todas</option>
+                        </select>
+                      </label>
+                      <label>
+                        Ubicación
+                        <select id="report-low-stock-location">
+                          <option value="">Todas</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="overdue-loans" hidden>
+                      <label>
+                        Fecha
+                        <input id="report-overdue-date" type="date">
+                      </label>
+                      <label>
+                        Material
+                        <input id="report-overdue-material" type="text" placeholder="Nombre o código">
+                      </label>
+                      <label>
+                        Responsable
+                        <input id="report-overdue-responsible" type="text" placeholder="Apellido y nombre o DNI">
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="student-clearance" hidden>
+                      <label>
+                        Alumno
+                        <input id="report-student-search" type="text" placeholder="Apellido y nombre o DNI">
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="consumptions-cost-center" hidden>
+                      <label>
+                        Desde
+                        <input id="report-consumptions-date-from" type="date">
+                      </label>
+                      <label>
+                        Hasta
+                        <input id="report-consumptions-date-to" type="date">
+                      </label>
+                      <label>
+                        Centro de costos
+                        <select id="report-consumptions-cost-center">
+                          <option value="">Todos</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="reports-results-panel">
+                    <div class="materials-list-header">
+                      <h3 id="reports-result-title">Informe de materiales y stock actual</h3>
+                      <p id="reports-result-summary">Visualización completa del inventario actualizado.</p>
+                    </div>
+                    <div class="reports-actions">
+                      <button type="button" id="reports-export-csv" class="button button--success">Exportar Excel</button>
+                      <button type="button" id="reports-export-pdf" class="button button--ghost">Exportar PDF</button>
+                    </div>
+                    <div id="reports-list" class="activity-list"></div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="master-data-panel" class="panel" data-view-panel="master-data">
+                <div class="panel__header">
+                  <h2 id="master-data-title">Datos Maestros</h2>
+                  <p id="master-data-description">Gestión de ubicaciones y categorías para el pañol.</p>
+                </div>
+                <div class="master-data-grid">
+                  <div class="materials-workspace master-data-workspace" data-master-section="locations">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Ubicaciones</h3>
+                        <p>Administrá las ubicaciones disponibles para materiales.</p>
+                      </div>
+                      <form id="location-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Nombre de ubicación
+                          <input name="name" type="text" placeholder="Estantería A1" required>
+                        </label>
+                        <label class="materials-form-notes">
+                          Descripción
+                          <textarea name="description" rows="3" placeholder="Detalle de la ubicación o sector"></textarea>
+                        </label>
+                        <div class="materials-form-actions">
+                          <button type="submit" id="location-submit-button" class="button button--success">Guardar ubicación</button>
+                          <button type="button" id="location-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
                         </div>
+                      </form>
                     </div>
-                    <div class="divider"></div>
-                    <button class="btn-primary" id="btn-quick-sale">
-                        <i data-lucide="plus-circle"></i>
-                        <span class="btn-label-full">Nueva Venta</span>
-                    </button>
+                    <div class="materials-list-panel">
+                      <div id="locations-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="locations-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="locations-page-info">Página 1</span>
+                        <button type="button" id="locations-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="materials-workspace master-data-workspace" data-master-section="suppliers">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Proveedores</h3>
+                        <p>Datos de los proveedores que se eligen al confirmar un pedido de compra.</p>
+                      </div>
+                      <form id="supplier-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Razón social
+                          <input name="name" type="text" placeholder="Ferretería Industrial SRL" required>
+                        </label>
+                        <label>
+                          CUIT
+                          <input name="cuit" type="text" inputmode="numeric" placeholder="30-12345678-9" required>
+                        </label>
+                        <label>
+                          Condición frente al IVA
+                          <select name="taxCondition">
+                            <option>Responsable Inscripto</option>
+                            <option>Monotributista</option>
+                            <option>Exento</option>
+                            <option>Consumidor Final</option>
+                          </select>
+                        </label>
+                        <label>
+                          Domicilio
+                          <input name="address" type="text" placeholder="Calle, número, localidad">
+                        </label>
+                        <label>
+                          Teléfono
+                          <input name="phone" type="text" placeholder="388 4000000">
+                        </label>
+                        <label>
+                          Email
+                          <input name="email" type="email" placeholder="ventas@proveedor.com">
+                        </label>
+                        <label>
+                          Persona de contacto
+                          <input name="contact" type="text" placeholder="Nombre y apellido">
+                        </label>
+                        <label class="materials-form-notes">
+                          Observaciones
+                          <textarea name="notes" rows="2" placeholder="Condiciones de pago, rubros, horarios"></textarea>
+                        </label>
+                        <div class="materials-form-actions">
+                          <button type="submit" id="supplier-submit-button" class="button button--success">Guardar proveedor</button>
+                          <button type="button" id="supplier-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="materials-list-panel">
+                      <label class="suppliers-search">
+                        Buscar
+                        <input id="suppliers-search" type="text" placeholder="Razón social, CUIT, contacto o email">
+                      </label>
+                      <div id="suppliers-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="suppliers-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="suppliers-page-info">Página 1</span>
+                        <button type="button" id="suppliers-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="materials-workspace master-data-workspace" data-master-section="categories">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Categorías</h3>
+                        <p>Definí las categorías que después vas a usar en materiales.</p>
+                      </div>
+                      <form id="category-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Nombre de categoría
+                          <input name="name" type="text" placeholder="Herramienta" required>
+                        </label>
+                        <label class="materials-form-notes">
+                          Descripción
+                          <textarea name="description" rows="3" placeholder="Uso o alcance de la categoría"></textarea>
+                        </label>
+                        <div class="materials-form-actions">
+                          <button type="submit" id="category-submit-button" class="button button--success">Guardar categoría</button>
+                          <button type="button" id="category-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="materials-list-panel">
+                      <div id="categories-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="categories-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="categories-page-info">Página 1</span>
+                        <button type="button" id="categories-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="materials-workspace master-data-workspace" data-master-section="cost-centers">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Centro de Costos</h3>
+                        <p>Definí los centros de costos disponibles para compras y pedidos.</p>
+                      </div>
+                      <form id="cost-center-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Nombre del centro de costos
+                          <input name="name" type="text" placeholder="Taller Mecánica" required>
+                        </label>
+                        <label class="materials-form-notes">
+                          Descripción
+                          <textarea name="description" rows="3" placeholder="Detalle o destino presupuestario"></textarea>
+                        </label>
+                        <div class="materials-form-actions">
+                          <button type="submit" id="cost-center-submit-button" class="button button--success">Guardar centro de costos</button>
+                          <button type="button" id="cost-center-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="materials-list-panel">
+                      <div id="cost-centers-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="cost-centers-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="cost-centers-page-info">Página 1</span>
+                        <button type="button" id="cost-centers-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="materials-workspace master-data-workspace" data-master-section="orientations">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Orientaciones</h3>
+                        <p>Definí las orientaciones disponibles para los alumnos.</p>
+                      </div>
+                      <form id="orientation-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Nombre de orientación
+                          <input name="name" type="text" placeholder="Electromecánica" required>
+                        </label>
+                        <label class="materials-form-notes">
+                          Descripción
+                          <textarea name="description" rows="3" placeholder="Detalle de la orientación"></textarea>
+                        </label>
+                        <div class="materials-form-actions">
+                          <button type="submit" id="orientation-submit-button" class="button button--success">Guardar orientación</button>
+                          <button type="button" id="orientation-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="materials-list-panel">
+                      <div id="orientations-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="orientations-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="orientations-page-info">Página 1</span>
+                        <button type="button" id="orientations-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="materials-workspace master-data-workspace" data-master-section="responsibles">
+                    <div class="materials-form-panel">
+                      <div class="materials-list-header">
+                        <h3>Responsables</h3>
+                        <p>Administrá alumnos y profesores habilitados para préstamos y seguimiento.</p>
+                      </div>
+                      <form id="responsible-form" class="form-grid">
+                        <input name="id" type="hidden">
+                        <label>
+                          Tipo de responsable
+                          <select name="type" id="responsible-type-select" required>
+                            <option value="alumno">Alumno</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="administrativo">Administrativo</option>
+                          </select>
+                        </label>
+                        <label>
+                          Nombre y apellido
+                          <input name="fullName" type="text" placeholder="Nombre y apellido" required>
+                        </label>
+                        <label>
+                          DNI
+                          <input name="dni" type="text" placeholder="30111222" required>
+                        </label>
+                        <label>
+                          Domicilio
+                          <input name="address" type="text" placeholder="Calle y número" required>
+                        </label>
+                        <label>
+                          Email
+                          <input name="email" type="email" placeholder="nombre@correo.com" required>
+                        </label>
+                        <label>
+                          Celular
+                          <input name="phone" type="text" placeholder="11 5555 5555" required>
+                        </label>
+
+                        <div class="type-specific-fields" data-responsible-type-fields="alumno">
+                          <label>
+                            Fecha de ingreso
+                            <input name="admissionDate" type="date">
+                          </label>
+                          <label>
+                            Curso actual
+                            <input name="course" type="text" placeholder="3°">
+                          </label>
+                          <label>
+                            División actual
+                            <input name="division" type="text" placeholder="2da">
+                          </label>
+                          <label>
+                            Orientación
+                            <select name="orientation" id="responsible-orientation-select"></select>
+                          </label>
+                        </div>
+
+                        <div class="type-specific-fields" data-responsible-type-fields="profesor" hidden>
+                          <label>
+                            Especialidad
+                            <input name="specialty" type="text" placeholder="Máquinas eléctricas">
+                          </label>
+                        </div>
+
+                        <div class="type-specific-fields" data-responsible-type-fields="administrativo" hidden>
+                          <label>
+                            Cargo
+                            <input name="position" type="text" placeholder="Secretaría, Administración, Regencia">
+                          </label>
+                        </div>
+
+                        <div class="materials-form-actions">
+                          <button type="submit" id="responsible-submit-button" class="button button--success">Guardar responsable</button>
+                          <button type="button" id="responsible-cancel-button" class="button button--ghost" hidden>Cancelar edición</button>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="materials-list-panel">
+                      <div class="responsibles-filters">
+                        <label>
+                          Nombre y apellido
+                          <input id="responsibles-name-filter" type="text" placeholder="Buscar por nombre y apellido">
+                        </label>
+                        <label>
+                          DNI
+                          <input id="responsibles-dni-filter" type="text" placeholder="Buscar por DNI">
+                        </label>
+                        <label>
+                          Tipo
+                          <select id="responsibles-type-filter">
+                            <option value="">Todos</option>
+                            <option value="alumno">Alumno</option>
+                            <option value="profesor">Profesor</option>
+                            <option value="administrativo">Administrativo</option>
+                          </select>
+                        </label>
+                      </div>
+                      <div id="responsibles-admin-list" class="activity-list"></div>
+                      <div class="materials-pagination">
+                        <button type="button" id="responsibles-prev-page" class="button button--ghost">Anterior</button>
+                        <span id="responsibles-page-info">Página 1</span>
+                        <button type="button" id="responsibles-next-page" class="button button--ghost">Siguiente</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-            </header>
+              </section>
+            </div>
 
-            <!-- Dynamic View Container -->
-            <div id="dynamic-content" class="content-body">
-                <!-- Content will be generated by app.js -->
-            </div>
-        </main>
-    </div>
-
-    <!-- ABM (CRUD) Generic Modal -->
-    <div class="modal-overlay" id="crud-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 id="modal-title">Agregar Elemento</h3>
-                <button class="modal-close" id="modal-close-btn">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="modal-form">
-                    <!-- Dynamic inputs injected by JS -->
-                    <div id="modal-fields"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="modal-cancel-btn">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="modal-submit-btn">Guardar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Details View Modal -->
-    <div class="modal-overlay" id="details-modal">
-        <div class="modal-container modal-lg">
-            <div class="modal-header">
-                <h3 id="details-modal-title">Detalles de Operación</h3>
-                <button class="modal-close" id="details-modal-close-btn">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="details-modal-content"></div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" id="details-modal-close-btn-bottom">Cerrar</button>
+            <aside class="dashboard-side">
+              <section class="panel panel--progress" data-view-panel="dashboard">
+                <div class="progress-ring" id="health-ring">
+                  <div class="progress-ring__inner">
+                    <strong id="health-percent">0%</strong>
+                  </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                <div class="progress-details">
+                  <p>Estado general del pañol</p>
+                  <ul class="progress-list">
+                    <li>
+                      <button type="button" class="progress-link" data-alert-view="low-stock">Stock bajo</button>
+                      <strong id="summary-low-stock">0</strong>
+                    </li>
+                    <li>
+                      <button type="button" class="progress-link" data-alert-view="overdue-loans">Vencidos</button>
+                      <strong id="summary-overdue">0</strong>
+                    </li>
+                    <li>
+                      <button type="button" class="progress-link" data-alert-view="purchase-request-form">Pedidos pendientes</button>
+                      <strong id="summary-purchase-requests">0</strong>
+                    </li>
+                  </ul>
+                </div>
+              </section>
 
-    <!-- Bulk Price Update Modal -->
-    <div class="modal-overlay" id="bulk-price-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Actualización Masiva de Precios</h3>
-                <button class="modal-close" id="bulk-price-close-btn">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="bulk-price-form">
-                    <div id="bulk-price-fields"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="bulk-price-cancel-btn">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="bulk-price-submit-btn">Aplicar Cambios</button>
-                    </div>
+              <section id="loan-form-panel" class="panel" data-view-panel="loan-form">
+                <div class="panel__header">
+                  <h2>Registrar préstamo</h2>
+                  <p>Habilitado para pañolero y docente.</p>
+                </div>
+                <form id="loan-form" class="form-grid single-column">
+                  <label>
+                    Buscar material
+                    <input id="loan-item-search" type="text" placeholder="Nombre, código o subcódigo">
+                  </label>
+                  <label>
+                    Elemento
+                    <select name="itemId" id="loan-item-select" required></select>
+                  </label>
+                  <label>
+                    Buscar responsable
+                    <input id="loan-responsible-search" type="text" placeholder="Apellido y nombre o DNI">
+                  </label>
+                  <label>
+                    Responsable
+                    <select name="responsibleId" id="loan-responsible-select" required></select>
+                  </label>
+                  <label>
+                    Curso / sector
+                    <input name="department" type="text" placeholder="3° Electromecánica">
+                  </label>
+                  <label>
+                    Cantidad
+                    <input name="quantity" type="number" min="1" value="1" required>
+                  </label>
+                  <label>
+                    Fecha de devolución
+                    <input name="dueDate" type="date" required>
+                  </label>
+                  <label>
+                    Observación
+                    <textarea name="observation" rows="3" placeholder="Motivo, estado del material o detalle del préstamo"></textarea>
+                  </label>
+                  <button type="submit" class="button button--action-blue">Registrar préstamo</button>
                 </form>
-            </div>
-        </div>
-    </div>
+              </section>
 
-    <!-- Cash Register Closing Modal -->
-    <div class="modal-overlay" id="cash-closing-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Cierre de Caja Diario</h3>
-                <button class="modal-close" id="cash-closing-close-btn">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="cash-closing-form">
-                    <div id="cash-closing-fields"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="cash-closing-cancel-btn">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="cash-closing-submit-btn">Registrar Cierre</button>
-                    </div>
+              <section id="consumption-form-panel" class="panel" data-view-panel="consumption-form">
+                <div class="panel__header">
+                  <h2>Registrar consumo</h2>
+                  <p>Descuenta stock sin generar devolución pendiente.</p>
+                </div>
+                <form id="consumption-form" class="form-grid single-column">
+                  <label>
+                    Buscar material
+                    <input id="consumption-item-search" type="text" placeholder="Nombre, código o subcódigo">
+                  </label>
+                  <label>
+                    Elemento
+                    <select name="itemId" id="consumption-item-select" required></select>
+                  </label>
+                  <label>
+                    Buscar responsable
+                    <input id="consumption-responsible-search" type="text" placeholder="Apellido y nombre o DNI">
+                  </label>
+                  <label>
+                    Responsable
+                    <select name="responsibleId" id="consumption-responsible-select" required></select>
+                  </label>
+                  <label>
+                    Curso / sector
+                    <input name="department" type="text" placeholder="3° Electromecánica">
+                  </label>
+                  <label>
+                    Centro de costos
+                    <select name="costCenter" id="consumption-cost-center-select">
+                      <option value="">Sin centro de costos</option>
+                    </select>
+                  </label>
+                  <label>
+                    Cantidad
+                    <input name="quantity" type="number" min="1" value="1" required>
+                  </label>
+                  <label>
+                    Detalle
+                    <textarea name="detail" rows="3" placeholder="Práctica, trabajo, motivo o destino del consumo"></textarea>
+                  </label>
+                  <button type="submit" class="button button--action-blue">Registrar consumo</button>
                 </form>
-            </div>
+              </section>
+            </aside>
+          </section>
+          <footer class="site-footer">
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+        </footer>
         </div>
-    </div>
+      </div>
+    </section>
+  </main>
 
-    <!-- Stock Transfer Between Branches Modal -->
-    <div class="modal-overlay" id="transfer-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Traspaso de Stock entre Sucursales</h3>
-                <button class="modal-close" id="transfer-close-btn">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="transfer-form">
-                    <div id="transfer-fields"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="transfer-cancel-btn">Cancelar</button>
-                        <button type="submit" class="btn-primary" id="transfer-submit-btn">Confirmar Traspaso</button>
-                    </div>
-                </form>
-            </div>
+  <template id="inventory-item-template">
+    <article class="item-card">
+      <div class="item-card__top">
+        <div>
+          <span class="pill"></span>
+          <h3></h3>
         </div>
-    </div>
+        <strong class="item-card__stock"></strong>
+      </div>
+      <p class="item-card__meta"></p>
+      <p class="item-card__cost"></p>
+      <p class="item-card__notes"></p>
+    </article>
+  </template>
 
-    <!-- Session Setup Modal: Sucursal + Turno (obligatorio para Vendedor/Depósito) -->
-    <div class="modal-overlay" id="session-setup-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3>Iniciar Turno de Trabajo</h3>
-                <button class="modal-close" id="session-setup-close-btn" style="display:none;">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="text-secondary" style="margin-bottom:16px;">Seleccioná en qué sucursal y turno vas a trabajar. Esto queda fijo para tus ventas y el cierre de caja hasta que lo cambies.</p>
-                <form id="session-setup-form">
-                    <div id="session-setup-fields"></div>
-                    <div class="modal-actions">
-                        <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Comenzar a Trabajar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+  <template id="loan-item-template">
+    <article class="loan-card">
+      <div>
+        <span class="pill pill--alert"></span>
+        <h3></h3>
+      </div>
+      <p class="loan-card__meta"></p>
+      <p class="loan-card__due"></p>
+      <div class="return-controls">
+        <label class="return-controls__field">
+          Devolver
+          <input class="loan-return-quantity" type="number" min="1" value="1">
+        </label>
+        <label class="return-controls__field return-controls__field--wide">
+          Observación
+          <input class="loan-return-observation" type="text" placeholder="Estado del material, faltantes, observaciones">
+        </label>
+        <button class="button button--action-blue loan-return-button" type="button">Registrar devolución</button>
+      </div>
+    </article>
+  </template>
 
-    <!-- Toast Notification container -->
-    <div class="toast-container" id="toast-container"></div>
+  <template id="activity-item-template">
+    <article class="activity-item">
+      <strong></strong>
+      <p></p>
+      <span></span>
+    </article>
+  </template>
 
-    <!-- JavaScript Bundle -->
-    <script src="app.js"></script>
+  <template id="category-bar-template">
+    <article class="chart-bar-card">
+      <span class="chart-bar-card__value"></span>
+      <div class="chart-bar">
+        <span></span>
+      </div>
+      <strong></strong>
+    </article>
+  </template>
+
+  <template id="material-admin-template">
+    <article class="activity-item material-admin-item">
+      <div class="material-admin-item__content">
+        <strong></strong>
+        <p></p>
+        <span></span>
+      </div>
+      <div class="material-admin-item__actions">
+        <button type="button" class="button button--warning material-edit-button">Editar</button>
+        <button type="button" class="button button--danger material-delete-button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="location-admin-template">
+    <article class="activity-item material-admin-item">
+      <div class="material-admin-item__content">
+        <strong></strong>
+        <p></p>
+        <span></span>
+      </div>
+      <div class="material-admin-item__actions">
+        <button type="button" class="button button--warning location-edit-button">Editar</button>
+        <button type="button" class="button button--danger location-delete-button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="category-admin-template">
+    <article class="activity-item material-admin-item">
+      <div class="material-admin-item__content">
+        <strong></strong>
+        <p></p>
+        <span></span>
+      </div>
+      <div class="material-admin-item__actions">
+        <button type="button" class="button button--warning category-edit-button">Editar</button>
+        <button type="button" class="button button--danger category-delete-button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="responsible-admin-template">
+    <article class="activity-item material-admin-item">
+      <div class="material-admin-item__content">
+        <strong></strong>
+        <p></p>
+        <span></span>
+      </div>
+      <div class="material-admin-item__actions">
+        <button type="button" class="button button--warning responsible-edit-button">Editar</button>
+        <button type="button" class="button button--danger responsible-delete-button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="user-admin-template">
+    <article class="activity-item material-admin-item">
+      <div class="material-admin-item__content">
+        <strong></strong>
+        <p></p>
+        <span></span>
+      </div>
+      <div class="material-admin-item__actions">
+        <button type="button" class="button button--warning user-edit-button">Editar</button>
+        <button type="button" class="button button--danger user-delete-button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="js/demo-backend.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
