@@ -1307,24 +1307,29 @@
 
             <aside class="dashboard-side">
               <section class="panel panel--progress" data-view-panel="dashboard">
-                <div class="progress-ring" id="health-ring">
+                <div class="progress-ring" id="health-ring" role="img" aria-label="Estado general del pañol">
                   <div class="progress-ring__inner">
                     <strong id="health-percent">0%</strong>
                   </div>
                 </div>
                 <div class="progress-details">
                   <p>Estado general del pañol</p>
+                  <small class="progress-help">Porcentaje de materiales y préstamos sin alertas. El resto del anillo se reparte entre las alertas.</small>
                   <ul class="progress-list">
                     <li>
-                      <button type="button" class="progress-link" data-alert-view="low-stock">Stock bajo</button>
+                      <span class="progress-label"><span class="legend-dot legend-dot--ok"></span>Sin alertas</span>
+                      <strong id="summary-health-legend">0%</strong>
+                    </li>
+                    <li>
+                      <span class="progress-label"><span class="legend-dot legend-dot--low"></span><button type="button" class="progress-link" data-alert-view="low-stock">Stock bajo</button></span>
                       <strong id="summary-low-stock">0</strong>
                     </li>
                     <li>
-                      <button type="button" class="progress-link" data-alert-view="overdue-loans">Vencidos</button>
+                      <span class="progress-label"><span class="legend-dot legend-dot--overdue"></span><button type="button" class="progress-link" data-alert-view="overdue-loans">Vencidos</button></span>
                       <strong id="summary-overdue">0</strong>
                     </li>
                     <li>
-                      <button type="button" class="progress-link" data-alert-view="purchase-request-form">Pedidos pendientes</button>
+                      <span class="progress-label"><span class="legend-dot legend-dot--pending"></span><button type="button" class="progress-link" data-alert-view="purchase-request-form">Pedidos pendientes</button></span>
                       <strong id="summary-purchase-requests">0</strong>
                     </li>
                   </ul>

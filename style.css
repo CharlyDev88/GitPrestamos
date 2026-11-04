@@ -2846,3 +2846,57 @@ textarea:focus {
 .demo-reset {
   width: 100%;
 }
+
+/* ---------- Dashboard: leyenda del anillo de estado ---------- */
+.progress-help {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.progress-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.legend-dot {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #e3eaf3;
+}
+
+.legend-dot--ok { background: #0b3f86; }
+.legend-dot--low { background: #d4b45c; }
+.legend-dot--overdue { background: #c0392b; }
+.legend-dot--pending { background: #7ca5d8; }
+
+/* ---------- Responsables en celular: mismos botones que el resto de datos maestros ---------- */
+@media (max-width: 920px) {
+  .master-data-workspace[data-master-section="responsibles"] .material-admin-item__actions {
+    flex: 0 0 auto;
+    min-width: 0;
+    align-self: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .master-data-workspace[data-master-section="responsibles"] .material-admin-item__actions .button {
+    min-width: 100px;
+    padding: 11px 14px;
+    font-size: inherit;
+  }
+}
+
+.progress-label .progress-link {
+  text-align: left;
+}
+
+.progress-list li {
+  align-items: center;
+}
