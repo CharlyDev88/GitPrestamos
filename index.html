@@ -36,7 +36,7 @@
           <h2>Ingresar</h2>
           <p>Accedé según tu rol dentro de la escuela.</p>
         </div>
-        <form id="login-form" class="form-grid single-column">
+        <form id="login-form" class="form-grid single-column" method="post">
           <label>
             Usuario
             <input name="username" type="text" placeholder="usuario" autocomplete="username" required>
@@ -71,7 +71,7 @@
           <h2>Nueva contraseña</h2>
           <p>Mínimo 8 caracteres, con letras y números, sin incluir tu nombre de usuario.</p>
         </div>
-        <form id="password-form" class="form-grid single-column">
+        <form id="password-form" class="form-grid single-column" method="post">
           <label>
             Contraseña actual
             <input name="currentPassword" type="password" autocomplete="current-password" required>
@@ -1551,7 +1551,15 @@
     </article>
   </template>
 
-  <script src="js/demo-backend.js"></script>
+  <script src="js/demo-backend.js" onerror="window.__PANOL_MISSING__=true"></script>
   <script type="module" src="js/main.js"></script>
+  <script>window.addEventListener("load", function () {
+    if (!window.__PANOL_MISSING__ && window.__PANOL_DEMO_WEB__) return;
+    var box = document.createElement("div");
+    box.setAttribute("role", "alert");
+    box.style.cssText = "position:fixed;inset:16px;z-index:9999;margin:auto;max-width:560px;height:fit-content;padding:20px 22px;border-radius:10px;background:#fff;border:3px solid #c80b0b;font:16px/1.5 system-ui,sans-serif;color:#202631;box-shadow:0 10px 30px rgba(0,0,0,.25)";
+    box.innerHTML = "<strong style='color:#c80b0b'>Faltan archivos de la demo.</strong><br>La página no encuentra la carpeta <b>js</b> (y probablemente <b>img</b>). Subí al repositorio las carpetas completas, arrastrándolas desde el ZIP descomprimido, junto a index.html.";
+    document.body.appendChild(box);
+  });</script>
 </body>
 </html>
