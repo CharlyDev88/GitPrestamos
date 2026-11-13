@@ -10,11 +10,14 @@ import {
   purchaseRequestsNextPage,
   purchaseRequestsPageInfo,
   purchaseRequestsPrevPage,
+  purchaseRequestsFilter,
+  purchaseApprovalsNotice,
+  sidebarApprovalsBadge,
 } from "../dom.js";
 import { api } from "../api.js";
 import { escapeHtml, formatCurrencyNumber, formatDateTime } from "../utils/format.js";
 import { createEmptyState, render, showToast, updateSimplePagination } from "../ui/layout.js";
-import { can, loadDashboard } from "../auth.js";
+import { APPROVAL_STEPS, can, loadDashboard } from "../auth.js";
 import { clearPager, paginateElements } from "../ui/pager.js";
 import { REQUEST_STATUS_LABELS, confirmedQuantities, openPurchaseConfirmation, requestCode } from "./purchaseConfirmation.js";
 
@@ -255,6 +258,7 @@ export function exportPurchaseRequestPdf(request) {
           table { width: 100%; border-collapse: collapse; }
           th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; vertical-align: top; }
           th { background: #eef2f7; }
+          h2 { margin: 24px 0 8px; font-size: 18px; }
         </style>
       </head>
       <body>
@@ -281,6 +285,7 @@ export function exportPurchaseRequestPdf(request) {
           </thead>
           <tbody>${rows}</tbody>
         </table>
+        ${approvalPdfSection(request)}
       </body>
       </html>
     `);
@@ -293,7 +298,165 @@ export function exportPurchaseRequestPdf(request) {
   }
 }
 
-export function renderPurchaseRequests(requests) {
+// --- Circuito de aprobación: Jefe de taller → Rector → Contable ---
+
+// Firmas del pedido en el orden del circuito. null = pedido anterior al circuito (se considera aprobado).
+export function approvalInfo(request) {
+  if (!request.approval) return null;
+  const stored = Array.isArray(request.approval.steps) ? request.approval.steps : [];
+  const steps = APPROVAL_STEPS.map((definition) => ({ ...definition, status: "pending", ...(stored.find((step) => step.key === definition.key) || {}), label: definition.label, permission: definition.permission }));
+  const rejected = steps.find((step) => step.status === "rejected") || null;
+  const current = rejected ? null : steps.find((step) => step.status !== "approved") || null;
+  return { steps, current, rejected };
+}
+
+// ¿El usuario puede dar la próxima firma? (tiene el permiso y no firmó otro paso del mismo pedido).
+export function canSignRequest(request) {
+  const info = approvalInfo(request);
+  if (!info?.current || !can(info.current.permission)) return false;
+  const me = String(state.dashboard?.user?.username || "").toLowerCase();
+  return !info.steps.some((step) => step.status === "approved" && String(step.byUsername || "").toLowerCase() === me);
+}
+
+function approvalPdfSection(request) {
+  const info = approvalInfo(request);
+  if (!info) return "";
+  const rows = info.steps
+    .map((step, index) => `
+      <tr>
+        <td>${index + 1}. ${escapeHtml(step.label)}</td>
+        <td>${escapeHtml(step.status === "approved" ? "Aprobado" : step.status === "rejected" ? "Rechazado" : "Pendiente")}</td>
+        <td>${escapeHtml(step.by || "-")}</td>
+        <td>${escapeHtml(step.at ? formatDateTime(step.at) : "-")}</td>
+        <td>${escapeHtml(step.comment || "")}</td>
+      </tr>`)
+    .join("");
+  return `
+    <h2>Firmas de aprobación</h2>
+    <table>
+      <thead><tr><th>Firma</th><th>Estado</th><th>Firmó</th><th>Fecha y hora</th><th>Observación</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function approvalTrack(request) {
+  const info = approvalInfo(request);
+  if (!info) return null;
+  const list = document.createElement("ol");
+  list.className = "approval-track";
+  list.setAttribute("aria-label", "Firmas de aprobación");
+  info.steps.forEach((step) => {
+    const li = document.createElement("li");
+    const isCurrent = info.current?.key === step.key;
+    li.className = `approval-step approval-step--${step.status}${isCurrent ? " is-current" : ""}`;
+    const name = document.createElement("strong");
+    name.textContent = step.label;
+    const detail = document.createElement("span");
+    if (step.status === "approved") {
+      detail.textContent = `✔ ${step.by} · ${formatDateTime(step.at)}`;
+    } else if (step.status === "rejected") {
+      detail.textContent = `✖ Rechazó ${step.by} · ${formatDateTime(step.at)}`;
+    } else {
+      detail.textContent = isCurrent ? "Esperando firma" : "Pendiente";
+    }
+    li.append(name, detail);
+    if (step.status === "rejected" && step.comment) {
+      const reason = document.createElement("em");
+      reason.textContent = `Motivo: ${step.comment}`;
+      li.append(reason);
+    }
+    list.append(li);
+  });
+  return list;
+}
+
+async function sendApproval(request, decision, comment = "") {
+  try {
+    const result = await api(`/api/purchase-requests/${request.id}/approval`, { method: "POST", body: { decision, comment } });
+    state.rejectingRequestId = "";
+    await loadDashboard();
+    render();
+    const next = approvalInfo(result.purchaseRequest)?.current;
+    if (decision === "reject") {
+      showToast("success", "Pedido rechazado", `El pedido #${requestCode(request)} quedó rechazado.`);
+    } else {
+      showToast("success", "Pedido aprobado", next ? `Firmaste el pedido #${requestCode(request)}. Ahora falta la firma de ${next.label}.` : `El pedido #${requestCode(request)} tiene las tres firmas y ya se puede confirmar con el proveedor.`);
+    }
+  } catch (error) {
+    showToast("error", decision === "reject" ? "No se pudo rechazar el pedido" : "No se pudo aprobar el pedido", error.message);
+  }
+}
+
+function rejectForm(request) {
+  const form = document.createElement("form");
+  form.className = "approval-reject";
+  const label = document.createElement("label");
+  label.textContent = "Motivo del rechazo";
+  const textarea = document.createElement("textarea");
+  textarea.rows = 2;
+  textarea.maxLength = 500;
+  textarea.required = true;
+  textarea.placeholder = "Explicá por qué se rechaza el pedido";
+  label.append(textarea);
+  const buttons = document.createElement("div");
+  buttons.className = "approval-reject__actions";
+  const submit = document.createElement("button");
+  submit.type = "submit";
+  submit.className = "button button--danger";
+  submit.textContent = "Confirmar rechazo";
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.className = "button button--ghost";
+  cancel.textContent = "Cancelar";
+  cancel.addEventListener("click", () => {
+    state.rejectingRequestId = "";
+    renderPurchaseRequests(state.dashboard?.purchaseRequests || []);
+  });
+  buttons.append(submit, cancel);
+  form.append(label, buttons);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const reason = textarea.value.trim();
+    if (!reason) {
+      showToast("error", "Falta el motivo", "Indicá por qué se rechaza el pedido.");
+      return;
+    }
+    sendApproval(request, "reject", reason);
+  });
+  setTimeout(() => textarea.focus(), 0);
+  return form;
+}
+
+const FILTERS = {
+  mine: (request) => canSignRequest(request),
+  pending_approval: (request) => request.status === "pending_approval",
+  approved: (request) => ["pending", "partially_confirmed", "confirmed"].includes(request.status),
+  rejected: (request) => request.status === "rejected",
+  completed: (request) => request.status === "completed",
+};
+
+function renderApprovalsNotice(requests) {
+  const mine = requests.filter((request) => canSignRequest(request)).length;
+  if (sidebarApprovalsBadge) {
+    sidebarApprovalsBadge.hidden = !mine;
+    sidebarApprovalsBadge.textContent = String(mine);
+  }
+  if (purchaseApprovalsNotice) {
+    purchaseApprovalsNotice.hidden = !mine;
+    purchaseApprovalsNotice.textContent = mine === 1 ? "Tenés 1 pedido esperando tu firma." : `Tenés ${mine} pedidos esperando tu firma.`;
+  }
+  if (purchaseRequestsFilter) {
+    const signs = APPROVAL_STEPS.some((step) => can(step.permission));
+    purchaseRequestsFilter.querySelector("option[value='mine']").hidden = !signs;
+    if (!signs && state.purchaseRequestsFilter === "mine") state.purchaseRequestsFilter = "";
+    purchaseRequestsFilter.value = state.purchaseRequestsFilter;
+  }
+}
+
+export function renderPurchaseRequests(allRequests) {
+  renderApprovalsNotice(allRequests);
+  const filter = FILTERS[state.purchaseRequestsFilter];
+  const requests = filter ? allRequests.filter(filter) : allRequests;
   purchaseRequestsList.innerHTML = "";
   const pageSize = 8;
   const totalPages = Math.max(1, Math.ceil(requests.length / pageSize));
@@ -304,7 +467,7 @@ export function renderPurchaseRequests(requests) {
   const pageEntries = requests.slice(startIndex, startIndex + pageSize);
 
   if (requests.length === 0) {
-    purchaseRequestsList.append(createEmptyState("Todavía no hay pedidos de compra generados."));
+    purchaseRequestsList.append(createEmptyState(filter ? "No hay pedidos para el filtro elegido." : "Todavía no hay pedidos de compra generados."));
     updateSimplePagination(purchaseRequestsPrevPage, purchaseRequestsNextPage, purchaseRequestsPageInfo, 0, 1, "pedido(s)");
     return;
   }
@@ -312,6 +475,9 @@ export function renderPurchaseRequests(requests) {
   pageEntries.forEach((request) => {
     const article = document.createElement("article");
     article.className = "activity-item material-admin-item";
+    article.dataset.requestId = request.id;
+    const signable = canSignRequest(request);
+    if (signable) article.classList.add("is-awaiting-me");
 
     const content = document.createElement("div");
     content.className = "material-admin-item__content";
@@ -336,6 +502,9 @@ export function renderPurchaseRequests(requests) {
     detail.textContent = `${request.observation || "Sin observación."} · Centro de costos ${request.costCenter || "Sin definir"} · ${formatDateTime(request.createdAt)} · Registró ${request.createdBy}${confirmationText}`;
 
     content.append(title, description, detail);
+    const track = approvalTrack(request);
+    if (track) content.append(track);
+    if (signable && state.rejectingRequestId === request.id) content.append(rejectForm(request));
 
     const actions = document.createElement("div");
     actions.className = "material-admin-item__actions";
@@ -345,6 +514,25 @@ export function renderPurchaseRequests(requests) {
     pdfButton.className = "button button--action-blue";
     pdfButton.textContent = "PDF";
     pdfButton.addEventListener("click", () => exportPurchaseRequestPdf(request));
+
+    if (signable && state.rejectingRequestId !== request.id) {
+      const step = approvalInfo(request).current;
+      const approveButton = document.createElement("button");
+      approveButton.type = "button";
+      approveButton.className = "button button--success";
+      approveButton.textContent = "Aprobar";
+      approveButton.title = `Firmar como ${step.label}`;
+      approveButton.addEventListener("click", () => sendApproval(request, "approve"));
+      const rejectButton = document.createElement("button");
+      rejectButton.type = "button";
+      rejectButton.className = "button button--danger";
+      rejectButton.textContent = "Rechazar";
+      rejectButton.addEventListener("click", () => {
+        state.rejectingRequestId = request.id;
+        renderPurchaseRequests(state.dashboard?.purchaseRequests || []);
+      });
+      actions.append(approveButton, rejectButton);
+    }
 
     if (["pending", "partially_confirmed"].includes(request.status) && can("purchases.confirm")) {
       const confirmButton = document.createElement("button");

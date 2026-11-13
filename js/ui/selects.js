@@ -46,6 +46,11 @@ export function renderItemSelect(select, items, searchTerm = "", options = {}) {
   }
 
   select.disabled = false;
+  // Opción vacía: después de guardar, la lista vuelve a "Seleccionar material".
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = normalizedSearch ? `Seleccionar material (${filteredItems.length} coincidencia${filteredItems.length === 1 ? "" : "s"})` : "Seleccionar material";
+  select.append(placeholder);
   filteredItems.forEach((item) => {
     const option = document.createElement("option");
     option.value = item.id;
@@ -54,9 +59,12 @@ export function renderItemSelect(select, items, searchTerm = "", options = {}) {
     select.append(option);
   });
 
+  // Se conserva lo elegido; si se está buscando, se elige solo la primera coincidencia.
   select.value = filteredItems.some((item) => item.id === currentValue)
     ? currentValue
-    : (filteredItems[0]?.id || "");
+    : normalizedSearch
+      ? (filteredItems[0]?.id || "")
+      : "";
 }
 
 export function renderStockItemSelect(select, items, searchTerm = "") {

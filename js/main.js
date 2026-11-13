@@ -63,6 +63,7 @@ import {
   purchaseRequestForm,
   purchaseRequestsNextPage,
   purchaseRequestsPrevPage,
+  purchaseRequestsFilter,
   reportConsumptionsCostCenter,
   reportConsumptionsDateFrom,
   reportConsumptionsDateTo,
@@ -451,6 +452,12 @@ purchaseItemSearch.addEventListener("input", () => {
   renderItemSelect(purchaseItemSelect, state.dashboard?.items || [], purchaseItemSearch.value, { includeZeroStock: true });
 });
 purchaseAddItemButton.addEventListener("click", handleAddPurchaseDraftItem);
+purchaseRequestsFilter?.addEventListener("change", () => {
+  state.purchaseRequestsFilter = purchaseRequestsFilter.value;
+  state.purchaseRequestsPage = 1;
+  renderPurchaseRequests(state.dashboard?.purchaseRequests || []);
+});
+
 purchaseRequestsPrevPage.addEventListener("click", () => {
   if (state.purchaseRequestsPage > 1) {
     state.purchaseRequestsPage -= 1;

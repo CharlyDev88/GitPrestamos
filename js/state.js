@@ -18,6 +18,8 @@ export const state = {
   selectedPurchaseRequestId: "",
   stockEntriesPage: 1,
   purchaseRequestsPage: 1,
+  purchaseRequestsFilter: "",
+  rejectingRequestId: "",
   categoriesPage: 1,
   locationsPage: 1,
   costCentersPage: 1,

@@ -2900,3 +2900,134 @@ textarea:focus {
 .progress-list li {
   align-items: center;
 }
+
+/* --- Circuito de aprobación de pedidos de compra (Jefe de taller → Rector → Contable) --- */
+.sidebar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #3d2f07;
+  font-size: 0.74rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.sidebar__badge[hidden] {
+  display: none;
+}
+
+.approval-notice {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(212, 180, 92, 0.2);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.approval-notice[hidden] {
+  display: none;
+}
+
+.approval-filter {
+  display: grid;
+  gap: 6px;
+  max-width: 340px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.approval-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: approval;
+}
+
+.approval-step {
+  counter-increment: approval;
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: var(--surface-strong);
+  font-size: 0.82rem;
+  min-width: 0;
+}
+
+.approval-step strong::before {
+  content: counter(approval) ". ";
+}
+
+.approval-step span,
+.approval-step em {
+  color: var(--muted);
+  overflow-wrap: break-word;
+}
+
+.approval-step--approved {
+  border-left-color: var(--success);
+}
+
+.approval-step--approved span {
+  color: #1f6e2f;
+}
+
+.approval-step--rejected {
+  border-left-color: var(--danger);
+  background: rgba(202, 11, 11, 0.05);
+}
+
+.approval-step--rejected span,
+.approval-step--rejected em {
+  color: #a30909;
+}
+
+.approval-step.is-current {
+  border-left-color: var(--accent);
+  background: rgba(212, 180, 92, 0.12);
+}
+
+.approval-step.is-current span {
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.material-admin-item.is-awaiting-me {
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.approval-reject {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.approval-reject label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.approval-reject__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .approval-track {
+    grid-template-columns: 1fr;
+  }
+}

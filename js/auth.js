@@ -22,13 +22,21 @@ export function can(permission) {
   return (state.dashboard?.permissions || []).includes(permission);
 }
 
+// Firmas del circuito de aprobación de pedidos de compra (deben coincidir con src/services/purchases.js).
+export const APPROVAL_STEPS = [
+  { key: "workshop", label: "Jefe de taller", permission: "purchases.approve.workshop" },
+  { key: "rector", label: "Rector", permission: "purchases.approve.rector" },
+  { key: "accounting", label: "Contable", permission: "purchases.approve.accounting" },
+];
+export const APPROVAL_PERMISSIONS = APPROVAL_STEPS.map((step) => step.permission);
+
 // Qué permiso habilita cada pantalla (alcanza con uno de la lista). "admin" = solo administrador.
 export const VIEW_PERMISSIONS = {
   "loan-form": ["loans.create"],
   "consumption-form": ["consumptions.create"],
   "item-form": ["items.manage"],
   "stock-entry-form": ["stock.entries"],
-  "purchase-request-form": ["purchases.requests", "purchases.confirm"],
+  "purchase-request-form": ["purchases.requests", "purchases.confirm", ...APPROVAL_PERMISSIONS],
   "purchase-confirmation": ["purchases.confirm"],
   "purchase-invoice": ["purchases.invoices"],
   "master-data-categories": ["masterData.manage"],
@@ -66,18 +74,18 @@ export function isAdminRole(role) {
   return role === "admin";
 }
 
+const ROLE_LABELS = {
+  admin: "Admin",
+  directivo: "Directivo",
+  jefe_taller: "Jefe de taller",
+  contable: "Contable",
+  administrativo: "Administrativo",
+  docente: "Docente",
+  panolero: "Pañolero",
+};
+
 export function roleLabel(role) {
-  return role === "admin"
-    ? "Admin"
-    : role === "directivo"
-      ? "Directivo"
-    : role === "administrativo"
-      ? "Administrativo"
-      : role === "docente"
-        ? "Docente"
-        : role === "panolero"
-          ? "Pañolero"
-          : capitalize(role || "");
+  return ROLE_LABELS[role] || capitalize(role || "");
 }
 
 // Versión demo: cartel y usuarios de prueba en la pantalla de ingreso.
@@ -149,7 +157,17 @@ export async function enterApp() {
     return;
   }
   await loadDashboard();
+  // Cada ingreso empieza en el Dashboard, arriba de todo y con el menú de celular cerrado.
+  state.activeView = "dashboard";
+  closeMobileMenu();
   render();
+  window.scrollTo({ top: 0 });
+  document.querySelector(".dashboard-content")?.scrollTo?.({ top: 0 });
+}
+
+function closeMobileMenu() {
+  document.querySelector(".sidebar")?.classList.remove("is-menu-open");
+  document.querySelector("#sidebar-menu-toggle")?.setAttribute("aria-expanded", "false");
 }
 
 export function renderPasswordChange(required) {
@@ -224,6 +242,7 @@ export async function handleLogin(event) {
 }
 
 export async function handleLogout() {
+  closeMobileMenu();
   try {
     await api("/api/logout", { method: "POST" });
   } catch (error) {

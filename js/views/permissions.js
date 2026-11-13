@@ -6,8 +6,8 @@ import { createEmptyState, render, showToast } from "../ui/layout.js";
 
 // Permisos por rol: grilla de funcionalidades × roles que solo ve el administrador.
 
-const ROLE_LABELS = { panolero: "Pañolero", docente: "Docente", administrativo: "Administrativo", directivo: "Directivo" };
-const ROLE_SHORT = { panolero: "Pañol.", docente: "Doc.", administrativo: "Admtvo.", directivo: "Direc." };
+const ROLE_LABELS = { panolero: "Pañolero", docente: "Docente", administrativo: "Administrativo", directivo: "Directivo", jefe_taller: "Jefe de taller", contable: "Contable" };
+const ROLE_SHORT = { panolero: "Pañol.", docente: "Doc.", administrativo: "Admtvo.", directivo: "Direc.", jefe_taller: "J. taller", contable: "Cont." };
 const IMPLIED = { "responsibles.manage": "responsibles.personalData" };
 
 let draft = null; // { rol: Set(claves propias) } con los cambios sin guardar

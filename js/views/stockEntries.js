@@ -58,6 +58,10 @@ export async function handleStockEntrySubmit(event) {
 
       if (targetType === "existing") {
         payload.itemId = formData.get("itemId");
+        if (!payload.itemId) {
+          showToast("error", "Falta el material", "Seleccioná el material que ingresa.");
+          return;
+        }
       } else {
         payload.name = formData.get("name");
         payload.category = formData.get("category");

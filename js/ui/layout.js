@@ -124,7 +124,11 @@ export function render() {
   summaryPurchaseRequests.textContent = String(summary.pendingPurchaseRequests || 0);
   summaryRole.textContent = roleLabel(user.role);
   healthRing.style.setProperty("--ring-value", String(healthValue));
+  healthRing.style.background = healthRingBackground(summary, healthValue);
+  healthRing.setAttribute("aria-label", `Estado general del pañol: ${healthValue}% sin alertas. Stock bajo ${summary.lowStock}, vencidos ${summary.overdueLoans}, pedidos pendientes ${summary.pendingPurchaseRequests || 0}.`);
   healthPercent.textContent = `${healthValue}%`;
+  const healthLegend = document.querySelector("#summary-health-legend");
+  if (healthLegend) healthLegend.textContent = `${healthValue}%`;
 
   itemPanel.hidden = !canView("item-form");
   usersPanel.hidden = !isAdminRole(user.role);
@@ -475,6 +479,32 @@ export function createEmptyState(message) {
   element.className = "empty-state";
   element.textContent = message;
   return element;
+}
+
+// Anillo: la parte "sin alertas" y el resto repartido entre stock bajo, vencidos y pedidos pendientes
+// (en proporción a cuántos hay de cada uno). Los colores coinciden con la leyenda de al lado.
+const RING_COLORS = { ok: "#0b3f86", low: "#d4b45c", overdue: "#c0392b", pending: "#7ca5d8", empty: "#e3eaf3" };
+export function healthRingBackground(summary, healthValue) {
+  const alerts = [
+    [RING_COLORS.low, Number(summary.lowStock) || 0],
+    [RING_COLORS.overdue, Number(summary.overdueLoans) || 0],
+    [RING_COLORS.pending, Number(summary.pendingPurchaseRequests) || 0],
+  ];
+  const totalAlerts = alerts.reduce((sum, [, count]) => sum + count, 0);
+  const stops = [`${RING_COLORS.ok} 0 ${healthValue}%`];
+  let position = healthValue;
+  const rest = 100 - healthValue;
+  if (!totalAlerts) {
+    stops.push(`${RING_COLORS.empty} ${position}% 100%`);
+  } else {
+    alerts.forEach(([color, count]) => {
+      if (!count) return;
+      const next = position + (rest * count) / totalAlerts;
+      stops.push(`${color} ${position}% ${next}%`);
+      position = next;
+    });
+  }
+  return `conic-gradient(${stops.join(", ")})`;
 }
 
 export function calculateHealth(summary) {

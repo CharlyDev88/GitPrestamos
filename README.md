@@ -13,7 +13,9 @@ Abrí la página publicada con GitHub Pages y elegí un usuario de prueba en la 
 | Usuario | Rol | Contraseña |
 |---|---|---|
 | `admin` | Administrador | `demo2026` |
-| `directora` | Directivo | `demo2026` |
+| `directora` | Directivo (firma como Rector) | `demo2026` |
+| `jefetaller` | Jefe de taller | `demo2026` |
+| `contable` | Contable | `demo2026` |
 | `panolero` | Pañolero | `demo2026` |
 | `docente` | Docente | `demo2026` |
 | `administrativo` | Administrativo | `demo2026` |

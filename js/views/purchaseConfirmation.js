@@ -23,7 +23,9 @@ import { paginateElements } from "../ui/pager.js";
 // bonificación por material, retenciones y total de factura (se ingresa a mano).
 
 export const REQUEST_STATUS_LABELS = {
-  pending: "Pendiente de confirmar",
+  pending_approval: "Esperando aprobación",
+  rejected: "Rechazado",
+  pending: "Aprobado · pendiente de confirmar",
   partially_confirmed: "Confirmado parcialmente",
   confirmed: "Confirmado · pendiente de ingreso",
   completed: "Cumplido",

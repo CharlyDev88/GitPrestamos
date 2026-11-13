@@ -119,7 +119,7 @@
             <button type="button" class="sidebar__link" data-view="loan-form">Préstamo</button>
             <button type="button" class="sidebar__link" data-view="consumption-form">Consumos</button>
             <button type="button" class="sidebar__link" data-view="stock-entry-form">Ingresos</button>
-            <button type="button" class="sidebar__link" data-view="purchase-request-form">Pedido de compra</button>
+            <button type="button" class="sidebar__link" data-view="purchase-request-form">Pedido de compra <span id="sidebar-approvals-badge" class="sidebar__badge" hidden title="Pedidos esperando tu firma"></span></button>
             <button type="button" class="sidebar__link" data-view="purchase-invoice">Factura de compra</button>
             <button type="button" class="sidebar__link" data-view="returns">Devolución</button>
             <button type="button" class="sidebar__link" data-view="item-form">Materiales</button>
@@ -457,6 +457,8 @@
                       <option value="">Todos</option>
                       <option value="admin">Admin</option>
                       <option value="directivo">Directivo</option>
+                      <option value="jefe_taller">Jefe de taller</option>
+                      <option value="contable">Contable</option>
                       <option value="administrativo">Administrativo</option>
                       <option value="docente">Docente</option>
                       <option value="panolero">Pañolero</option>
@@ -481,6 +483,8 @@
                         <select name="role" id="user-role-select" required>
                           <option value="admin">Admin</option>
                           <option value="directivo">Directivo</option>
+                          <option value="jefe_taller">Jefe de taller</option>
+                          <option value="contable">Contable</option>
                           <option value="administrativo">Administrativo</option>
                           <option value="docente">Docente</option>
                           <option value="panolero">Pañolero</option>
@@ -690,8 +694,20 @@
                   <div class="materials-list-panel">
                     <div class="materials-list-header">
                       <h3>Pedidos generados</h3>
-                      <p>Historial reciente de pedidos emitidos desde el sistema.</p>
+                      <p>Cada pedido necesita tres firmas, en este orden: Jefe de taller, Rector y Contable. Con las tres firmas queda listo para confirmar con el proveedor.</p>
                     </div>
+                    <p id="purchase-approvals-notice" class="approval-notice" hidden></p>
+                    <label class="approval-filter">
+                      Mostrar
+                      <select id="purchase-requests-filter">
+                        <option value="">Todos los pedidos</option>
+                        <option value="mine">Esperando mi firma</option>
+                        <option value="pending_approval">Esperando aprobación</option>
+                        <option value="approved">Aprobados (para confirmar o en curso)</option>
+                        <option value="rejected">Rechazados</option>
+                        <option value="completed">Cumplidos</option>
+                      </select>
+                    </label>
                     <div id="purchase-requests-list" class="activity-list"></div>
                     <div class="materials-pagination">
                       <button type="button" id="purchase-requests-prev-page" class="button button--ghost">Anterior</button>
