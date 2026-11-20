@@ -68,6 +68,7 @@ export async function handleStockEntrySubmit(event) {
         payload.code = formData.get("code");
         payload.subcode = formData.get("subcode");
         payload.location = formData.get("location");
+        payload.unit = formData.get("unit") || "unidad";
         payload.stockMinimum = Number(formData.get("stockMinimum"));
         payload.amount = Number(formData.get("estimatedUnitCost"));
         payload.notes = formData.get("notes");

@@ -34,7 +34,7 @@ export const APPROVAL_PERMISSIONS = APPROVAL_STEPS.map((step) => step.permission
 export const VIEW_PERMISSIONS = {
   "loan-form": ["loans.create"],
   "consumption-form": ["consumptions.create"],
-  "item-form": ["items.manage"],
+  "item-form": ["items.manage", "items.writeOff"],
   "stock-entry-form": ["stock.entries"],
   "purchase-request-form": ["purchases.requests", "purchases.confirm", ...APPROVAL_PERMISSIONS],
   "purchase-confirmation": ["purchases.confirm"],

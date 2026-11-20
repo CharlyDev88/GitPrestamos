@@ -118,7 +118,7 @@ export function updatePurchaseDraftQuantity(itemId, quantity) {
 
 export function renderPurchaseLowStockOptions(items) {
   purchaseLowStockList.innerHTML = "";
-  const lowStockItems = items.filter((item) => Number(item.stock) <= Number(item.stockMinimum ?? 0));
+  const lowStockItems = items.filter((item) => !item.retiredAt && Number(item.stock) <= Number(item.stockMinimum ?? 0));
 
   if (lowStockItems.length === 0) {
     purchaseLowStockList.append(createEmptyState("No hay materiales en alerta de stock para sugerir."));

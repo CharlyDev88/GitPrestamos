@@ -11,6 +11,7 @@ import { capitalize, formatDate, formatDateTime } from "../utils/format.js";
 import { createEmptyState, setActiveView } from "../ui/layout.js";
 import { can } from "../auth.js";
 import { clearPager, paginateElements } from "../ui/pager.js";
+import { formatQuantity } from "../utils/units.js";
 
 // Pantalla "Préstamos activos": detalle de los préstamos con devolución pendiente.
 
@@ -188,7 +189,7 @@ export function renderActiveLoans(loans = state.dashboard?.loans || []) {
 
     const code = loan.item ? `${loan.item.code}${loan.item.subcode ? `-${loan.item.subcode}` : ""}` : "";
     cell(row, loan.item?.name || "Material no disponible", [code, loan.item?.category].filter(Boolean).join(" · "));
-    const quantityCell = cell(row, String(loan.quantity));
+    const quantityCell = cell(row, formatQuantity(loan.quantity, loan.item));
     quantityCell.className = "is-numeric";
     cell(row, loan.borrower, responsibleDetail(loan.responsible));
     if (showContact) cell(row, responsibleContact(loan.responsible));

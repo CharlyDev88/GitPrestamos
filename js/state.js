@@ -85,6 +85,11 @@ export const state = {
       dateTo: "",
       costCenter: "",
     },
+    writeOffs: {
+      dateFrom: "",
+      dateTo: "",
+      reason: "",
+    },
   },
   responsiblesFilters: {
     name: "",

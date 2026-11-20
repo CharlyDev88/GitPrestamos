@@ -23,6 +23,7 @@ import {
   reportTypeSelect,
 } from "../dom.js";
 import { escapeHtml, formatCurrencyNumber, formatDate, formatDateTime, slugify } from "../utils/format.js";
+import { WRITE_OFF_REASONS, formatQuantity, isRetired, unitOf } from "../utils/units.js";
 import { createEmptyState, showToast, syncSelectOptions } from "../ui/layout.js";
 import { clearPager, paginateElements } from "../ui/pager.js";
 
@@ -40,7 +41,7 @@ export function renderReports() {
   const responsibles = state.dashboard?.responsibles || [];
   const consumptions = state.dashboard?.consumptions || [];
   const reportType = state.reports.type;
-  const reportConfig = buildReportConfig(reportType, { items, loans, responsibles, consumptions });
+  const reportConfig = buildReportConfig(reportType, { items, loans, responsibles, consumptions, writeOffs: state.dashboard?.writeOffs || [] });
 
   clearPager(reportsList, "reports");
   const reportSignature = JSON.stringify(state.reports);
@@ -121,10 +122,56 @@ export function getCurrentReportConfig() {
     loans: state.dashboard?.loans || [],
     responsibles: state.dashboard?.responsibles || [],
     consumptions: state.dashboard?.consumptions || [],
+    writeOffs: state.dashboard?.writeOffs || [],
   });
 }
 
+// Bajas de materiales entre fechas y por motivo, con el valor estimado (costo promedio al momento de la baja).
+export function buildWriteOffsReport(writeOffs) {
+  const { dateFrom, dateTo, reason } = state.reports.writeOffs;
+  const filtered = writeOffs.filter((entry) =>
+    (!dateFrom || entry.date >= dateFrom) && (!dateTo || entry.date <= dateTo) && (!reason || entry.reason === reason)
+  );
+  const total = filtered.reduce((sum, entry) => sum + Number(entry.unitCost || 0) * Number(entry.quantity || 0), 0);
+  return {
+    title: "Informe de bajas de materiales",
+    summary: `${filtered.length} baja(s) · valor estimado $${formatCurrencyNumber(total)}.`,
+    emptyMessage: "No hay bajas que coincidan con los filtros seleccionados.",
+    columns: [
+      { key: "date", label: "Fecha" },
+      { key: "time", label: "Hora" },
+      { key: "material", label: "Material" },
+      { key: "code", label: "Código" },
+      { key: "quantity", label: "Cantidad" },
+      { key: "unit", label: "Unidad" },
+      { key: "reason", label: "Motivo" },
+      { key: "observation", label: "Observación" },
+      { key: "type", label: "Tipo" },
+      { key: "value", label: "Valor estimado" },
+      { key: "by", label: "Registró" },
+    ],
+    rows: filtered.map((entry) => ({
+      date: String(entry.date || "").split("-").reverse().join("/"),
+      time: entry.time || "",
+      material: entry.itemName,
+      code: entry.itemCode || "-",
+      quantity: String(entry.quantity),
+      unit: unitOf(entry.unit).label,
+      reason: entry.reason,
+      observation: entry.observation || "-",
+      type: entry.retire ? "Definitiva" : "Parcial",
+      value: `$${formatCurrencyNumber(Number(entry.unitCost || 0) * Number(entry.quantity || 0))}`,
+      by: entry.createdBy || "-",
+    })),
+    entries: [],
+  };
+}
+
 export function syncReportsFilters() {
+  const writeOffReason = document.querySelector("#report-write-offs-reason");
+  if (writeOffReason && writeOffReason.options.length === 1) {
+    WRITE_OFF_REASONS.forEach((text) => writeOffReason.append(Object.assign(document.createElement("option"), { value: text, textContent: text })));
+  }
   const categories = (state.dashboard?.categories || []).map((category) => category.name);
   const locations = (state.dashboard?.locations || []).map((location) => location.name);
   const costCenters = (state.dashboard?.costCenters || []).map((costCenter) => costCenter.name);
@@ -301,6 +348,8 @@ export function buildReportConfig(reportType, data) {
       return buildStudentClearanceReport(data.loans, data.responsibles);
     case "consumptions-cost-center":
       return buildConsumptionsByCostCenterReport(data.consumptions);
+    case "write-offs":
+      return buildWriteOffsReport(data.writeOffs);
     case "materials-stock":
     default:
       return buildMaterialsStockReport(data.items);
@@ -330,6 +379,7 @@ export function buildMaterialsStockReport(items) {
       { key: "code", label: "Código" },
       { key: "subcode", label: "Subcódigo" },
       { key: "location", label: "Ubicación" },
+      { key: "unit", label: "Unidad" },
       { key: "stock", label: "Stock Actual" },
       { key: "stockMinimum", label: "Stock Mínimo" },
       { key: "unitCost", label: "Costo Unitario" },
@@ -342,6 +392,7 @@ export function buildMaterialsStockReport(items) {
       code: item.code,
       subcode: item.subcode || "-",
       location: item.location || "Sin ubicación",
+      unit: unitOf(item).label,
       stock: String(item.stock),
       stockMinimum: String(item.stockMinimum ?? 0),
       unitCost: `$${formatCurrencyNumber(item.amount)}`,
@@ -361,7 +412,7 @@ export function buildPendingReturnsReport(loans) {
     emptyMessage: "No hay devoluciones pendientes que coincidan con los filtros seleccionados.",
     entries: filteredLoans.map((loan) => ({
       title: loan.item?.name || "Material no disponible",
-      description: `${loan.borrower} · ${loan.department || "Sin sector"} · ${loan.quantity} unidad(es) pendientes`,
+      description: `${loan.borrower} · ${loan.department || "Sin sector"} · ${formatQuantity(loan.quantity, loan.item)} pendientes`,
       detail: `Fecha de devolución ${formatDate(loan.dueDate)} · Registró ${loan.createdBy}${loan.observation ? ` · ${loan.observation}` : ""}`,
     })),
   };
@@ -369,7 +420,7 @@ export function buildPendingReturnsReport(loans) {
 
 export function buildLowStockReport(items) {
   const filteredItems = items
-    .filter((item) => Number(item.stock) <= Number(item.stockMinimum ?? 0))
+    .filter((item) => !isRetired(item) && Number(item.stock) <= Number(item.stockMinimum ?? 0))
     .filter((item) => {
       const { search, category, location } = state.reports.lowStock;
       const matchesSearch =
@@ -389,7 +440,7 @@ export function buildLowStockReport(items) {
     entries: filteredItems.map((item) => ({
       title: item.name,
       description: `${item.category} · ${item.code}${item.subcode ? `-${item.subcode}` : ""} · ${item.location || "Sin ubicación"}`,
-      detail: `Stock actual ${item.stock} · Stock mínimo ${item.stockMinimum ?? 0}${item.notes ? ` · ${item.notes}` : ""}`,
+      detail: `Stock actual ${formatQuantity(item.stock, item)} · Stock mínimo ${formatQuantity(item.stockMinimum ?? 0, item)}${item.notes ? ` · ${item.notes}` : ""}`,
     })),
   };
 }
@@ -403,7 +454,7 @@ export function buildOverdueReport(loans) {
     emptyMessage: "No hay préstamos vencidos que coincidan con los filtros seleccionados.",
     entries: filteredLoans.map((loan) => ({
       title: loan.item?.name || "Material no disponible",
-      description: `${loan.borrower} · ${loan.department || "Sin sector"} · ${loan.quantity} unidad(es) pendientes`,
+      description: `${loan.borrower} · ${loan.department || "Sin sector"} · ${formatQuantity(loan.quantity, loan.item)} pendientes`,
       detail: `Vencimiento ${formatDate(loan.dueDate)} · Registró ${loan.createdBy}${loan.observation ? ` · ${loan.observation}` : ""}`,
     })),
   };
@@ -430,7 +481,7 @@ export function buildStudentClearanceReport(loans, responsibles) {
       const activeLoans = loans.filter((loan) => loan.responsibleId === student.id);
       const debtLabel = activeLoans.length === 0
         ? "Libre de deuda de materiales."
-        : `Con deuda: ${activeLoans.map((loan) => `${loan.item?.name || "Material"} (${loan.quantity})`).join(" · ")}`;
+        : `Con deuda: ${activeLoans.map((loan) => `${loan.item?.name || "Material"} (${formatQuantity(loan.quantity, loan.item)})`).join(" · ")}`;
 
       return {
         title: student.fullName,
@@ -464,7 +515,7 @@ export function buildConsumptionsByCostCenterReport(consumptions) {
     emptyMessage: "No hay consumos para el centro de costos o rango de fechas seleccionado.",
     entries: filteredConsumptions.map((entry) => ({
       title: entry.item?.name || entry.itemName || "Material no disponible",
-      description: `${entry.costCenter || "Sin centro de costos"} · ${entry.responsible || entry.responsibleData?.fullName || "Sin responsable"} · ${entry.quantity} unidad(es)`,
+      description: `${entry.costCenter || "Sin centro de costos"} · ${entry.responsible || entry.responsibleData?.fullName || "Sin responsable"} · ${formatQuantity(entry.quantity, entry.item)}`,
       detail: `${entry.department || "Sin sector"} · ${entry.detail || "Sin detalle"} · ${formatDateTime(entry.createdAt)}`,
     })),
   };

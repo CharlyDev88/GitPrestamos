@@ -121,7 +121,8 @@ import {
 } from "./ui/selects.js";
 import { bootstrap, handleLogin, handleLogout, handlePasswordChange, renderPasswordChange } from "./auth.js";
 import { renderInventory, renderLowStockItems } from "./views/inventory.js";
-import { handleItemSubmit, renderMaterialsAdmin, resetItemForm } from "./views/materials.js";
+import { handleItemSubmit, renderMaterialsAdmin, resetItemForm, setupMaterialsExtras } from "./views/materials.js";
+import { fillUnitSelects } from "./utils/units.js";
 import {
   handleCategorySubmit,
   handleCostCenterSubmit,
@@ -143,7 +144,7 @@ import {
   toggleResponsibleFields,
 } from "./views/responsibles.js";
 import { handleUserSubmit, renderUsersAdmin, resetUserForm } from "./views/users.js";
-import { handleLoanSubmit, renderLoans, renderOverdueLoans } from "./views/loans.js";
+import { handleAddLoanItem, handleLoanSubmit, renderLoans, renderOverdueLoans, syncLoanQuantityStep } from "./views/loans.js";
 import { handleConsumptionSubmit } from "./views/consumptions.js";
 import {
   handleStockEntrySubmit,
@@ -301,7 +302,10 @@ responsiblesTypeFilter.addEventListener("change", () => {
 });
 loanItemSearch.addEventListener("input", () => {
   renderStockItemSelect(loanItemSelect, state.dashboard?.items || [], loanItemSearch.value);
+  syncLoanQuantityStep();
 });
+loanItemSelect.addEventListener("change", syncLoanQuantityStep);
+document.querySelector("#loan-add-item-button")?.addEventListener("click", handleAddLoanItem);
 consumptionItemSearch.addEventListener("input", () => {
   renderStockItemSelect(consumptionItemSelect, state.dashboard?.items || [], consumptionItemSearch.value);
 });
@@ -561,6 +565,12 @@ reportConsumptionsCostCenter?.addEventListener("change", () => {
   state.reports.consumptions.costCenter = reportConsumptionsCostCenter.value;
   renderReports();
 });
+[["#report-write-offs-date-from", "dateFrom", "input"], ["#report-write-offs-date-to", "dateTo", "input"], ["#report-write-offs-reason", "reason", "change"]].forEach(([selector, key, eventName]) => {
+  document.querySelector(selector)?.addEventListener(eventName, (event) => {
+    state.reports.writeOffs[key] = event.target.value;
+    renderReports();
+  });
+});
 reportsExportCsvButton?.addEventListener("click", exportCurrentReportCsv);
 reportsExportPdfButton?.addEventListener("click", exportCurrentReportPdf);
 
@@ -625,3 +635,7 @@ document.querySelector("#activity-limit-filter")?.addEventListener("change", (ev
   renderActivity(state.dashboard?.activity || []);
 });
 initInvoiceFilters();
+
+// Unidades de medida en los formularios de materiales y eventos de bajas.
+fillUnitSelects();
+setupMaterialsExtras();

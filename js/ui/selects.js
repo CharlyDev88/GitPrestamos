@@ -9,11 +9,14 @@ import {
   responsibleOrientationSelect,
 } from "../dom.js";
 import { dniLabel } from "../utils/format.js";
+import { formatQuantity, isRetired } from "../utils/units.js";
 
 // Listas desplegables de materiales, responsables y datos maestros.
 export function renderItemSelect(select, items, searchTerm = "", options = {}) {
   const { includeZeroStock = false } = options;
-  const availableItems = includeZeroStock ? items.slice() : items.filter((item) => item.stock > 0);
+  // Los materiales dados de baja definitivamente no se eligen en ningún formulario.
+  const activeItems = items.filter((item) => !isRetired(item));
+  const availableItems = includeZeroStock ? activeItems : activeItems.filter((item) => item.stock > 0);
   const normalizedSearch = String(searchTerm || "").trim().toLowerCase();
   const currentValue = select.value;
   select.innerHTML = "";
@@ -55,7 +58,7 @@ export function renderItemSelect(select, items, searchTerm = "", options = {}) {
     const option = document.createElement("option");
     option.value = item.id;
     option.textContent =
-      `${item.name} · ${item.code}${item.subcode ? `-${item.subcode}` : ""} · ${item.location || "Sin ubicación"} (${item.stock} disponibles)`;
+      `${item.name} · ${item.code}${item.subcode ? `-${item.subcode}` : ""} · ${item.location || "Sin ubicación"} (${formatQuantity(item.stock, item)} disponibles)`;
     select.append(option);
   });
 

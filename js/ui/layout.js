@@ -82,7 +82,7 @@ import {
 } from "../views/masterData.js";
 import { renderResponsiblesAdmin } from "../views/responsibles.js";
 import { renderUsersAdmin } from "../views/users.js";
-import { renderLoans, renderOverdueLoans, syncOverdueFilters, syncReturnsFilters } from "../views/loans.js";
+import { renderLoanDraft, renderLoans, renderOverdueLoans, syncLoanQuantityStep, syncOverdueFilters, syncReturnsFilters } from "../views/loans.js";
 import {
   renderPurchaseRequestOptions,
   renderSelectedPurchaseRequest,
@@ -131,6 +131,9 @@ export function render() {
   if (healthLegend) healthLegend.textContent = `${healthValue}%`;
 
   itemPanel.hidden = !canView("item-form");
+  // Dentro de "Materiales": el formulario de alta solo si puede administrar materiales.
+  itemPanel.querySelector(".materials-form-panel")?.toggleAttribute("hidden", !can("items.manage"));
+  itemPanel.querySelector(".materials-workspace")?.classList.toggle("is-list-only", !can("items.manage"));
   usersPanel.hidden = !isAdminRole(user.role);
   loanFormPanel.hidden = !canView("loan-form");
   consumptionFormPanel.hidden = !canView("consumption-form");
@@ -156,6 +159,8 @@ export function render() {
   renderLocationSelect(state.dashboard.locations);
   renderOrientationSelect(state.dashboard.orientations || []);
   renderStockItemSelect(loanItemSelect, items, loanItemSearch.value);
+  syncLoanQuantityStep();
+  renderLoanDraft();
   renderStockItemSelect(consumptionItemSelect, items, consumptionItemSearch?.value || "");
   renderItemSelect(stockEntryItemSelect, items, stockEntryItemSearch.value, { includeZeroStock: true });
   renderCategorySelect(state.dashboard.categories, stockEntryCategorySelect, "Seleccionar");

@@ -11,12 +11,15 @@ import {
   lowStockSearch,
 } from "../dom.js";
 import { formatDateTime } from "../utils/format.js";
+import { formatQuantity, isRetired, unitOf } from "../utils/units.js";
 import { lastPurchaseText, money } from "../utils/purchaseMath.js";
 import { createEmptyState, syncSelectOptions } from "../ui/layout.js";
 import { clearPager, paginateElements } from "../ui/pager.js";
 
 // Inventario y alertas de stock bajo.
-export function renderInventory(items) {
+export function renderInventory(allItems) {
+  // Los materiales dados de baja definitivamente no figuran en el inventario (se ven en Materiales).
+  const items = allItems.filter((item) => !isRetired(item));
   inventoryList.innerHTML = "";
   const filteredItems = filterInventoryItems(items);
 
@@ -42,7 +45,7 @@ export function renderInventory(items) {
 
     fragment.querySelector(".pill").textContent = item.category;
     fragment.querySelector("h3").textContent = item.name;
-    fragment.querySelector(".item-card__stock").textContent = `${item.stock} en stock`;
+    fragment.querySelector(".item-card__stock").textContent = `${formatQuantity(item.stock, item)} en stock`;
     fragment.querySelector(".item-card__meta").textContent =
       `Código: ${item.code}${item.subcode ? ` · Subcódigo: ${item.subcode}` : ""} · Ubicación: ${item.location || "Sin definir"}`;
     const cost = fragment.querySelector(".item-card__cost");
@@ -56,7 +59,7 @@ export function renderInventory(items) {
       }
     }
     fragment.querySelector(".item-card__notes").textContent =
-      `${item.notes || "Sin observaciones."} · Stock mínimo: ${item.stockMinimum ?? 0} · Alta: ${formatDateTime(item.createdAt)}`;
+      `${item.notes || "Sin observaciones."} · Unidad: ${unitOf(item).label} · Stock mínimo: ${formatQuantity(item.stockMinimum ?? 0, item)} · Alta: ${formatDateTime(item.createdAt)}`;
 
     inventoryList.append(fragment);
   });
@@ -120,7 +123,7 @@ export function filterLowStockItems(items) {
         .some((value) => String(value).toLowerCase().includes(search));
     const matchesCategory = !category || item.category === category;
     const matchesLocation = !location || item.location === location;
-    const hasLowStock = Number(item.stock) <= minimum;
+    const hasLowStock = !isRetired(item) && Number(item.stock) <= minimum;
 
     return hasLowStock && matchesSearch && matchesCategory && matchesLocation;
   });
@@ -129,7 +132,7 @@ export function filterLowStockItems(items) {
 export function renderLowStockItems(items) {
   lowStockList.innerHTML = "";
   const filteredItems = filterLowStockItems(items);
-  const allLowStockItems = items.filter((item) => Number(item.stock) <= Number(item.stockMinimum ?? 0));
+  const allLowStockItems = items.filter((item) => !isRetired(item) && Number(item.stock) <= Number(item.stockMinimum ?? 0));
 
   if (allLowStockItems.length === 0) {
     lowStockList.append(createEmptyState("No hay materiales con stock bajo en este momento."));
@@ -148,9 +151,9 @@ export function renderLowStockItems(items) {
     fragment.querySelector(".pill").textContent = item.category;
     fragment.querySelector(".pill").classList.add("pill--alert");
     fragment.querySelector("h3").textContent = item.name;
-    fragment.querySelector(".item-card__stock").textContent = `${item.stock} en stock`;
+    fragment.querySelector(".item-card__stock").textContent = `${formatQuantity(item.stock, item)} en stock`;
     fragment.querySelector(".item-card__meta").textContent =
-      `${item.code}${item.subcode ? `-${item.subcode}` : ""} · ${item.location || "Sin ubicación"} · Mínimo ${item.stockMinimum ?? 0}`;
+      `${item.code}${item.subcode ? `-${item.subcode}` : ""} · ${item.location || "Sin ubicación"} · Mínimo ${formatQuantity(item.stockMinimum ?? 0, item)}`;
     const cost = fragment.querySelector(".item-card__cost");
     if (cost) {
       cost.textContent = `Costo unitario promedio ${money(item.amount ?? 0)}`;
