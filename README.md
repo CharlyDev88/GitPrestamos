@@ -13,7 +13,7 @@ Abrí la página publicada con GitHub Pages y elegí un usuario de prueba en la 
 | Usuario | Rol | Contraseña |
 |---|---|---|
 | `admin` | Administrador | `demo2026` |
-| `directora` | Directivo (firma como Rector) | `demo2026` |
+| `director` | Directivo · Miguel Toconas (firma como Rector) | `demo2026` |
 | `jefetaller` | Jefe de taller | `demo2026` |
 | `contable` | Contable | `demo2026` |
 | `panolero` | Pañolero | `demo2026` |
@@ -45,4 +45,4 @@ Esta demo se genera desde ese proyecto con `node scripts/demo/armar-demo-web.js`
 
 ---
 
-Copyright© 2026 Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. | Desarrollado por Carlos Vasquez · carlitosvasquez005@gmail.com
+Copyright© 2026 Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. | Desarrollado por Ing. Carlos Vasquez · carlitosvasquez005@gmail.com

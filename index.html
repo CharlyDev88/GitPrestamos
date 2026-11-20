@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Sistema de gestión de inventario del pañol de la Escuela Técnica Ing. Herminio Arrieta.">
-  <meta name="author" content="Carlos Vasquez">
+  <meta name="author" content="Ing. Carlos Vasquez">
   <meta name="contact" content="carlitosvasquez005@gmail.com">
   <meta name="reply-to" content="carlitosvasquez005@gmail.com">
   <meta name="copyright" content="Colegio Técnico Ing. Herminio Arrieta">
@@ -55,7 +55,7 @@
         </div>
       </section>
       <footer class="site-footer site-footer--auth">
-          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Ing. Carlos Vasquez</span>
         </footer>
     </section>
 
@@ -90,7 +90,7 @@
         <p id="password-error" class="form-error" hidden></p>
       </section>
       <footer class="site-footer site-footer--auth">
-          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Ing. Carlos Vasquez</span>
         </footer>
     </section>
 
@@ -347,7 +347,7 @@
               <section id="item-panel" class="panel" data-view-panel="item-form">
                 <div class="panel__header">
                   <h2>Materiales</h2>
-                  <p>Alta, edición y baja de materiales del pañol. Disponible solo para el pañolero.</p>
+                  <p>Alta, edición y baja de materiales del pañol, con su unidad de medida.</p>
                 </div>
                 <div class="materials-toolbar">
                   <label>
@@ -364,6 +364,15 @@
                     Ubicación
                     <select id="materials-location-filter">
                       <option value="">Todas</option>
+                    </select>
+                  </label>
+                  <label>
+                    Estado
+                    <select id="materials-status-filter">
+                      <option value="active">En uso</option>
+                      <option value="retired">Dados de baja</option>
+                      <option value="">Todos</option>
+                      <option value="history">Historial de bajas</option>
                     </select>
                   </label>
                 </div>
@@ -392,12 +401,16 @@
                         <select name="location" id="item-location-select" required></select>
                       </label>
                       <label>
+                        Unidad de medida
+                        <select name="unit" id="item-unit-select" data-unit-select required></select>
+                      </label>
+                      <label>
                         Stock
-                        <input name="stock" type="number" min="0" value="1" required>
+                        <input name="stock" type="number" min="0" step="any" value="1" required>
                       </label>
                       <label>
                         Stock mínimo
-                        <input name="stockMinimum" type="number" min="0" value="1" required>
+                        <input name="stockMinimum" type="number" min="0" step="any" value="1" required>
                       </label>
                       <label>
                         Costo Unitario
@@ -416,7 +429,7 @@
                   <div class="materials-list-panel">
                     <div class="materials-list-header">
                       <h3>Materiales cargados</h3>
-                      <p>Seleccioná uno para editarlo o eliminarlo.</p>
+                      <p>Seleccioná uno para editarlo, darlo de baja o eliminarlo (solo si se cargó por error).</p>
                     </div>
                     <div id="materials-admin-list" class="activity-list"></div>
                     <div class="materials-pagination">
@@ -424,6 +437,31 @@
                       <span id="materials-page-info">Página 1</span>
                       <button type="button" id="materials-next-page" class="button button--ghost">Siguiente</button>
                     </div>
+                  </div>
+                </div>
+
+                <div class="write-offs-block" hidden>
+                  <div class="materials-list-header">
+                    <h3>Bajas registradas</h3>
+                    <p>Historial de materiales dados de baja: motivo, cantidad, fecha y hora, y quién la registró.</p>
+                  </div>
+                  <div class="write-offs-filters">
+                    <label>
+                      Buscar
+                      <input id="write-offs-search" type="text" placeholder="Material, código u observación">
+                    </label>
+                    <label>
+                      Motivo
+                      <select id="write-offs-reason-filter">
+                        <option value="">Todos</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div id="write-offs-list" class="activity-list"></div>
+                  <div class="materials-pagination">
+                    <button type="button" id="write-offs-prev-page" class="button button--ghost">Anterior</button>
+                    <span id="write-offs-page-info">Página 1</span>
+                    <button type="button" id="write-offs-next-page" class="button button--ghost">Siguiente</button>
                   </div>
                 </div>
               </section>
@@ -583,8 +621,12 @@
                           <select name="location" id="stock-entry-location-select"></select>
                         </label>
                         <label>
+                          Unidad de medida
+                          <select name="unit" data-unit-select></select>
+                        </label>
+                        <label>
                           Stock mínimo
-                          <input name="stockMinimum" type="number" min="0" value="0">
+                          <input name="stockMinimum" type="number" min="0" step="any" value="0">
                         </label>
                         <label id="stock-entry-new-amount-label">
                           Costo Unitario
@@ -904,6 +946,7 @@
                         <option value="overdue-loans">Préstamos vencidos</option>
                         <option value="student-clearance">Libre de deuda por alumno</option>
                         <option value="consumptions-cost-center">Consumos por centro de costo</option>
+                        <option value="write-offs">Bajas de materiales</option>
                       </select>
                     </label>
 
@@ -994,6 +1037,23 @@
                       <label>
                         Centro de costos
                         <select id="report-consumptions-cost-center">
+                          <option value="">Todos</option>
+                        </select>
+                      </label>
+                    </div>
+
+                    <div class="reports-filters-grid" data-report-filter="write-offs" hidden>
+                      <label>
+                        Desde
+                        <input id="report-write-offs-date-from" type="date">
+                      </label>
+                      <label>
+                        Hasta
+                        <input id="report-write-offs-date-to" type="date">
+                      </label>
+                      <label>
+                        Motivo
+                        <select id="report-write-offs-reason">
                           <option value="">Todos</option>
                         </select>
                       </label>
@@ -1358,14 +1418,25 @@
                   <p>Habilitado para pañolero y docente.</p>
                 </div>
                 <form id="loan-form" class="form-grid single-column">
-                  <label>
-                    Buscar material
-                    <input id="loan-item-search" type="text" placeholder="Nombre, código o subcódigo">
-                  </label>
-                  <label>
-                    Elemento
-                    <select name="itemId" id="loan-item-select" required></select>
-                  </label>
+                  <fieldset class="loan-items-builder">
+                    <legend>Materiales del préstamo</legend>
+                    <label>
+                      Buscar material
+                      <input id="loan-item-search" type="text" placeholder="Nombre, código o subcódigo">
+                    </label>
+                    <div class="loan-items-builder__row">
+                      <label>
+                        Material
+                        <select name="itemId" id="loan-item-select"></select>
+                      </label>
+                      <label class="loan-items-builder__quantity">
+                        Cantidad
+                        <input name="quantity" id="loan-item-quantity" type="number" min="1" step="1" value="1">
+                      </label>
+                      <button type="button" id="loan-add-item-button" class="button button--ghost">Agregar</button>
+                    </div>
+                    <div id="loan-items-list" class="loan-items-list" aria-live="polite"></div>
+                  </fieldset>
                   <label>
                     Buscar responsable
                     <input id="loan-responsible-search" type="text" placeholder="Apellido y nombre o DNI">
@@ -1377,10 +1448,6 @@
                   <label>
                     Curso / sector
                     <input name="department" type="text" placeholder="3° Electromecánica">
-                  </label>
-                  <label>
-                    Cantidad
-                    <input name="quantity" type="number" min="1" value="1" required>
                   </label>
                   <label>
                     Fecha de devolución
@@ -1440,7 +1507,7 @@
             </aside>
           </section>
           <footer class="site-footer">
-          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Carlos Vasquez</span>
+          Copyright© <span class="js-current-year">2026</span> Colegio Técnico Ing. Herminio Arrieta. Todos los derechos reservados. <span class="site-footer__sep">|</span> <span class="site-footer__dev">Desarrollado por Ing. Carlos Vasquez</span>
         </footer>
         </div>
       </div>
@@ -1511,6 +1578,8 @@
       </div>
       <div class="material-admin-item__actions">
         <button type="button" class="button button--warning material-edit-button">Editar</button>
+        <button type="button" class="button button--action-blue material-writeoff-button">Dar de baja</button>
+        <button type="button" class="button button--success material-reactivate-button" hidden>Habilitar</button>
         <button type="button" class="button button--danger material-delete-button">Eliminar</button>
       </div>
     </article>

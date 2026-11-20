@@ -3031,3 +3031,285 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* --- Materiales: filtro de estado, bajas e historial --- */
+#item-panel .materials-toolbar {
+  grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(150px, 0.7fr));
+}
+
+.material-admin-item.is-retired {
+  opacity: 0.78;
+  background: repeating-linear-gradient(135deg, var(--surface-strong), var(--surface-strong) 12px, rgba(202, 11, 11, 0.04) 12px, rgba(202, 11, 11, 0.04) 24px);
+}
+
+.material-admin-item.is-retired strong {
+  color: var(--danger);
+}
+
+.material-admin-item__actions button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.write-off-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid rgba(202, 11, 11, 0.25);
+  border-left: 4px solid var(--danger);
+  border-radius: 8px;
+  background: rgba(202, 11, 11, 0.03);
+}
+
+.write-off-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.88rem;
+  min-width: 0;
+}
+
+.write-off-form small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.write-off-form__title,
+.write-off-form__wide,
+.write-off-form__retire,
+.write-off-form__actions {
+  grid-column: 1 / -1;
+}
+
+.write-off-form__retire {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text);
+}
+
+.write-off-form__retire input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.write-off-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#item-panel.show-write-offs .materials-workspace {
+  display: none !important;
+}
+
+.write-offs-block {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.write-offs-block[hidden] {
+  display: none;
+}
+
+#write-offs-list {
+  overflow-y: auto;
+  padding-right: 6px;
+  min-height: 0;
+}
+
+.write-offs-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(200px, 1fr);
+  gap: 14px;
+  margin-bottom: 12px;
+  max-width: 720px;
+}
+
+.write-offs-filters label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+/* --- Préstamo con varios materiales --- */
+.loan-items-builder {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.loan-items-builder legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.loan-items-builder label {
+  display: grid;
+  gap: 7px;
+  font-size: 0.95rem;
+}
+
+.loan-items-builder__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.loan-items-list {
+  display: grid;
+  gap: 8px;
+}
+
+.loan-items-list__empty,
+.loan-items-list__total {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.loan-items-list__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-strong);
+}
+
+.loan-items-list__name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.loan-items-list__name span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.loan-items-list__quantity {
+  display: flex !important;
+  align-items: center;
+  gap: 6px;
+}
+
+.loan-items-list__quantity span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* --- Devolución agrupada por préstamo --- */
+.loan-return-lines {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.loan-return-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: rgba(11, 63, 134, 0.03);
+}
+
+.loan-return-line__name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.loan-return-line__name span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.loan-return-line__quantity {
+  display: grid;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.loan-return-line__input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loan-return-line__input span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  #item-panel .materials-toolbar,
+  .write-offs-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .write-off-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .loan-items-builder__row {
+    grid-template-columns: minmax(0, 1fr) 90px;
+  }
+
+  .loan-items-builder__row button {
+    grid-column: 1 / -1;
+  }
+
+  .loan-items-list__row {
+    grid-template-columns: minmax(0, 1fr) 110px;
+  }
+
+  .loan-items-list__remove {
+    grid-column: 1 / -1;
+  }
+
+  .loan-return-line {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ajustes: el bloque de materiales del préstamo ocupa todo el ancho y sus botones no se estiran. */
+#loan-form-panel.is-visible form .loan-items-builder {
+  grid-column: 1 / -1;
+}
+
+#loan-form-panel.is-visible form .loan-items-builder .button,
+#loan-form-panel.is-visible form .loan-items-builder label {
+  grid-column: auto;
+}
+
+#loan-form-panel.is-visible form .loan-items-builder > label {
+  grid-column: 1 / -1;
+}
+
+/* El formulario de baja dentro de la lista de materiales (columna angosta): dos columnas. */
+.materials-list-panel .write-off-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  #loan-form-panel.is-visible form .loan-items-builder__row .button,
+  #loan-form-panel.is-visible form .loan-items-list__remove {
+    grid-column: 1 / -1;
+  }
+}
